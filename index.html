@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Football Tournament Registrations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,600;0,700;0,800;1,800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --pl-purple: #360D3A;
+  --pl-purple-dark: #240827;
+  --pl-magenta: #E90052;
+  --pl-neon-green: #00FF85;
+  --pl-violet: #963CFF;
+  --pl-cyan: #04F160;
+  --pl-yellow: #FFF500;
+  --pl-bg-main: #360D3A;
+  --pl-card-bg: #240827;
+  --pl-card-bg-hover: #2e0b32;
+  --pl-text-primary: #FFFFFF;
+  --pl-text-secondary: #E8D7EE;
+  --pl-text-muted: #B3A2C7;
+  --pl-border-color: rgba(255, 255, 255, 0.1);
+  --pl-font-family: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --pl-font-weight-regular: 400;
+  --pl-font-weight-semibold: 600;
+  --pl-font-weight-bold: 700;
+  --pl-font-weight-heavy: 800;
+  --pl-radius-sm: 4px;
+  --pl-radius-md: 8px;
+  --pl-radius-lg: 16px;
+  --pl-radius-pill: 50px;
+  --pl-transition-fast: 0.15s ease;
+  --pl-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  margin: 0;
+  background-color: var(--pl-purple);
+  color: var(--pl-text-primary);
+  font-family: var(--pl-font-family);
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.5;
+  padding: 2rem 1.5rem 3rem;
+}
+.wrap { max-width: 1100px; margin: 0 auto; }
+h1, h2 {
+  font-weight: var(--pl-font-weight-heavy);
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  margin: 0;
+  line-height: 1.1;
+}
+h1 { font-size: 2rem; }
+h2 { font-size: 1.05rem; margin-bottom: 0.25rem; }
+p { color: var(--pl-text-secondary); margin: 0; }
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 4px solid var(--pl-neon-green);
+  margin-bottom: 2rem;
+}
+.header p { font-size: 0.9rem; margin-top: 0.35rem; }
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+}
+.metric-card {
+  background: var(--pl-card-bg);
+  border-radius: var(--pl-radius-md);
+  padding: 1.25rem 1.4rem;
+  box-shadow: var(--pl-shadow-md);
+  border-left: 4px solid var(--pl-neon-green);
+}
+.metric-card.m2 { border-left-color: var(--pl-magenta); }
+.metric-card.m3 { border-left-color: var(--pl-violet); }
+.metric-card.m4 { border-left-color: var(--pl-yellow); }
+.metric-value { font-size: 2rem; font-weight: var(--pl-font-weight-heavy); }
+.metric-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--pl-text-muted);
+  margin-top: 0.4rem;
+  font-weight: var(--pl-font-weight-semibold);
+}
+
+.panel {
+  background: var(--pl-card-bg);
+  border-radius: var(--pl-radius-md);
+  padding: 1.75rem;
+  box-shadow: var(--pl-shadow-md);
+  margin-bottom: 2rem;
+}
+.panel .desc { font-size: 0.85rem; margin-bottom: 1.5rem; }
+
+/* Batch bar chart */
+.batch-chart { display: flex; align-items: flex-end; gap: 10px; height: 190px; padding-top: 1.5rem; border-bottom: 1px solid var(--pl-border-color); }
+.batch-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
+.batch-value { font-size: 0.78rem; font-weight: var(--pl-font-weight-bold); margin-bottom: 6px; }
+.batch-bar { width: 60%; max-width: 34px; background: var(--pl-neon-green); border-radius: 6px 6px 0 0; transition: opacity var(--pl-transition-fast); }
+.batch-bar:hover { opacity: 0.75; }
+.batch-label { margin-top: 0.6rem; font-size: 0.72rem; font-weight: var(--pl-font-weight-semibold); color: var(--pl-text-muted); }
+
+/* Position bar chart */
+.pos-legend { display: flex; gap: 1.25rem; flex-wrap: wrap; margin-bottom: 1.5rem; font-size: 0.78rem; color: var(--pl-text-secondary); }
+.pos-legend .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+.pos-row { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.8rem; }
+.pos-label { width: 165px; flex-shrink: 0; }
+.pos-code { font-weight: var(--pl-font-weight-bold); font-size: 0.9rem; }
+.pos-name { display: block; font-size: 0.68rem; color: var(--pl-text-muted); font-weight: 400; }
+.pos-bar-track { flex: 1; background: rgba(255,255,255,0.06); border-radius: var(--pl-radius-pill); height: 16px; overflow: hidden; }
+.pos-bar-fill { height: 100%; border-radius: var(--pl-radius-pill); transition: opacity var(--pl-transition-fast); }
+.pos-bar-fill:hover { opacity: 0.75; }
+.pos-value { width: 26px; text-align: right; font-weight: var(--pl-font-weight-bold); font-size: 0.85rem; flex-shrink: 0; }
+
+/* Hall donut */
+.hall-wrap { display: flex; align-items: center; gap: 2.5rem; flex-wrap: wrap; }
+.hall-donut {
+  width: 190px; height: 190px; border-radius: 50%; flex-shrink: 0;
+  background: conic-gradient(var(--pl-neon-green) 0% 31.03%, var(--pl-magenta) 31.03% 44.83%, var(--pl-violet) 44.83% 67.24%, var(--pl-yellow) 67.24% 100%);
+  display: flex; align-items: center; justify-content: center;
+}
+.hall-hole { width: 118px; height: 118px; border-radius: 50%; background: var(--pl-card-bg); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.hall-hole-value { font-size: 1.75rem; font-weight: var(--pl-font-weight-heavy); }
+.hall-hole-label { font-size: 0.65rem; color: var(--pl-text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.hall-legend { display: flex; flex-direction: column; gap: 0.9rem; min-width: 200px; }
+.hall-legend-item { display: flex; align-items: center; gap: 0.6rem; font-size: 0.92rem; font-weight: var(--pl-font-weight-semibold); }
+.hall-legend-item .swatch { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+.hall-legend-item .hall-count { margin-left: auto; font-weight: var(--pl-font-weight-bold); }
+.hall-legend-item .hall-pct { color: var(--pl-text-muted); font-size: 0.78rem; font-weight: 400; margin-left: 0.35rem; }
+
+.note-panel {
+  background: var(--pl-card-bg);
+  border-left: 5px solid var(--pl-magenta);
+  border-radius: var(--pl-radius-md);
+  padding: 1.1rem 1.4rem;
+  font-size: 0.85rem;
+}
+.note-panel strong { color: var(--pl-text-primary); }
+.note-panel ul { margin: 0.5rem 0 0; padding-left: 1.1rem; color: var(--pl-text-secondary); }
+.note-panel li { margin-bottom: 0.3rem; }
+
+@media (max-width: 560px) {
+  .pos-label { width: 120px; }
+  .hall-wrap { justify-content: center; text-align: left; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div>
+      <h1>Football tournament registrations</h1>
+      <p>Breakdown of 58 signups by batch, position and hall</p>
+    </div>
+  </div>
+
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-value">58</div>
+      <div class="metric-label">Total registrations</div>
+    </div>
+    <div class="metric-card m2">
+      <div class="metric-value">4</div>
+      <div class="metric-label">Halls represented</div>
+    </div>
+    <div class="metric-card m3">
+      <div class="metric-value">9</div>
+      <div class="metric-label">Batches (95&ndash;105)</div>
+    </div>
+    <div class="metric-card m4">
+      <div class="metric-value">2.2</div>
+      <div class="metric-label">Avg. positions picked / player</div>
+    </div>
+  </div>
+
+  <div class="panel" role="img" aria-label="Bar chart of registrations by batch. Batch 105: 15, Batch 104: 9, Batch 103: 15, Batch 102: 6, Batch 101: 2, Batch 100: 6, Batch 99: 3, Batch 97: 1, Batch 95: 1">
+    <h2>Registrations by batch</h2>
+    <p class="desc">Number of players registered per batch</p>
+    <div class="batch-chart">
+      <div class="batch-col"><span class="batch-value">15</span><div class="batch-bar" style="height:100%"></div><span class="batch-label">105</span></div>
+      <div class="batch-col"><span class="batch-value">9</span><div class="batch-bar" style="height:60%"></div><span class="batch-label">104</span></div>
+      <div class="batch-col"><span class="batch-value">15</span><div class="batch-bar" style="height:100%"></div><span class="batch-label">103</span></div>
+      <div class="batch-col"><span class="batch-value">6</span><div class="batch-bar" style="height:40%"></div><span class="batch-label">102</span></div>
+      <div class="batch-col"><span class="batch-value">2</span><div class="batch-bar" style="height:13%"></div><span class="batch-label">101</span></div>
+      <div class="batch-col"><span class="batch-value">6</span><div class="batch-bar" style="height:40%"></div><span class="batch-label">100</span></div>
+      <div class="batch-col"><span class="batch-value">3</span><div class="batch-bar" style="height:20%"></div><span class="batch-label">99</span></div>
+      <div class="batch-col"><span class="batch-value">1</span><div class="batch-bar" style="height:7%"></div><span class="batch-label">97</span></div>
+      <div class="batch-col"><span class="batch-value">1</span><div class="batch-bar" style="height:7%"></div><span class="batch-label">95</span></div>
+    </div>
+  </div>
+
+  <div class="panel" role="img" aria-label="Horizontal bar chart of position preferences, sorted highest to lowest. Attacking midfielder 18, Left winger 18, Centre-back 13, Central midfielder 13, Right-back 11, Defensive midfielder 10, Left-back 9, Centre-forward 8, Left midfielder 8, Right winger 7, Goalkeeper 5, Right midfielder 4, Striker 4">
+    <h2>Position preferences</h2>
+    <p class="desc">Players could pick more than one position, so totals add up to 128 picks across 58 players</p>
+    <div class="pos-legend">
+      <span><span class="swatch" style="background:var(--pl-yellow)"></span>Goalkeeper</span>
+      <span><span class="swatch" style="background:var(--pl-violet)"></span>Defence</span>
+      <span><span class="swatch" style="background:var(--pl-magenta)"></span>Midfield</span>
+      <span><span class="swatch" style="background:var(--pl-neon-green)"></span>Attack</span>
+    </div>
+
+    <div class="pos-row"><div class="pos-label"><span class="pos-code">AMF</span><span class="pos-name">Attacking midfielder</span></div><div class="pos-bar-track"><div class="pos-bar-fill" style="width:100%;background:var(--pl-magenta)"></div></div><span class="pos-value">18</span></div>
+    <div class="pos-row"><div class="pos-label"><span class="pos-code">LW</span><span class="pos-name">Left winger</span></div><div class="pos-bar-track"><div class="pos-bar-fill" style="width:100%;background:var(--pl-neon-green)"></div></div><span class="pos-value">18</span></div>
+    <div class="pos-row"><div class="pos-label"><span class="pos-code">CB</span><span class="pos-name">Centre-back</span></div><div class="pos-bar-track"><div class="pos-bar-fill" style="width:72%;background:var(--pl-violet)"></div></div><span class="pos-value">13</span></div>
+    <div class="pos-row"><div class="pos-label"><span class="pos-code">CM</span><span class="pos-name">Central midfielder</span></div><div class="pos-bar-track"><div class="pos-bar-fill" style="width:72%;background:var(--pl-magenta)"></div></div><span class="pos-value">13</span></div>
+    <div class="pos-row"><div class="pos-label"><span class="pos-code">RB</span><span class="pos-name">Right-back</span></div><div class="pos-bar-track"><div class="pos-bar-fill" style="width:61%;background:var(--pl-violet)"></div></div><span class="pos-value">11</span></div>
+    <div class="pos-row"><div class="pos-label"><span class="pos-code">DMF</span><span class="pos-name">Defensive midfielder</span></div><div class="pos-bar-track"><div class="pos-bar-fill" style="width:56%;background:var(--pl-magenta)"></div></div><span class="pos-value">10</span></div>
+    <div class="pos-row"><div class="pos-label"><span class="pos-code">LB</span><span class="pos-name">Left-back</span></div><div class="pos-bar-track"><div class="pos-bar-fill" style="width:50%;background:var(--pl-violet)"></div></div><span class="pos-value">9</span></div>
+    <div class="pos-row"><div class="pos-label"><span class="pos-code">CF</span><span class="pos-name">Centre-forward</span></div><div class="pos-bar-track"><div class="pos-bar-fill" style="width:44%;background:var(--pl-neon-green)"></div></div><span class="pos-value">8</span></div>
+    <div class="pos-row"><div class="pos-label"><span class="pos-code">LM</span><span class="pos-name">Left midfielder</span></div><div class="pos-bar-track"><div class="pos-bar-fill" style="width:44%;background:var(--pl-magenta)"></div></div><span class="pos-value">8</span></div>
+    <div class="pos-row"><div class="pos-label"><span class="pos-code">RW</span><span class="pos-name">Right winger</span></div><div class="pos-bar-track"><div class="pos-bar-fill" style="width:39%;background:var(--pl-neon-green)"></div></div><span class="pos-value">7</span></div>
+    <div class="pos-row"><div class="pos-label"><span class="pos-code">GK</span><span class="pos-name">Goalkeeper</span></div><div class="pos-bar-track"><div class="pos-bar-fill" style="width:28%;background:var(--pl-yellow)"></div></div><span class="pos-value">5</span></div>
+    <div class="pos-row"><div class="pos-label"><span class="pos-code">RM</span><span class="pos-name">Right midfielder</span></div><div class="pos-bar-track"><div class="pos-bar-fill" style="width:22%;background:var(--pl-magenta)"></div></div><span class="pos-value">4</span></div>
+    <div class="pos-row"><div class="pos-label"><span class="pos-code">ST</span><span class="pos-name">Striker</span></div><div class="pos-bar-track"><div class="pos-bar-fill" style="width:22%;background:var(--pl-neon-green)"></div></div><span class="pos-value">4</span></div>
+  </div>
+
+  <div class="panel" role="img" aria-label="Donut chart of registrations by hall. SH: 18, 31 percent. FH: 19, 33 percent. AE: 13, 22 percent. JN: 8, 14 percent">
+    <h2>Registrations by hall</h2>
+    <p class="desc">Distribution of players across residence halls</p>
+    <div class="hall-wrap">
+      <div class="hall-donut"><div class="hall-hole"><span class="hall-hole-value">58</span><span class="hall-hole-label">Total</span></div></div>
+      <div class="hall-legend">
+        <div class="hall-legend-item"><span class="swatch" style="background:var(--pl-neon-green)"></span>SH<span class="hall-count">18</span><span class="hall-pct">31%</span></div>
+        <div class="hall-legend-item"><span class="swatch" style="background:var(--pl-magenta)"></span>JN<span class="hall-count">8</span><span class="hall-pct">14%</span></div>
+        <div class="hall-legend-item"><span class="swatch" style="background:var(--pl-violet)"></span>AE<span class="hall-count">13</span><span class="hall-pct">22%</span></div>
+        <div class="hall-legend-item"><span class="swatch" style="background:var(--pl-yellow)"></span>FH<span class="hall-count">19</span><span class="hall-pct">33%</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note-panel">
+    <strong>Data quality note:</strong> a few entries look like duplicate signups (same name &amp; phone number) &mdash; worth checking before finalizing squads:
+    <ul>
+      <li><strong>Rahat Mahmud</strong> &mdash; identical entry appears twice</li>
+      <li><strong>MD. MAHBUBUL ALAM RASHED</strong> &mdash; appears twice with different batch numbers (97 and 95)</li>
+      <li><strong>Omar Sajid</strong> &mdash; appears twice with slightly different position lists</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>
