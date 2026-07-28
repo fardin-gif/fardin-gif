@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PHY-LIGA — Season 01 · Department of Physics, University of Dhaka</title>
+<meta name="description" content="PHY-LIGA Season 01 — the Intra-Department Football Tournament of the Department of Physics, University of Dhaka. Beyond Equations, Into the Game." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --clr-canvas: #162235;
+    --clr-surface: #1E2D42;
+    --clr-surface-alt: #253850;
+    --clr-accent-primary: #A1C4C7;
+    --clr-accent-interactive: #34DFEC;
+    --clr-highlight: #2A8042;
+    --clr-danger: #E24C4C;
+    --clr-text-muted: #7E8B9B;
+    --clr-text-primary: #EAF2F2;
+    --radius-md: 12px;
+    --radius-lg: 20px;
+    --shadow-glow: 0 0 24px rgba(52, 223, 236, 0.15);
+    --font-display: 'Orbitron', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background-color: var(--clr-canvas);
+    background-image:
+      radial-gradient(circle at 15% 10%, rgba(52,223,236,0.06), transparent 40%),
+      radial-gradient(circle at 85% 30%, rgba(42,128,66,0.08), transparent 45%);
+    color: var(--clr-text-primary);
+    font-family: var(--font-body);
+    line-height: 1.55;
+    min-height: 100vh;
+  }
+
+  a { color: inherit; text-decoration: none; }
+
+  ::selection { background: var(--clr-accent-interactive); color: var(--clr-canvas); }
+
+  :focus-visible {
+    outline: 2px solid var(--clr-accent-interactive);
+    outline-offset: 3px;
+  }
+
+  /* ---------- HEADER / NAV ---------- */
+  header.site-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 5vw;
+    background: rgba(22, 34, 53, 0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(161, 196, 199, 0.12);
+    transition: padding 0.25s ease;
+  }
+
+  .brand {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  .brand .logo-text {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(1.1rem, 2vw, 1.5rem);
+    letter-spacing: 0.06em;
+    background: linear-gradient(135deg, var(--clr-accent-interactive), var(--clr-accent-primary));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .brand .season-tag {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--clr-text-muted);
+    border: 1px solid rgba(161, 196, 199, 0.25);
+    padding: 2px 8px;
+    border-radius: 20px;
+    letter-spacing: 0.05em;
+  }
+
+  nav.main-nav ul {
+    list-style: none;
+    display: flex;
+    gap: clamp(10px, 1.6vw, 26px);
+    flex-wrap: wrap;
+  }
+
+  nav.main-nav a {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--clr-accent-primary);
+    padding-bottom: 4px;
+    border-bottom: 2px solid transparent;
+    transition: color 0.2s ease, border-color 0.2s ease;
+    white-space: nowrap;
+  }
+
+  nav.main-nav a:hover,
+  nav.main-nav a.active {
+    color: var(--clr-accent-interactive);
+    border-bottom-color: var(--clr-accent-interactive);
+  }
+
+  .nav-toggle {
+    display: none;
+    background: none;
+    border: 1px solid rgba(161,196,199,0.3);
+    border-radius: 8px;
+    color: var(--clr-text-primary);
+    font-size: 1.2rem;
+    padding: 6px 10px;
+    cursor: pointer;
+  }
+
+  /* ---------- HERO ---------- */
+  .hero {
+    position: relative;
+    max-width: none;
+    margin: 0;
+    padding: 140px 6vw 90px;
+    text-align: center;
+    overflow: hidden;
+    min-height: 640px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    background-image: url("hero-kick.png");
+    background-size: cover;
+    background-position: center 35%;
+    background-repeat: no-repeat;
+    isolation: isolate;
+  }
+
+  .hero-inner {
+    position: relative;
+    z-index: 1;
+    max-width: 760px;
+    width: 100%;
+  }
+
+  .hero::before {
+    /* darken + tint the photo so it reads as part of the dark UI, and
+       fade it toward the canvas color at the edges/bottom so text stays legible */
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(180deg, rgba(22,34,53,0.55) 0%, rgba(22,34,53,0.35) 35%, rgba(22,34,53,0.92) 88%, var(--clr-canvas) 100%),
+      linear-gradient(90deg, rgba(22,34,53,0.75) 0%, rgba(22,34,53,0.15) 45%, rgba(22,34,53,0.15) 55%, rgba(22,34,53,0.75) 100%),
+      radial-gradient(circle at 50% 0%, rgba(52,223,236,0.08), transparent 55%);
+    z-index: 0;
+  }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--clr-accent-interactive);
+    margin-bottom: 12px;
+  }
+
+  h1.hero-title {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(2.4rem, 7vw, 4.2rem);
+    letter-spacing: 0.03em;
+    margin-bottom: 16px;
+  }
+
+  .hero-tagline {
+    color: var(--clr-accent-primary);
+    font-style: italic;
+    font-size: clamp(1rem, 2vw, 1.2rem);
+    margin-bottom: 26px;
+  }
+
+  .hero-desc {
+    color: var(--clr-text-muted);
+    font-size: 0.95rem;
+    max-width: 620px;
+    margin: 0 auto 36px;
+  }
+
+  .hero-ctas {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 44px;
+  }
+
+  .btn {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 0.03em;
+    padding: 14px 30px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-primary {
+    color: var(--clr-canvas);
+    background: linear-gradient(135deg, var(--clr-accent-interactive), #6BEFF7);
+    border: none;
+    box-shadow: 0 0 24px rgba(52,223,236,0.35);
+  }
+
+  .btn-primary:hover { transform: scale(1.03); box-shadow: 0 0 32px rgba(52,223,236,0.5); }
+
+  .btn-secondary {
+    color: var(--clr-text-primary);
+    background: transparent;
+    border: 1px solid rgba(161,196,199,0.3);
+  }
+
+  .btn-secondary:hover { border-color: var(--clr-accent-interactive); color: var(--clr-accent-interactive); transform: scale(1.03); }
+
+  .live-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--clr-highlight);
+    box-shadow: 0 0 8px 2px rgba(42,128,66,0.7);
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.75); }
+  }
+
+  /* ---------- COUNTDOWN STRIP ---------- */
+  .countdown-strip {
+    max-width: 880px;
+    margin: 50px auto 70px;
+    padding: clamp(18px, 3vw, 28px) clamp(20px, 4vw, 36px);
+    background: rgba(30, 45, 66, 0.55);
+    border: 1px solid rgba(161, 196, 199, 0.15);
+    border-radius: var(--radius-lg);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+
+  .countdown-strip .cd-label {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--clr-text-muted);
+    margin-bottom: 6px;
+  }
+
+  .countdown-strip .cd-sub {
+    font-size: 0.85rem;
+    color: var(--clr-accent-primary);
+  }
+
+  .countdown-units {
+    display: flex;
+    gap: 18px;
+  }
+
+  .cd-unit {
+    text-align: center;
+    min-width: 60px;
+  }
+
+  .cd-unit .cd-num {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 1.6rem;
+    color: var(--clr-accent-interactive);
+  }
+
+  .cd-unit .cd-tag {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--clr-text-muted);
+  }
+
+  .countdown-strip.closed .cd-num { color: var(--clr-danger); }
+
+  /* ---------- FEATURE CARDS ---------- */
+  .section-wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 6vw 80px;
+  }
+
+  .section-heading {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .section-heading .eyebrow { margin-bottom: 10px; }
+
+  .section-heading h2 {
+    font-family: var(--font-display);
+    font-size: clamp(1.3rem, 3vw, 1.8rem);
+    letter-spacing: 0.02em;
+  }
+
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+  }
+
+  .feature-card {
+    position: relative;
+    padding: 30px 24px;
+    background: rgba(30, 45, 66, 0.55);
+    border: 1px solid rgba(161, 196, 199, 0.15);
+    border-radius: var(--radius-lg);
+    backdrop-filter: blur(10px);
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%);
+  }
+
+  .feature-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(52,223,236,0.4);
+    box-shadow: var(--shadow-glow);
+  }
+
+  .feature-card .fc-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: var(--radius-md);
+    background: rgba(52,223,236,0.1);
+    border: 1px solid rgba(52,223,236,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    margin-bottom: 18px;
+  }
+
+  .feature-card h3 {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    letter-spacing: 0.02em;
+    margin-bottom: 8px;
+  }
+
+  .feature-card p {
+    font-size: 0.85rem;
+    color: var(--clr-text-muted);
+    margin-bottom: 18px;
+  }
+
+  .feature-card .fc-link {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--clr-accent-interactive);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .feature-card .fc-link::after { content: "→"; transition: transform 0.2s ease; }
+  .feature-card:hover .fc-link::after { transform: translateX(4px); }
+
+  /* ---------- QUICK STATS ---------- */
+  .stats-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px;
+  }
+
+  .stat-box {
+    padding: 22px 18px;
+    background: rgba(30, 45, 66, 0.55);
+    border: 1px solid rgba(161, 196, 199, 0.15);
+    border-radius: var(--radius-md);
+    backdrop-filter: blur(10px);
+    text-align: center;
+  }
+
+  .stat-box .stat-num {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 1.8rem;
+    color: var(--clr-accent-interactive);
+    display: block;
+  }
+
+  .stat-box .stat-label {
+    font-size: 0.75rem;
+    color: var(--clr-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  /* ---------- FOOTER ---------- */
+  footer.site-footer {
+    text-align: center;
+    padding: 26px 5vw;
+    border-top: 1px solid rgba(161,196,199,0.12);
+    font-size: 0.78rem;
+    color: var(--clr-text-muted);
+  }
+
+  footer.site-footer a { color: var(--clr-accent-interactive); }
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width: 768px) {
+    nav.main-nav {
+      position: absolute;
+      top: 100%; left: 0; right: 0;
+      background: rgba(22,34,53,0.97);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(161,196,199,0.12);
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+    nav.main-nav.open { max-height: 400px; }
+    nav.main-nav ul { flex-direction: column; padding: 16px 6vw; gap: 14px; }
+    .nav-toggle { display: block; }
+
+    .countdown-strip { flex-direction: column; align-items: flex-start; }
+    .countdown-units { align-self: stretch; justify-content: space-between; }
+
+    .hero {
+      min-height: 78vh;
+      padding: 110px 6vw 60px;
+      background-position: 62% center;
+      align-items: center;
+    }
+
+    .hero::before {
+      background:
+        linear-gradient(180deg, rgba(22,34,53,0.35) 0%, rgba(22,34,53,0.45) 40%, rgba(22,34,53,0.95) 82%, var(--clr-canvas) 100%),
+        linear-gradient(90deg, rgba(22,34,53,0.55) 0%, rgba(22,34,53,0.1) 40%, rgba(22,34,53,0.2) 100%),
+        radial-gradient(circle at 50% 0%, rgba(52,223,236,0.08), transparent 55%);
+    }
+
+    .hero-inner { padding-top: 30vh; }
+  }
+
+  @media (max-width: 480px) {
+    .cd-unit { min-width: 46px; }
+    .cd-unit .cd-num { font-size: 1.3rem; }
+
+    .hero {
+      min-height: 74vh;
+      padding: 100px 5vw 50px;
+      background-position: 66% center;
+    }
+
+    .hero-inner { padding-top: 26vh; }
+
+    .hero-title { font-size: clamp(2.1rem, 11vw, 2.6rem); }
+    .hero-desc { font-size: 0.88rem; }
+  }
+
+  @media (max-width: 380px) {
+    .hero { background-position: 70% center; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <a href="index.html" class="brand" style="cursor:pointer;">
+    <img src="logo.png" alt="PHY LIGA Logo" class="logo-img" width="140" height="36.46" />
+    <!-- <span class="logo-text">PHY LIGA</span> -->
+    <span class="season-tag">Season 01</span>
+  </a>
+  <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+  <nav class="main-nav" id="mainNav">
+    <ul>
+      <li><a href="auction.html">Auction</a></li>
+      <li><a href="register.html">Registration</a></li>
+      <li><a href="players.html">Players</a></li>
+      <li><a href="teams.html">Teams</a></li>
+      <li><a href="stats.html">Statistics</a></li>
+      <li><a href="fixture.html">Fixture</a></li>
+      <li><a href="scoreboard.html">Scoreboard</a></li>
+      <li><a href="memory.html">Memory</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="hero-inner">
+      <p class="eyebrow">Department of Physics · University of Dhaka</p>
+      <h1 class="hero-title">PHY-LIGA</h1>
+      <p class="hero-tagline">"Beyond Equations, Into the Game."</p>
+      <p class="hero-desc">
+        The official Intra-Department Football Tournament of the Department of Physics —
+        Season 01 brings together players, owners, and fans of the department for a season
+        of drafts, derbies, and department pride.
+      </p>
+
+      <div class="hero-ctas">
+        <a href="scoreboard.html" class="btn btn-primary"><span class="live-dot" aria-hidden="true"></span> Scoreboard</a>
+        <a href="register.html" class="btn btn-secondary">Register Now</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="countdown-strip" id="countdownStrip">
+    <div>
+      <div class="cd-label">Registration Deadline</div>
+      <div class="cd-sub" id="deadlineText">31 July 2026, 11:59 PM</div>
+    </div>
+    <div class="countdown-units" id="countdownUnits">
+      <div class="cd-unit"><span class="cd-num" id="cdDays">–</span><span class="cd-tag">Days</span></div>
+      <div class="cd-unit"><span class="cd-num" id="cdHours">–</span><span class="cd-tag">Hours</span></div>
+      <div class="cd-unit"><span class="cd-num" id="cdMins">–</span><span class="cd-tag">Mins</span></div>
+    </div>
+  </div>
+
+  <section class="section-wrap">
+    <div class="section-heading">
+      <p class="eyebrow">Get Involved</p>
+      <h2>Where do you want to go?</h2>
+    </div>
+    <div class="feature-grid">
+      <a href="register.html" class="feature-card">
+        <div class="fc-icon">📝</div>
+        <h3>Register</h3>
+        <p>Sign up as a Player, Owner, or Both before the Season 01 deadline.</p>
+        <span class="fc-link">Register now</span>
+      </a>
+      <a href="players.html" class="feature-card">
+        <div class="fc-icon">⛹🏼‍♂️</div>
+        <h3>View Players</h3>
+        <p>Browse every registered player — batch, hall, position, and team.</p>
+        <span class="fc-link">See players</span>
+      </a>
+      <a href="fixture.html" class="feature-card">
+        <div class="fc-icon">📅</div>
+        <h3>See Fixtures</h3>
+        <p>Check upcoming, live, and completed matches across every round.</p>
+        <span class="fc-link">View fixtures</span>
+      </a>
+      <a href="scoreboard.html" class="feature-card">
+        <div class="fc-icon">📡</div>
+        <h3>Live Scoreboard</h3>
+        <p>Follow live scores, match events, and past results as they happen.</p>
+        <span class="fc-link">Open scoreboard</span>
+      </a>
+    </div>
+  </section>
+
+  <section class="section-wrap">
+    <div class="section-heading">
+      <p class="eyebrow">At a Glance</p>
+      <h2>Season 01 Snapshot</h2>
+    </div>
+    <div class="stats-strip" id="statsStrip">
+      <div class="stat-box"><span class="stat-num" id="statPlayers">–</span><span class="stat-label">Players</span></div>
+      <div class="stat-box"><span class="stat-num" id="statOwners">–</span><span class="stat-label">Owners</span></div>
+      <div class="stat-box"><span class="stat-num" id="statTeams">–</span><span class="stat-label">Teams</span></div>
+      <div class="stat-box"><span class="stat-num" id="statRegs">–</span><span class="stat-label">Registrations</span></div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  © 2026 PHY-LIGA · Developed by <a href="https://www.facebook.com/fardin.0112" target="_blank" rel="noopener">Fardin Hossain</a> · Feathered by <a href="https://www.facebook.com/tawkir.hossain.16" target="_blank" rel="noopener">Tawkir Hossain Rahat</a>
+</footer>
+
+<script>
+  /* ---------- Nav toggle (mobile) ---------- */
+  const navToggle = document.getElementById("navToggle");
+  const mainNav = document.getElementById("mainNav");
+
+  function closeNav() {
+    mainNav.classList.remove("open");
+    navToggle.setAttribute("aria-expanded", "false");
+    navToggle.textContent = "☰";
+  }
+
+  function toggleNav() {
+    const isOpen = mainNav.classList.toggle("open");
+    navToggle.setAttribute("aria-expanded", String(isOpen));
+    navToggle.textContent = isOpen ? "✕" : "☰";
+  }
+
+  navToggle.addEventListener("click", (e) => {
+    e.stopPropagation();
+    toggleNav();
+  });
+
+  mainNav.querySelectorAll("a").forEach(link => link.addEventListener("click", closeNav));
+
+  document.addEventListener("click", (e) => {
+    if (mainNav.classList.contains("open") && !mainNav.contains(e.target) && !navToggle.contains(e.target)) {
+      closeNav();
+    }
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeNav();
+  });
+
+  /* ---------- Countdown to registration deadline ---------- */
+  const REGISTRATION_DEADLINE = new Date("2026-07-31T23:59:00+06:00");
+  const countdownStrip = document.getElementById("countdownStrip");
+  const cdDays = document.getElementById("cdDays");
+  const cdHours = document.getElementById("cdHours");
+  const cdMins = document.getElementById("cdMins");
+  const deadlineText = document.getElementById("deadlineText");
+
+  function updateCountdown() {
+    const now = new Date();
+    const diff = REGISTRATION_DEADLINE - now;
+    if (diff <= 0) {
+      countdownStrip.classList.add("closed");
+      deadlineText.textContent = "Registration is now closed";
+      cdDays.textContent = "0";
+      cdHours.textContent = "0";
+      cdMins.textContent = "0";
+      return;
+    }
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+    const mins = Math.floor((diff / (1000 * 60)) % 60);
+    cdDays.textContent = days;
+    cdHours.textContent = hours;
+    cdMins.textContent = mins;
+  }
+  updateCountdown();
+  setInterval(updateCountdown, 60000);
+
+  /* ---------- Quick stats (best-effort, read-only, zero writes) ----------
+     If Firebase fails to load (e.g. file opened directly instead of served,
+     or a network block), the stat boxes just stay at their placeholder "–"
+     — nothing above this depends on it, so the rest of the homepage
+     (hero, countdown, nav, feature cards) keeps working regardless.
+  ------------------------------------------------------------------- */
+  (async function loadQuickStats() {
+    try {
+      const [{ db }, firestoreMod] = await Promise.all([
+        import("./assets/js/firebase-config.js"),
+        import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js")
+      ]);
+      const { collection, getDocs } = firestoreMod;
+      const snap = await getDocs(collection(db, "publicPlayers"));
+
+      let players = 0, owners = 0;
+      const teamIds = new Set();
+
+      snap.forEach(docSnap => {
+        const d = docSnap.data();
+        if (d.role === "player" || d.role === "both") players++;
+        if (d.role === "owner" || d.role === "both") owners++;
+        if (d.teamId) teamIds.add(d.teamId);
+      });
+
+      document.getElementById("statPlayers").textContent = players;
+      document.getElementById("statOwners").textContent = owners;
+      document.getElementById("statTeams").textContent = teamIds.size;
+      document.getElementById("statRegs").textContent = snap.size;
+    } catch (err) {
+      console.error("Quick stats unavailable:", err);
+      // Leave placeholders as "–" — homepage remains fully usable.
+    }
+  })();
+</script>
+
+</body>
+</html>

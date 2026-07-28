@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Statistics — PHY-LIGA</title>
+<meta name="description" content="PHY-LIGA Season 01 registration statistics — player distribution by batch, position, and hall." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+
+<style>
+  :root {
+    --clr-canvas: #162235;
+    --clr-surface: #1E2D42;
+    --clr-surface-alt: #253850;
+    --clr-accent-primary: #A1C4C7;
+    --clr-accent-interactive: #34DFEC;
+    --clr-highlight: #2A8042;
+    --clr-danger: #E24C4C;
+    --clr-text-muted: #7E8B9B;
+    --clr-text-primary: #EAF2F2;
+    --radius-md: 12px;
+    --radius-lg: 20px;
+    --shadow-glow: 0 0 24px rgba(52, 223, 236, 0.15);
+    --font-display: 'Orbitron', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background-color: var(--clr-canvas);
+    background-image:
+      radial-gradient(circle at 15% 10%, rgba(52,223,236,0.06), transparent 40%),
+      radial-gradient(circle at 85% 30%, rgba(42,128,66,0.08), transparent 45%);
+    color: var(--clr-text-primary);
+    font-family: var(--font-body);
+    line-height: 1.55;
+    min-height: 100vh;
+  }
+
+  a { color: inherit; text-decoration: none; }
+  ::selection { background: var(--clr-accent-interactive); color: var(--clr-canvas); }
+  :focus-visible { outline: 2px solid var(--clr-accent-interactive); outline-offset: 3px; }
+
+  /* ---------- HEADER / NAV (shared) ---------- */
+  header.site-header {
+    position: sticky; top: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 5vw;
+    background: rgba(22, 34, 53, 0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(161, 196, 199, 0.12);
+  }
+  .brand { display: flex; align-items: baseline; gap: 10px; }
+  .logo-img { display: block; height: 36px; width: auto; }
+  .brand .season-tag {
+    font-family: var(--font-mono); font-size: 0.7rem; color: var(--clr-text-muted);
+    border: 1px solid rgba(161, 196, 199, 0.25); padding: 2px 8px; border-radius: 20px; letter-spacing: 0.05em;
+  }
+  nav.main-nav ul { list-style: none; display: flex; gap: clamp(10px, 1.6vw, 26px); flex-wrap: wrap; }
+  nav.main-nav a {
+    font-size: 0.85rem; font-weight: 500; color: var(--clr-accent-primary);
+    padding-bottom: 4px; border-bottom: 2px solid transparent;
+    transition: color 0.2s ease, border-color 0.2s ease; white-space: nowrap;
+  }
+  nav.main-nav a:hover, nav.main-nav a.active { color: var(--clr-accent-interactive); border-bottom-color: var(--clr-accent-interactive); }
+  .nav-toggle {
+    display: none; background: none; border: 1px solid rgba(161,196,199,0.3); border-radius: 8px;
+    color: var(--clr-text-primary); font-size: 1.2rem; padding: 6px 10px; cursor: pointer;
+  }
+
+  /* ---------- PAGE INTRO ---------- */
+  .page-intro { max-width: 880px; margin: 48px auto 0; padding: 0 6vw; text-align: center; }
+  .page-intro .eyebrow {
+    font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--clr-accent-interactive); margin-bottom: 10px;
+  }
+  .page-intro h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(1.6rem, 3.5vw, 2.4rem); letter-spacing: 0.02em; margin-bottom: 12px; }
+  .page-intro .page-desc { color: var(--clr-text-muted); font-size: 0.95rem; max-width: 680px; margin: 0 auto; }
+
+  /* ---------- SUMMARY STAT STRIP ---------- */
+  .section-wrap { max-width: 1100px; margin: 0 auto; padding: 0 6vw 60px; }
+  .section-wrap.first { padding-top: 36px; }
+
+  .summary-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px;
+  }
+  .stat-box {
+    padding: 22px 18px;
+    background: rgba(30, 45, 66, 0.55);
+    border: 1px solid rgba(161, 196, 199, 0.15);
+    border-radius: var(--radius-md);
+    backdrop-filter: blur(10px);
+    text-align: center;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+  }
+  .stat-box:hover { border-color: rgba(52,223,236,0.35); transform: translateY(-2px); }
+  .stat-box .stat-icon { font-size: 1.3rem; margin-bottom: 6px; }
+  .stat-box .stat-num { font-family: var(--font-mono); font-weight: 700; font-size: 1.8rem; color: var(--clr-accent-interactive); display: block; }
+  .stat-box .stat-label { font-size: 0.72rem; color: var(--clr-text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+
+  /* ---------- CHART CARDS ---------- */
+  .chart-card {
+    background: rgba(30, 45, 66, 0.55);
+    border: 1px solid rgba(161, 196, 199, 0.15);
+    border-radius: var(--radius-lg);
+    backdrop-filter: blur(10px);
+    padding: clamp(20px, 3.5vw, 32px);
+  }
+
+  .chart-card-header { margin-bottom: 20px; }
+  .chart-card-header .cc-eyebrow {
+    font-family: var(--font-mono); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--clr-accent-interactive); margin-bottom: 6px;
+  }
+  .chart-card-header h2 { font-family: var(--font-display); font-size: 1.15rem; letter-spacing: 0.02em; margin-bottom: 6px; }
+  .chart-card-header p { font-size: 0.82rem; color: var(--clr-text-muted); }
+
+  .donut-layout {
+    display: grid;
+    grid-template-columns: minmax(180px, 240px) 1fr;
+    gap: 28px;
+    align-items: center;
+  }
+  .donut-canvas-wrap { position: relative; aspect-ratio: 1 / 1; max-width: 240px; margin: 0 auto; width: 100%; }
+  .donut-center-label {
+    position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    pointer-events: none;
+  }
+  .donut-center-label .dc-num { font-family: var(--font-mono); font-weight: 700; font-size: 1.7rem; color: var(--clr-text-primary); }
+  .donut-center-label .dc-tag { font-family: var(--font-mono); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--clr-text-muted); }
+
+  .legend-list { display: flex; flex-direction: column; gap: 10px; }
+  .legend-row { display: grid; grid-template-columns: 14px 1fr auto auto; align-items: center; gap: 10px; }
+  .legend-dot { width: 11px; height: 11px; border-radius: 3px; }
+  .legend-name { font-size: 0.85rem; font-weight: 600; }
+  .legend-count { font-family: var(--font-mono); font-size: 0.8rem; color: var(--clr-text-muted); }
+  .legend-pct { font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700; color: var(--clr-accent-interactive); min-width: 46px; text-align: right; }
+  .legend-bar-track { grid-column: 1 / -1; height: 4px; border-radius: 3px; background: rgba(161,196,199,0.12); overflow: hidden; margin-top: -4px; }
+  .legend-bar-fill { height: 100%; border-radius: 3px; }
+
+  .bar-chart-wrap { position: relative; width: 100%; }
+  .bar-note { margin-top: 14px; font-size: 0.75rem; color: var(--clr-text-muted); font-style: italic; }
+
+  .two-col-charts { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+
+  .loading-note, .error-note {
+    text-align: center; padding: 50px 20px; color: var(--clr-text-muted); font-size: 0.9rem;
+  }
+  .error-note { color: var(--clr-danger); }
+
+  /* ---------- FOOTER ---------- */
+  footer.site-footer { text-align: center; padding: 26px 5vw; border-top: 1px solid rgba(161,196,199,0.12); font-size: 0.78rem; color: var(--clr-text-muted); }
+  footer.site-footer a { color: var(--clr-accent-interactive); }
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width: 900px) {
+    .two-col-charts { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 768px) {
+    nav.main-nav {
+      position: absolute; top: 100%; left: 0; right: 0;
+      background: rgba(22,34,53,0.97); backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(161,196,199,0.12);
+      max-height: 0; overflow: hidden; transition: max-height 0.3s ease;
+    }
+    nav.main-nav.open { max-height: 400px; }
+    nav.main-nav ul { flex-direction: column; padding: 16px 6vw; gap: 14px; }
+    .nav-toggle { display: block; }
+    .donut-layout { grid-template-columns: 1fr; }
+    .donut-canvas-wrap { max-width: 200px; }
+  }
+
+  @media (max-width: 480px) {
+    .page-intro { margin-top: 32px; }
+    .legend-row { grid-template-columns: 12px 1fr auto; }
+    .legend-count { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <a href="index.html" class="brand" style="cursor:pointer;">
+    <img src="logo.png" alt="PHY LIGA Logo" class="logo-img" width="140" height="36.46" />
+    <span class="season-tag">Season 01</span>
+  </a>
+  <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+  <nav class="main-nav" id="mainNav">
+    <ul>
+      <li><a href="auction.html">Auction</a></li>
+      <li><a href="register.html">Registration</a></li>
+      <li><a href="players.html">Players</a></li>
+      <li><a href="teams.html">Teams</a></li>
+      <li><a href="stats.html" class="active">Statistics</a></li>
+      <li><a href="fixture.html">Fixture</a></li>
+      <li><a href="scoreboard.html">Scoreboard</a></li>
+      <li><a href="memory.html">Memory</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main>
+  <section class="page-intro">
+    <p class="eyebrow">Season 01 By the Numbers</p>
+    <h1>Statistics</h1>
+    <p class="page-desc">A breakdown of every registration for PHY-LIGA Season 01 — who's playing, from which batch and hall, and in what positions.</p>
+  </section>
+
+  <section class="section-wrap first">
+    <div class="summary-strip" id="summaryStrip">
+      <div class="stat-box"><div class="stat-icon">📋</div><span class="stat-num" id="statRegs">–</span><span class="stat-label">Total Registrations</span></div>
+      <div class="stat-box"><div class="stat-icon">⚽</div><span class="stat-num" id="statPlayers">–</span><span class="stat-label">Players</span></div>
+      <div class="stat-box"><div class="stat-icon">👔</div><span class="stat-num" id="statOwners">–</span><span class="stat-label">Owners</span></div>
+      <div class="stat-box"><div class="stat-icon">🏆</div><span class="stat-num" id="statTeams">–</span><span class="stat-label">Teams Assigned</span></div>
+    </div>
+  </section>
+
+  <section class="section-wrap" id="loadingSection">
+    <div class="loading-note" id="loadingNote">Loading statistics…</div>
+  </section>
+
+  <section class="section-wrap" id="chartsSection" style="display:none;">
+
+    <div class="two-col-charts" style="margin-bottom: 24px;">
+      <!-- Batch chart -->
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <p class="cc-eyebrow">Distribution 01</p>
+          <h2>Players by Batch</h2>
+          <p>Which batch is showing up the most this season.</p>
+        </div>
+        <div class="donut-layout">
+          <div class="donut-canvas-wrap">
+            <canvas id="batchChart"></canvas>
+            <div class="donut-center-label"><span class="dc-num" id="batchCenterNum">–</span><span class="dc-tag">Total</span></div>
+          </div>
+          <div class="legend-list" id="batchLegend"></div>
+        </div>
+      </div>
+
+      <!-- Hall chart -->
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <p class="cc-eyebrow">Distribution 02</p>
+          <h2>Players by Hall</h2>
+          <p>How registrations are spread across the halls.</p>
+        </div>
+        <div class="donut-layout">
+          <div class="donut-canvas-wrap">
+            <canvas id="hallChart"></canvas>
+            <div class="donut-center-label"><span class="dc-num" id="hallCenterNum">–</span><span class="dc-tag">Total</span></div>
+          </div>
+          <div class="legend-list" id="hallLegend"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Position chart (full width bar) -->
+    <div class="chart-card">
+      <div class="chart-card-header">
+        <p class="cc-eyebrow">Distribution 03</p>
+        <h2>Players by Preferred Position</h2>
+        <p>How many players are comfortable playing each position on the pitch.</p>
+      </div>
+      <div class="bar-chart-wrap">
+        <canvas id="positionChart"></canvas>
+      </div>
+      <p class="bar-note">Players may select more than one preferred position, so counts and percentages can add up to more than the total number of players.</p>
+    </div>
+
+  </section>
+</main>
+
+<footer class="site-footer">
+  © 2026 PHY-LIGA · Developed by <a href="https://www.facebook.com/fardin.0112" target="_blank" rel="noopener">Fardin Hossain</a> · Feathered by <a href="https://www.facebook.com/tawkir.hossain.16" target="_blank" rel="noopener">Tawkir Hossain Rahat</a>
+</footer>
+
+<script>
+  /* ---------- Nav toggle (mobile) ---------- */
+  const navToggle = document.getElementById("navToggle");
+  const mainNav = document.getElementById("mainNav");
+  function closeNav() { mainNav.classList.remove("open"); navToggle.setAttribute("aria-expanded", "false"); navToggle.textContent = "☰"; }
+  function toggleNav() { const isOpen = mainNav.classList.toggle("open"); navToggle.setAttribute("aria-expanded", String(isOpen)); navToggle.textContent = isOpen ? "✕" : "☰"; }
+  navToggle.addEventListener("click", (e) => { e.stopPropagation(); toggleNav(); });
+  mainNav.querySelectorAll("a").forEach(link => link.addEventListener("click", closeNav));
+  document.addEventListener("click", (e) => { if (mainNav.classList.contains("open") && !mainNav.contains(e.target) && !navToggle.contains(e.target)) closeNav(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeNav(); });
+
+  /* ---------- Fixed category order + palette (kept consistent across charts) ---------- */
+  const BATCH_ORDER = ["99", "100", "101", "102", "103", "104", "105"];
+  const HALL_ORDER = ["FH", "SH", "AE", "JN", "SK", "SN", "RH"];
+  const POSITION_ORDER = ["GK", "CB", "LB", "RB", "AMF", "DMF", "CM", "LM", "RM", "LW", "RW", "ST", "CF"];
+
+  const PALETTE = [
+    "#34DFEC", "#2A8042", "#A1C4C7", "#E2B04C", "#E24C4C",
+    "#6BEFF7", "#9CF0B0", "#5C7CFA", "#F3D28A", "#FF8FA3",
+    "#4DD0E1", "#8BC34A", "#B39DDB", "#7E8B9B"
+  ];
+
+  function colorFor(order, key) {
+    const idx = order.indexOf(key);
+    return PALETTE[(idx >= 0 ? idx : order.length) % PALETTE.length];
+  }
+
+  Chart.defaults.font.family = "'Inter', sans-serif";
+  Chart.defaults.color = "#7E8B9B";
+
+  /* ---------- Helpers ---------- */
+  function pct(count, total) {
+    if (!total) return "0.0";
+    return ((count / total) * 100).toFixed(1);
+  }
+
+  function buildDonut(canvasId, centerNumId, legendId, order, counts, total) {
+    // Sort categories that actually have players, descending by count, for legend readability;
+    // categories with zero registrations are omitted from the chart & legend.
+    const entries = order
+      .map(key => ({ key, count: counts[key] || 0 }))
+      .filter(e => e.count > 0)
+      .sort((a, b) => b.count - a.count);
+
+    const labels = entries.map(e => e.key);
+    const data = entries.map(e => e.count);
+    const colors = entries.map(e => colorFor(order, e.key));
+
+    document.getElementById(centerNumId).textContent = total;
+
+    new Chart(document.getElementById(canvasId), {
+      type: "doughnut",
+      data: {
+        labels,
+        datasets: [{ data, backgroundColor: colors, borderColor: "#1E2D42", borderWidth: 2, hoverOffset: 6 }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        cutout: "68%",
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: "#1E2D42",
+            borderColor: "rgba(161,196,199,0.25)",
+            borderWidth: 1,
+            titleFont: { family: "'IBM Plex Mono', monospace", size: 12 },
+            bodyFont: { family: "'IBM Plex Mono', monospace", size: 12 },
+            padding: 10,
+            callbacks: {
+              label: (ctx) => `${ctx.label}: ${ctx.parsed} (${pct(ctx.parsed, total)}%)`
+            }
+          }
+        }
+      }
+    });
+
+    const legendEl = document.getElementById(legendId);
+    legendEl.innerHTML = entries.map(e => {
+      const c = colorFor(order, e.key);
+      const p = pct(e.count, total);
+      return `
+        <div class="legend-row">
+          <span class="legend-dot" style="background:${c}"></span>
+          <span class="legend-name">${e.key}</span>
+          <span class="legend-count">${e.count}</span>
+          <span class="legend-pct">${p}%</span>
+          <div class="legend-bar-track"><div class="legend-bar-fill" style="width:${p}%; background:${c};"></div></div>
+        </div>
+      `;
+    }).join("") || `<p style="color:var(--clr-text-muted); font-size:0.85rem;">No data yet.</p>`;
+  }
+
+  /* ---------- Position bar chart (rebuilt for clean, premium readability) ---------- */
+  function buildPositionBar(counts, totalPlayers) {
+    // Only show positions with at least 1 pick, sorted descending — keeps the chart tight
+    // instead of wasting rows on positions nobody selected.
+    const entries = POSITION_ORDER
+      .map(key => ({ key, count: counts[key] || 0 }))
+      .filter(e => e.count > 0)
+      .sort((a, b) => b.count - a.count);
+
+    const labels = entries.map(e => e.key);
+    const data = entries.map(e => e.count);
+    const colors = entries.map(e => colorFor(POSITION_ORDER, e.key));
+    const maxValue = Math.max(...data, 1);
+
+    // Dynamically size the canvas so every row gets enough vertical space —
+    // this is what actually fixes the label overlap / squeezed bars issue.
+    const rowHeight = 34;
+    const chartHeight = Math.max(entries.length * rowHeight + 40, 160);
+    const canvas = document.getElementById("positionChart");
+    canvas.parentElement.style.height = `${chartHeight}px`;
+    canvas.height = chartHeight;
+
+    const barLabelPlugin = {
+      id: "barLabelPlugin",
+      afterDatasetsDraw(chart) {
+        const { ctx } = chart;
+        const meta = chart.getDatasetMeta(0);
+        meta.data.forEach((bar, i) => {
+          const value = data[i];
+          ctx.save();
+          ctx.fillStyle = "#EAF2F2";
+          ctx.font = "600 11px 'IBM Plex Mono', monospace";
+          ctx.textBaseline = "middle";
+          ctx.textAlign = "left";
+          // Just the count inline — percentage lives in the tooltip, keeps it clean
+          ctx.fillText(`${value}`, bar.x + 8, bar.y);
+          ctx.restore();
+        });
+      }
+    };
+
+    new Chart(canvas, {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [{
+          data,
+          backgroundColor: colors,
+          borderRadius: 5,
+          barPercentage: 0.7,
+          categoryPercentage: 0.8
+        }]
+      },
+      options: {
+        indexAxis: "y",
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: { padding: { right: 50, top: 4, bottom: 4 } },
+        scales: {
+          x: {
+            suggestedMax: maxValue * 1.15,
+            grid: { color: "rgba(161,196,199,0.08)" },
+            ticks: { font: { family: "'IBM Plex Mono', monospace", size: 10 } },
+            beginAtZero: true
+          },
+          y: {
+            grid: { display: false },
+            ticks: {
+              autoSkip: false,
+              font: { family: "'IBM Plex Mono', monospace", size: 11, weight: "600" },
+              color: "#A1C4C7"
+            }
+          }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: "#1E2D42",
+            borderColor: "rgba(161,196,199,0.25)",
+            borderWidth: 1,
+            titleFont: { family: "'IBM Plex Mono', monospace", size: 12 },
+            bodyFont: { family: "'IBM Plex Mono', monospace", size: 12 },
+            padding: 10,
+            callbacks: {
+              label: (ctx) => `${ctx.parsed.x} players (${pct(ctx.parsed.x, totalPlayers)}%)`
+            }
+          }
+        }
+      },
+      plugins: [barLabelPlugin]
+    });
+  }
+
+  /* ---------- Firebase fetch + compute ---------- */
+  (async function loadStats() {
+    const loadingNote = document.getElementById("loadingNote");
+    const chartsSection = document.getElementById("chartsSection");
+    const loadingSection = document.getElementById("loadingSection");
+
+    try {
+      const [{ db }, firestoreMod] = await Promise.all([
+        import("./assets/js/firebase-config.js"),
+        import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js")
+      ]);
+      const { collection, getDocs } = firestoreMod;
+      const snap = await getDocs(collection(db, "publicPlayers"));
+
+      const docs = [];
+      snap.forEach(d => docs.push(d.data()));
+
+      if (!docs.length) {
+        loadingNote.textContent = "No registrations yet — charts will appear once players sign up.";
+        return;
+      }
+
+      const totalRegistrations = docs.length;
+      let playerCount = 0, ownerCount = 0;
+      const teamIds = new Set();
+      const batchCounts = {};
+      const hallCounts = {};
+      const positionCounts = {};
+      let playersWithPositions = 0;
+
+      docs.forEach(d => {
+        if (d.role === "player" || d.role === "both") playerCount++;
+        if (d.role === "owner" || d.role === "both") ownerCount++;
+        if (d.teamId) teamIds.add(d.teamId);
+
+        const batchKey = String(d.batch ?? "");
+        const hallKey = d.hall ?? "";
+        if (batchKey) batchCounts[batchKey] = (batchCounts[batchKey] || 0) + 1;
+        if (hallKey) hallCounts[hallKey] = (hallCounts[hallKey] || 0) + 1;
+
+        if (Array.isArray(d.preferredPositions) && d.preferredPositions.length) {
+          playersWithPositions++;
+          d.preferredPositions.forEach(pos => {
+            positionCounts[pos] = (positionCounts[pos] || 0) + 1;
+          });
+        }
+      });
+
+      document.getElementById("statRegs").textContent = totalRegistrations;
+      document.getElementById("statPlayers").textContent = playerCount;
+      document.getElementById("statOwners").textContent = ownerCount;
+      document.getElementById("statTeams").textContent = teamIds.size;
+
+      loadingSection.style.display = "none";
+      chartsSection.style.display = "block";
+
+      buildDonut("batchChart", "batchCenterNum", "batchLegend", BATCH_ORDER, batchCounts, totalRegistrations);
+      buildDonut("hallChart", "hallCenterNum", "hallLegend", HALL_ORDER, hallCounts, totalRegistrations);
+      buildPositionBar(positionCounts, playersWithPositions || playerCount);
+
+    } catch (err) {
+      console.error("Failed to load statistics:", err);
+      loadingNote.classList.add("error-note");
+      loadingNote.textContent = "Couldn't load statistics. If you're opening this file directly on your computer, serve it through a local web server (e.g. VS Code's \"Live Server\" extension) or view it on the live deployed site.";
+    }
+  })();
+</script>
+
+</body>
+</html>

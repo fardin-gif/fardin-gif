@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Auction — PHY-LIGA</title>
+<meta name="description" content="The PHY-LIGA Season 01 player auction. Not yet on the block." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --clr-canvas: #162235;
+    --clr-surface: #1E2D42;
+    --clr-accent-primary: #A1C4C7;
+    --clr-accent-interactive: #34DFEC;
+    --clr-text-muted: #7E8B9B;
+    --clr-text-primary: #EAF2F2;
+    --font-display: 'Orbitron', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background-color: var(--clr-canvas);
+    color: var(--clr-text-primary);
+    font-family: var(--font-body);
+    line-height: 1.55;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  a { color: inherit; text-decoration: none; }
+
+  ::selection { background: var(--clr-accent-interactive); color: var(--clr-canvas); }
+
+  :focus-visible {
+    outline: 2px solid var(--clr-accent-interactive);
+    outline-offset: 3px;
+  }
+
+  /* ---------- HEADER / NAV ---------- */
+  header.site-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 5vw;
+    background: rgba(22, 34, 53, 0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(161, 196, 199, 0.12);
+  }
+
+  .brand { display: flex; align-items: baseline; gap: 10px; }
+
+  .brand .season-tag {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--clr-text-muted);
+    border: 1px solid rgba(161, 196, 199, 0.25);
+    padding: 2px 8px;
+    border-radius: 20px;
+    letter-spacing: 0.05em;
+  }
+
+  .logo-img { display: block; height: 36px; width: auto; }
+
+  nav.main-nav ul { list-style: none; display: flex; gap: clamp(10px, 1.6vw, 26px); flex-wrap: wrap; }
+
+  nav.main-nav a {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--clr-accent-primary);
+    padding-bottom: 4px;
+    border-bottom: 2px solid transparent;
+    transition: color 0.2s ease, border-color 0.2s ease;
+    white-space: nowrap;
+  }
+
+  nav.main-nav a:hover, nav.main-nav a.active {
+    color: var(--clr-accent-interactive);
+    border-bottom-color: var(--clr-accent-interactive);
+  }
+
+  .nav-toggle {
+    display: none;
+    background: none;
+    border: 1px solid rgba(161,196,199,0.3);
+    border-radius: 8px;
+    color: var(--clr-text-primary);
+    font-size: 1.2rem;
+    padding: 6px 10px;
+    cursor: pointer;
+  }
+
+  /* ---------- MAIN / LOT CARD ---------- */
+  main.auction-main {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 56px 6vw;
+  }
+
+  .lot-card {
+    width: 100%;
+    max-width: 560px;
+    background: rgba(30, 45, 66, 0.42);
+    border: 1px solid rgba(161, 196, 199, 0.18);
+    border-radius: 3px;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(14px);
+    animation: cardIn 0.7s ease-out 0.1s forwards;
+  }
+
+  @keyframes cardIn {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ---- visual panel: half-drawn pitch diagram ---- */
+  .lot-visual {
+    padding: clamp(20px, 4vw, 30px) clamp(22px, 5vw, 34px) clamp(14px, 3vw, 22px);
+    background: rgba(20, 31, 48, 0.5);
+    border-bottom: 1px solid rgba(161, 196, 199, 0.14);
+  }
+
+  .lot-visual svg { display: block; width: 100%; height: auto; }
+
+  .pitch-outline, .pitch-halfway, .pitch-circle, .pitch-spot {
+    stroke: var(--clr-accent-primary);
+    stroke-width: 1.25;
+    fill: none;
+    opacity: 0.5;
+  }
+  .pitch-spot { fill: var(--clr-accent-primary); stroke: none; }
+
+  .pitch-built {
+    stroke: var(--clr-accent-interactive);
+    stroke-width: 1.5;
+    fill: none;
+    opacity: 0.9;
+  }
+
+  .pitch-draft {
+    stroke: var(--clr-accent-primary);
+    stroke-width: 1.25;
+    fill: none;
+    opacity: 0.55;
+    stroke-dasharray: 4 4;
+    animation: draftMarch 3.2s linear infinite;
+  }
+
+  @keyframes draftMarch {
+    to { stroke-dashoffset: -16; }
+  }
+
+  .pitch-label {
+    font-family: var(--font-mono);
+    font-size: 6px;
+    letter-spacing: 0.08em;
+    fill: var(--clr-text-muted);
+    text-transform: uppercase;
+  }
+
+  /* ---- body ---- */
+  .lot-body {
+    padding: clamp(26px, 5vw, 40px) clamp(22px, 5vw, 34px) clamp(32px, 6vw, 44px);
+  }
+
+  .lot-row-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 22px;
+  }
+
+  .lot-tag, .lot-status {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .lot-tag { color: var(--clr-accent-primary); }
+  .lot-status { color: var(--clr-text-muted); }
+
+  .lot-rule {
+    height: 1px;
+    background: rgba(161, 196, 199, 0.18);
+    transform-origin: left;
+    transform: scaleX(0);
+    animation: ruleIn 0.8s ease-out 0.5s forwards;
+  }
+
+  @keyframes ruleIn {
+    to { transform: scaleX(1); }
+  }
+
+  .lot-rule.bottom { margin-top: 30px; margin-bottom: 26px; }
+
+  .lot-title {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(2.2rem, 5.4vw, 3.2rem);
+    line-height: 1.05;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+  }
+
+  .lot-desc {
+    color: var(--clr-text-muted);
+    font-size: 0.95rem;
+    line-height: 1.65;
+    max-width: 440px;
+  }
+
+  .lot-meta {
+    display: grid;
+    gap: 12px;
+  }
+
+  .lot-meta-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .lot-meta-row dt {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--clr-text-muted);
+    white-space: nowrap;
+  }
+
+  .lot-meta-row dd {
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--clr-text-primary);
+    text-align: right;
+  }
+
+  .lot-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 32px;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--clr-accent-interactive);
+    padding-bottom: 3px;
+    background-image: linear-gradient(var(--clr-accent-interactive), var(--clr-accent-interactive));
+    background-size: 0% 1px;
+    background-repeat: no-repeat;
+    background-position: left bottom;
+    transition: background-size 0.25s ease;
+  }
+
+  .lot-cta:hover { background-size: 100% 1px; }
+  .lot-cta .arrow { transition: transform 0.2s ease; }
+  .lot-cta:hover .arrow { transform: translateX(4px); }
+
+  .lot-footnote {
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--clr-text-muted);
+    max-width: 480px;
+    margin: 24px auto 0;
+  }
+
+  .lot-footnote a { color: var(--clr-accent-interactive); }
+  .lot-footnote .sep { margin: 0 8px; opacity: 0.4; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .lot-card { animation: none; opacity: 1; transform: none; }
+    .lot-rule { animation: none; transform: scaleX(1); }
+    .pitch-draft { animation: none; }
+  }
+
+  /* ---------- FOOTER ---------- */
+  footer.site-footer {
+    text-align: center;
+    padding: 26px 5vw;
+    border-top: 1px solid rgba(161,196,199,0.12);
+    font-size: 0.78rem;
+    color: var(--clr-text-muted);
+  }
+
+  footer.site-footer a { color: var(--clr-accent-interactive); }
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width: 768px) {
+    nav.main-nav {
+      position: absolute;
+      top: 100%; left: 0; right: 0;
+      background: rgba(22,34,53,0.97);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(161,196,199,0.12);
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+    nav.main-nav.open { max-height: 400px; }
+    nav.main-nav ul { flex-direction: column; padding: 16px 6vw; gap: 14px; }
+    .nav-toggle { display: block; }
+  }
+
+  @media (max-width: 480px) {
+    .lot-meta-row { flex-direction: column; gap: 2px; }
+    .lot-meta-row dd { text-align: left; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <a href="index.html" class="brand" style="cursor:pointer;">
+    <img src="logo.png" alt="PHY LIGA Logo" class="logo-img" width="140" height="36.46" />
+    <span class="season-tag">Season 01</span>
+  </a>
+  <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+  <nav class="main-nav" id="mainNav">
+    <ul>
+      <li><a href="auction.html" class="active">Auction</a></li>
+      <li><a href="register.html">Registration</a></li>
+      <li><a href="players.html">Players</a></li>
+      <li><a href="teams.html">Teams</a></li>
+      <li><a href="stats.html">Statistics</a></li>
+      <li><a href="fixture.html">Fixture</a></li>
+      <li><a href="scoreboard.html">Scoreboard</a></li>
+      <li><a href="memory.html">Memory</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main class="auction-main">
+  <div style="width:100%; max-width:560px;">
+    <div class="lot-card">
+
+      <div class="lot-visual">
+        <svg viewBox="0 0 340 150" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+          <!-- outer pitch boundary -->
+          <rect class="pitch-outline" x="6" y="6" width="328" height="138" />
+          <!-- halfway line -->
+          <line class="pitch-halfway" x1="170" y1="6" x2="170" y2="144" />
+          <!-- centre circle + spot -->
+          <circle class="pitch-circle" cx="170" cy="75" r="24" />
+          <circle class="pitch-spot" cx="170" cy="75" r="1.6" />
+
+          <!-- LEFT side: built (registration + teams) -->
+          <rect class="pitch-built" x="6" y="35" width="46" height="80" />
+          <rect class="pitch-built" x="6" y="55" width="18" height="40" />
+          <path class="pitch-built" d="M52,55 A24,24 0 0 1 52,95" />
+          <text class="pitch-label" x="14" y="128">Built</text>
+
+          <!-- RIGHT side: still being drawn (auction) -->
+          <rect class="pitch-draft" x="288" y="35" width="46" height="80" />
+          <rect class="pitch-draft" x="316" y="55" width="18" height="40" />
+          <path class="pitch-draft" d="M288,55 A24,24 0 0 0 288,95" />
+          <text class="pitch-label" x="270" y="128">Drafting</text>
+        </svg>
+      </div>
+
+      <div class="lot-body">
+        <div class="lot-row-top">
+          <span class="lot-tag">Lot 00 · Season 01</span>
+          <span class="lot-status">Not yet on the block</span>
+        </div>
+
+        <div class="lot-rule"></div>
+
+        <h1 class="lot-title">Player<br>Auction</h1>
+        <p class="lot-desc">
+          Every registered player goes to a live bid once the roster closes.
+          Owners spend from a fixed purse, one player at a time. Registration
+          and teams are built — this corner of the pitch is still being marked out.
+        </p>
+
+        <div class="lot-rule bottom"></div>
+
+        <dl class="lot-meta">
+          <div class="lot-meta-row">
+            <dt>Opens</dt>
+            <dd>After registration closes</dd>
+          </div>
+          <div class="lot-meta-row">
+            <dt>Format</dt>
+            <dd>Live bidding, fixed purse</dd>
+          </div>
+          <div class="lot-meta-row">
+            <dt>Eligible</dt>
+            <dd>Registered team owners</dd>
+          </div>
+        </dl>
+
+        <a href="register.html" class="lot-cta">Register as an owner <span class="arrow">→</span></a>
+      </div>
+    </div>
+
+    <p class="lot-footnote">
+      <a href="index.html">← Back to home</a>
+      <span class="sep">·</span>
+      Questions about the format? Contact <a href="https://wa.me/8801310908781" target="_blank" rel="noopener">Fardin Hossain</a>.
+    </p>
+  </div>
+</main>
+
+<footer class="site-footer">
+  © 2026 PHY-LIGA · Developed by <a href="https://www.facebook.com/fardin.0112" target="_blank" rel="noopener">Fardin Hossain</a> · Feathered by <a href="https://www.facebook.com/tawkir.hossain.16" target="_blank" rel="noopener">Tawkir Hossain Rahat</a>
+</footer>
+
+<script>
+  const navToggle = document.getElementById("navToggle");
+  const mainNav = document.getElementById("mainNav");
+
+  function closeNav() {
+    mainNav.classList.remove("open");
+    navToggle.setAttribute("aria-expanded", "false");
+    navToggle.textContent = "☰";
+  }
+
+  function toggleNav() {
+    const isOpen = mainNav.classList.toggle("open");
+    navToggle.setAttribute("aria-expanded", String(isOpen));
+    navToggle.textContent = isOpen ? "✕" : "☰";
+  }
+
+  navToggle.addEventListener("click", (e) => {
+    e.stopPropagation();
+    toggleNav();
+  });
+
+  mainNav.querySelectorAll("a").forEach(link => link.addEventListener("click", closeNav));
+
+  document.addEventListener("click", (e) => {
+    if (mainNav.classList.contains("open") && !mainNav.contains(e.target) && !navToggle.contains(e.target)) {
+      closeNav();
+    }
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeNav();
+  });
+</script>
+
+</body>
+</html>

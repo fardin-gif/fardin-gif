@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Player Registration — PHY-LIGA</title>
+    <meta name="description" content="Official player & owner registration for PHY-LIGA, the Intra-Department Football Tournament of the Department of Physics, University of Dhaka." />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --clr-canvas: #162235;
+            --clr-surface: #1E2D42;
+            --clr-surface-alt: #253850;
+            --clr-accent-primary: #A1C4C7;
+            --clr-accent-interactive: #34DFEC;
+            --clr-highlight: #2A8042;
+            --clr-danger: #E24C4C;
+            --clr-text-muted: #7E8B9B;
+            --clr-text-primary: #EAF2F2;
+            --radius-md: 12px;
+            --radius-lg: 20px;
+            --shadow-glow: 0 0 24px rgba(52, 223, 236, 0.15);
+            --font-display: 'Orbitron', sans-serif;
+            --font-body: 'Inter', sans-serif;
+            --font-mono: 'IBM Plex Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--clr-canvas);
+            background-image:
+                radial-gradient(circle at 15% 10%, rgba(52, 223, 236, 0.06), transparent 40%),
+                radial-gradient(circle at 85% 30%, rgba(42, 128, 66, 0.08), transparent 45%);
+            color: var(--clr-text-primary);
+            font-family: var(--font-body);
+            line-height: 1.55;
+            min-height: 100vh;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        ::selection {
+            background: var(--clr-accent-interactive);
+            color: var(--clr-canvas);
+        }
+
+        :focus-visible {
+            outline: 2px solid var(--clr-accent-interactive);
+            outline-offset: 3px;
+        }
+
+        /* ---------- HEADER / NAV ---------- */
+        header.site-header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 5vw;
+            background: rgba(22, 34, 53, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(161, 196, 199, 0.12);
+            transition: padding 0.25s ease;
+        }
+
+        .brand {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+        }
+
+        .brand .logo-text {
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: clamp(1.1rem, 2vw, 1.5rem);
+            letter-spacing: 0.06em;
+            background: linear-gradient(135deg, var(--clr-accent-interactive), var(--clr-accent-primary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .brand .season-tag {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--clr-text-muted);
+            border: 1px solid rgba(161, 196, 199, 0.25);
+            padding: 2px 8px;
+            border-radius: 20px;
+            letter-spacing: 0.05em;
+        }
+
+        .logo-img {
+            display: block;
+            height: 36px;
+            width: auto;
+        }
+
+        nav.main-nav ul {
+            list-style: none;
+            display: flex;
+            gap: clamp(10px, 1.6vw, 26px);
+            flex-wrap: wrap;
+        }
+
+        nav.main-nav a {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--clr-accent-primary);
+            padding-bottom: 4px;
+            border-bottom: 2px solid transparent;
+            transition: color 0.2s ease, border-color 0.2s ease;
+            white-space: nowrap;
+        }
+
+        nav.main-nav a:hover,
+        nav.main-nav a.active {
+            color: var(--clr-accent-interactive);
+            border-bottom-color: var(--clr-accent-interactive);
+        }
+
+        .nav-toggle {
+            display: none;
+            background: none;
+            border: 1px solid rgba(161, 196, 199, 0.3);
+            border-radius: 8px;
+            color: var(--clr-text-primary);
+            font-size: 1.2rem;
+            padding: 6px 10px;
+            cursor: pointer;
+        }
+
+        /* ---------- PAGE INTRO (simplified, no hero) ---------- */
+        .page-intro {
+            max-width: 880px;
+            margin: 48px auto 0;
+            padding: 0 6vw;
+            text-align: center;
+        }
+
+        .page-intro .eyebrow {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--clr-accent-interactive);
+            margin-bottom: 10px;
+        }
+
+        .page-intro h1 {
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+            letter-spacing: 0.02em;
+            margin-bottom: 12px;
+        }
+
+        .page-intro .page-desc {
+            color: var(--clr-text-muted);
+            font-size: 0.95rem;
+            max-width: 680px;
+            margin: 0 auto;
+        }
+
+        /* ---------- INFO / RULES CARD ---------- */
+        .info-card {
+            max-width: 880px;
+            margin: 32px auto 40px;
+            padding: clamp(20px, 4vw, 36px);
+            background: rgba(30, 45, 66, 0.55);
+            border: 1px solid rgba(161, 196, 199, 0.15);
+            border-radius: var(--radius-lg);
+            backdrop-filter: blur(10px);
+        }
+
+        .info-card h2 {
+            font-family: var(--font-display);
+            font-size: 1rem;
+            letter-spacing: 0.04em;
+            color: var(--clr-accent-interactive);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-card h2::before {
+            content: "";
+            width: 3px;
+            height: 18px;
+            background: var(--clr-accent-interactive);
+            border-radius: 2px;
+        }
+
+        .rules-list {
+            list-style: none;
+            display: grid;
+            gap: 10px;
+            margin-bottom: 22px;
+        }
+
+        .rules-list li {
+            position: relative;
+            padding-left: 26px;
+            font-size: 0.88rem;
+            color: var(--clr-text-primary);
+        }
+
+        .rules-list li::before {
+            content: "▹";
+            position: absolute;
+            left: 0;
+            color: var(--clr-accent-interactive);
+        }
+
+        .meta-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(161, 196, 199, 0.12);
+        }
+
+        .meta-item .meta-label {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--clr-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 4px;
+        }
+
+        .meta-item .meta-value {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .meta-item .meta-value.countdown {
+            color: var(--clr-accent-interactive);
+            font-family: var(--font-mono);
+        }
+
+        .contacts-line {
+            margin-top: 18px;
+            font-size: 0.85rem;
+            color: var(--clr-text-muted);
+        }
+
+        .contacts-line a {
+            color: var(--clr-accent-interactive);
+            font-weight: 500;
+        }
+
+        /* ---------- FORM ---------- */
+        .form-card {
+            max-width: 880px;
+            margin: 0 auto 100px;
+            padding: clamp(20px, 4vw, 40px);
+            background: rgba(30, 45, 66, 0.6);
+            border: 1px solid rgba(161, 196, 199, 0.15);
+            border-radius: var(--radius-lg);
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow-glow);
+        }
+
+        fieldset {
+            border: none;
+            margin-bottom: 30px;
+        }
+
+        legend {
+            font-family: var(--font-display);
+            font-size: 0.95rem;
+            letter-spacing: 0.03em;
+            color: var(--clr-accent-interactive);
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(161, 196, 199, 0.15);
+            width: 100%;
+        }
+
+        .field {
+            margin-bottom: 20px;
+        }
+
+        .field label.field-label {
+            display: block;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--clr-accent-primary);
+            margin-bottom: 8px;
+        }
+
+        .field label.field-label .required {
+            color: var(--clr-danger);
+            margin-left: 3px;
+        }
+
+        .field label.field-label .optional-tag {
+            font-family: var(--font-mono);
+            font-weight: 400;
+            color: var(--clr-text-muted);
+            font-size: 0.72rem;
+            margin-left: 8px;
+        }
+
+        .field .hint {
+            font-size: 0.75rem;
+            color: var(--clr-text-muted);
+            margin-top: 6px;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        input[type="url"],
+        select {
+            width: 100%;
+            padding: 12px 14px;
+            background: var(--clr-surface);
+            border: 1px solid rgba(161, 196, 199, 0.2);
+            border-radius: var(--radius-md);
+            color: var(--clr-text-primary);
+            font-family: var(--font-body);
+            font-size: 0.92rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        input::placeholder {
+            color: var(--clr-text-muted);
+        }
+
+        input:focus,
+        select:focus {
+            border-color: var(--clr-accent-interactive);
+            box-shadow: 0 0 0 3px rgba(52, 223, 236, 0.15);
+            outline: none;
+        }
+
+        input.field-error,
+        select.field-error {
+            border-color: var(--clr-danger);
+        }
+
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2334DFEC' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            cursor: pointer;
+        }
+
+        /* Role choice */
+        .role-choice {
+            position: relative;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 12px;
+        }
+
+        .role-choice input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .role-choice label {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding: 14px 16px;
+            background: var(--clr-surface);
+            border: 1px solid rgba(161, 196, 199, 0.2);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .role-choice label .role-name {
+            font-weight: 700;
+            font-size: 0.92rem;
+        }
+
+        .role-choice label .role-desc {
+            font-size: 0.72rem;
+            color: var(--clr-text-muted);
+        }
+
+        .role-choice input[type="radio"]:checked+label {
+            border-color: var(--clr-accent-interactive);
+            background: rgba(52, 223, 236, 0.08);
+            box-shadow: 0 0 0 1px var(--clr-accent-interactive);
+        }
+
+        /* Positions grid (checkboxes) */
+        .position-grid {
+            position: relative;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+            gap: 10px;
+        }
+
+        .position-grid input[type="checkbox"] {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .position-grid label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 4px;
+            text-align: center;
+            background: var(--clr-surface);
+            border: 1px solid rgba(161, 196, 199, 0.2);
+            border-radius: var(--radius-md);
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .position-grid input[type="checkbox"]:checked+label {
+            border-color: var(--clr-highlight);
+            background: rgba(42, 128, 66, 0.25);
+            color: #9CF0B0;
+        }
+
+        /* Skill rating slider */
+        .rating-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            accent-color: var(--clr-accent-interactive);
+        }
+
+        .rating-value {
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--clr-accent-interactive);
+            min-width: 28px;
+            text-align: center;
+        }
+
+        /* Alerts */
+        .alert {
+            display: none;
+            padding: 12px 16px;
+            border-radius: var(--radius-md);
+            font-size: 0.82rem;
+            margin-bottom: 20px;
+            border: 1px solid transparent;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        .alert-error {
+            background: rgba(226, 76, 76, 0.1);
+            border-color: rgba(226, 76, 76, 0.4);
+            color: #FFB4B4;
+        }
+
+        .alert-warning {
+            background: rgba(226, 176, 76, 0.1);
+            border-color: rgba(226, 176, 76, 0.4);
+            color: #F3D28A;
+        }
+
+        .alert-success {
+            background: rgba(42, 128, 66, 0.15);
+            border-color: rgba(42, 128, 66, 0.5);
+            color: #9CF0B0;
+        }
+
+        /* Submit */
+        .submit-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+
+        button.btn-submit {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 0.9rem;
+            letter-spacing: 0.03em;
+            color: var(--clr-canvas);
+            background: linear-gradient(135deg, var(--clr-accent-interactive), #6BEFF7);
+            border: none;
+            padding: 14px 32px;
+            border-radius: 999px;
+            cursor: pointer;
+            box-shadow: 0 0 24px rgba(52, 223, 236, 0.35);
+            transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+        }
+
+        button.btn-submit:hover:not(:disabled) {
+            transform: scale(1.03);
+            box-shadow: 0 0 32px rgba(52, 223, 236, 0.5);
+        }
+
+        button.btn-submit:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .submit-status {
+            font-size: 0.8rem;
+            color: var(--clr-text-muted);
+            font-family: var(--font-mono);
+        }
+
+        /* Success screen */
+        .success-screen {
+            display: none;
+            text-align: center;
+            padding: 50px 20px;
+        }
+
+        .success-screen.show {
+            display: block;
+        }
+
+        .success-screen .checkmark {
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 20px;
+            border-radius: 50%;
+            background: rgba(42, 128, 66, 0.2);
+            border: 2px solid var(--clr-highlight);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: #9CF0B0;
+        }
+
+        .success-screen h3 {
+            font-family: var(--font-display);
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+        }
+
+        .success-screen p {
+            color: var(--clr-text-muted);
+            font-size: 0.9rem;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        .closed-screen {
+            display: none;
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .closed-screen.show {
+            display: block;
+        }
+
+        .closed-screen h3 {
+            font-family: var(--font-display);
+            color: var(--clr-danger);
+            margin-bottom: 10px;
+        }
+
+        .closed-screen p {
+            color: var(--clr-text-muted);
+        }
+
+        /* ---------- FOOTER ---------- */
+        footer.site-footer {
+            text-align: center;
+            padding: 26px 5vw;
+            border-top: 1px solid rgba(161, 196, 199, 0.12);
+            font-size: 0.78rem;
+            color: var(--clr-text-muted);
+        }
+
+        footer.site-footer a {
+            color: var(--clr-accent-interactive);
+        }
+
+        /* ---------- RESPONSIVE ---------- */
+        @media (max-width: 768px) {
+            nav.main-nav {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: rgba(22, 34, 53, 0.97);
+                backdrop-filter: blur(12px);
+                border-bottom: 1px solid rgba(161, 196, 199, 0.12);
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.3s ease;
+            }
+
+            nav.main-nav.open {
+                max-height: 400px;
+            }
+
+            nav.main-nav ul {
+                flex-direction: column;
+                padding: 16px 6vw;
+                gap: 14px;
+            }
+
+            .nav-toggle {
+                display: block;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .page-intro {
+                margin-top: 32px;
+            }
+
+            .role-choice {
+                grid-template-columns: 1fr;
+            }
+
+            .position-grid {
+                grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="site-header">
+        <a href="index.html" class="brand" style="cursor:pointer;">
+            <img src="logo.png" alt="PHY LIGA Logo" class="logo-img" width="140" height="36.46" />
+            <span class="season-tag">Season 01</span>
+        </a>
+        <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+        <nav class="main-nav" id="mainNav">
+            <ul>
+                <li><a href="auction.html">Auction</a></li>
+                <li><a href="register.html" class="active">Registration</a></li>
+                <li><a href="players.html">Players</a></li>
+                <li><a href="teams.html">Teams</a></li>
+                <li><a href="stats.html">Statistics</a></li>
+                <li><a href="fixture.html">Fixture</a></li>
+                <li><a href="scoreboard.html">Scoreboard</a></li>
+                <li><a href="memory.html">Memory</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Simplified intro — no hero, just a clean heading -->
+        <section class="page-intro">
+            <p class="eyebrow">Player &amp; Owner Registration</p>
+            <h1>PHY-LIGA</h1>
+        </section>
+
+        <section class="info-card">
+            <h2>Before Submitting</h2>
+            <ul class="rules-list">
+                <li>Please do not register if you will not be available to play. Matches will be held on weekends and after 5:00 PM on weekdays, so they won't conflict with classes, exams, or lab sessions.</li>
+                <li>Registration is open to students from all batches. Students from batches 103–105 may register as players but not as team owners. Students from all other batches may register as team owners.</li>
+                <li>Ensure that all the information you provide is accurate.</li>
+                <li>Use your full name as per the department records.</li>
+                <li>Provide an active WhatsApp number.</li>
+                <li>Submit only one response.</li>
+            </ul>
+
+            <div class="meta-grid">
+                <div class="meta-item">
+                    <div class="meta-label">Registration Deadline</div>
+                    <div class="meta-value">31 July 2026, 11:59 PM</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Time Remaining</div>
+                    <div class="meta-value countdown" id="countdownValue">calculating…</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Tournament Schedule</div>
+                    <div class="meta-value">To be announced</div>
+                </div>
+            </div>
+
+            <p class="contacts-line">
+                Queries about registration? Contact <b>Ibna Hossain Emon</b>, <b>Tawkir Hossain Rahat</b>, or
+                <a href="https://wa.me/8801310908781" target="_blank" rel="noopener">Fardin Hossain</a>.
+            </p>
+        </section>
+
+        <section class="form-card">
+
+            <div class="alert alert-error" id="formError" role="alert"></div>
+            <div class="alert alert-warning" id="formWarning" role="alert"></div>
+
+            <form id="regForm" novalidate>
+
+                <fieldset>
+                    <legend>Contact</legend>
+                    <div class="field">
+                        <label class="field-label" for="email">Email <span class="required">*</span></label>
+                        <input type="email" id="email" name="email" placeholder="yourname@example.com" required />
+                        <p class="hint" id="emailHint">We'll check this hasn't already been used to register.</p>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Register Yourself As</legend>
+                    <div class="role-choice" id="roleChoice">
+                        <input type="radio" id="roleplayer" name="role" value="player" checked />
+                        <label for="roleplayer">
+                            <span class="role-name">Player</span>
+                            <span class="role-desc">I want to be drafted onto a team</span>
+                        </label>
+
+                        <input type="radio" id="roleowner" name="role" value="owner" />
+                        <label for="roleowner">
+                            <span class="role-name">Owner</span>
+                            <span class="role-desc">I want to own/manage a team</span>
+                        </label>
+
+                        <input type="radio" id="roleboth" name="role" value="both" />
+                        <label for="roleboth">
+                            <span class="role-name">Both</span>
+                            <span class="role-desc">I want to own a team and also play</span>
+                        </label>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Personal Details</legend>
+
+                    <div class="field">
+                        <label class="field-label" for="fullName">Full Name (as per department records) <span class="required">*</span></label>
+                        <input type="text" id="fullName" name="fullName" placeholder="e.g. Curzon" required />
+                    </div>
+
+                    <div class="field">
+                        <label class="field-label" for="contactNumber">Contact Number — Bangladeshi WhatsApp <span class="required">*</span></label>
+                        <input type="tel" id="contactNumber" name="contactNumber" placeholder="01XXXXXXXXX" required />
+                        <p class="hint">Must be an active WhatsApp number, format 01XXXXXXXXX.</p>
+                    </div>
+
+                    <div class="field">
+                        <label class="field-label" for="batch">Batch <span class="required">*</span></label>
+                        <select id="batch" name="batch" required>
+                            <option value="" disabled selected>Select your batch</option>
+                            <option value="99">99</option>
+                            <option value="100">100</option>
+                            <option value="101">101</option>
+                            <option value="102">102</option>
+                            <option value="103">103</option>
+                            <option value="104">104</option>
+                            <option value="105">105</option>
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label class="field-label" for="hall">Hall <span class="required">*</span></label>
+                        <select id="hall" name="hall" required>
+                            <option value="" disabled selected>Select your hall</option>
+                            <option value="FH">FH</option>
+                            <option value="SH">SH</option>
+                            <option value="AE">AE</option>
+                            <option value="JN">JN</option>
+                            <option value="SK">SK</option>
+                            <option value="SN">SN</option>
+                            <option value="RH">RH</option>
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label class="field-label" for="photoLink">Square Photo — Google Drive Link <span class="required">*</span></label>
+                        <input type="url" id="photoLink" name="photoLink" placeholder="https://drive.google.com/..." required />
+                        <p class="hint">Upload a square (1:1) photo to Google Drive, set sharing to "Anyone with the link", then paste the link here.</p>
+                    </div>
+                </fieldset>
+
+                <fieldset id="playerFieldset">
+                    <legend>Playing Details</legend>
+
+                    <div class="field">
+                        <label class="field-label">Preferred Position(s) <span class="required">*</span></label>
+                        <div class="position-grid" id="positionGrid">
+                            <!-- populated by JS -->
+                        </div>
+                        <p class="hint">Select all positions you're comfortable playing.</p>
+                    </div>
+
+                    <div class="field">
+                        <label class="field-label" for="skillRating">Rate Your Playing <span class="optional-tag">(optional, 1–10)</span></label>
+                        <div class="rating-row">
+                            <input type="range" id="skillRating" name="skillRating" min="1" max="10" step="1" value="5" />
+                            <span class="rating-value" id="ratingValueDisplay">5</span>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <div class="submit-row">
+                    <button type="submit" class="btn-submit" id="submitBtn">Submit Registration</button>
+                    <span class="submit-status" id="submitStatus"></span>
+                </div>
+            </form>
+
+            <div class="success-screen" id="successScreen">
+                <div class="checkmark">✓</div>
+                <h3>You're Registered!</h3>
+                <p>
+                    Thanks for registering for PHY-LIGA Season 01. Keep an eye on your WhatsApp and email —
+                    team formation and fixture updates will be announced soon. For any questions,
+                    <a href="https://wa.me/8801310908781" target="_blank" rel="noopener">message us on WhatsApp</a>.
+                </p>
+            </div>
+
+            <div class="closed-screen" id="closedScreen">
+                <h3>Registration Closed</h3>
+                <p>The registration window for PHY-LIGA Season 01 ended on 31 July 2026, 11:59 PM. Please reach out to the organizers if you believe this is a mistake.</p>
+            </div>
+
+        </section>
+    </main>
+
+    <footer class="site-footer">
+  © 2026 PHY-LIGA · Developed by <a href="https://www.facebook.com/fardin.0112" target="_blank" rel="noopener">Fardin Hossain</a> · Feathered by <a href="https://www.facebook.com/tawkir.hossain.16" target="_blank" rel="noopener">Tawkir Hossain Rahat</a>
+</footer>
+
+    <script>
+        /* ---------- Nav toggle (mobile) ---------- */
+        const navToggle = document.getElementById("navToggle");
+        const mainNav = document.getElementById("mainNav");
+
+        function closeNav() {
+            mainNav.classList.remove("open");
+            navToggle.setAttribute("aria-expanded", "false");
+            navToggle.textContent = "☰";
+        }
+
+        function toggleNav() {
+            const isOpen = mainNav.classList.toggle("open");
+            navToggle.setAttribute("aria-expanded", String(isOpen));
+            navToggle.textContent = isOpen ? "✕" : "☰";
+        }
+
+        navToggle.addEventListener("click", (e) => {
+            e.stopPropagation();
+            toggleNav();
+        });
+
+        mainNav.querySelectorAll("a").forEach(link => link.addEventListener("click", closeNav));
+
+        document.addEventListener("click", (e) => {
+            if (mainNav.classList.contains("open") && !mainNav.contains(e.target) && !navToggle.contains(e.target)) {
+                closeNav();
+            }
+        });
+
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") closeNav();
+        });
+
+        /* ---------- Constants ---------- */
+        const REGISTRATION_DEADLINE = new Date("2026-07-31T23:59:00+06:00");
+        const RESTRICTED_OWNER_BATCHES = ["103", "104", "105"];
+        const POSITIONS = ["GK", "CB", "LB", "RB", "AMF", "DMF", "CM", "LM", "RM", "LW", "RW", "ST", "CF"];
+        const PHONE_REGEX = /^01[3-9]\d{8}$/;
+
+        /* ---------- Build position checkboxes ---------- */
+        const positionGrid = document.getElementById("positionGrid");
+        POSITIONS.forEach(pos => {
+            const id = `pos-${pos}`;
+            const input = document.createElement("input");
+            input.type = "checkbox";
+            input.id = id;
+            input.name = "preferredPositions";
+            input.value = pos;
+            const label = document.createElement("label");
+            label.setAttribute("for", id);
+            label.textContent = pos;
+            positionGrid.appendChild(input);
+            positionGrid.appendChild(label);
+        });
+
+        /* ---------- Countdown ---------- */
+        const countdownEl = document.getElementById("countdownValue");
+        const closedScreen = document.getElementById("closedScreen");
+        const formCardForm = document.getElementById("regForm");
+        const submitBtn = document.getElementById("submitBtn");
+
+        function updateCountdown() {
+            const now = new Date();
+            const diff = REGISTRATION_DEADLINE - now;
+            if (diff <= 0) {
+                countdownEl.textContent = "Registration closed";
+                closedScreen.classList.add("show");
+                formCardForm.style.display = "none";
+                submitBtn.disabled = true;
+                return false;
+            }
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+            const mins = Math.floor((diff / (1000 * 60)) % 60);
+            countdownEl.textContent = `${days}d ${hours}h ${mins}m`;
+            return true;
+        }
+        updateCountdown();
+        setInterval(updateCountdown, 60000);
+
+        /* ---------- Role-based field visibility ---------- */
+        const playerFieldset = document.getElementById("playerFieldset");
+        const roleInputs = document.querySelectorAll('input[name="role"]');
+        const batchSelect = document.getElementById("batch");
+        const formWarning = document.getElementById("formWarning");
+
+        function currentRole() {
+            return document.querySelector('input[name="role"]:checked')?.value || "player";
+        }
+
+        function togglePlayerFields() {
+            const role = currentRole();
+            const showPlayerFields = role === "player" || role === "both";
+            playerFieldset.style.display = showPlayerFields ? "block" : "none";
+        }
+
+        function checkEligibility() {
+            const role = currentRole();
+            const batch = batchSelect.value;
+            const ineligible = RESTRICTED_OWNER_BATCHES.includes(batch) && (role === "owner" || role === "both");
+
+            if (ineligible) {
+                formWarning.textContent =
+                    'Batches 103–105 may register as Player only — please switch your role to "Player" or choose a different batch.';
+                formWarning.classList.add("show");
+                submitBtn.disabled = true;
+            } else {
+                formWarning.classList.remove("show");
+                submitBtn.disabled = false;
+            }
+            return !ineligible;
+        }
+
+        roleInputs.forEach(input => input.addEventListener("change", () => {
+            togglePlayerFields();
+            checkEligibility();
+        }));
+        batchSelect.addEventListener("change", checkEligibility);
+        togglePlayerFields();
+
+        /* ---------- Skill rating live value ---------- */
+        const skillRating = document.getElementById("skillRating");
+        const ratingValueDisplay = document.getElementById("ratingValueDisplay");
+        skillRating.addEventListener("input", () => {
+            ratingValueDisplay.textContent = skillRating.value;
+        });
+
+        /* ---------- Alerts ---------- */
+        const formError = document.getElementById("formError");
+        const submitStatus = document.getElementById("submitStatus");
+        const successScreen = document.getElementById("successScreen");
+
+        function showError(msg) {
+            formError.textContent = msg;
+            formError.classList.add("show");
+        }
+
+        function clearError() {
+            formError.classList.remove("show");
+            formError.textContent = "";
+        }
+
+        /* ---------- Firebase (loaded dynamically) ---------- */
+        let db, fsDoc, fsGetDoc, fsWriteBatch, fsServerTimestamp, fsCollection;
+        let firebaseReady = false;
+
+        (async function initFirebase() {
+            try {
+                const [{ db: dbInstance }, firestoreMod] = await Promise.all([
+                    import("./assets/js/firebase-config.js"),
+                    import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js")
+                ]);
+                db = dbInstance;
+                fsDoc = firestoreMod.doc;
+                fsGetDoc = firestoreMod.getDoc;
+                fsWriteBatch = firestoreMod.writeBatch;
+                fsServerTimestamp = firestoreMod.serverTimestamp;
+                fsCollection = firestoreMod.collection;
+                firebaseReady = true;
+            } catch (err) {
+                console.error("Firebase failed to load:", err);
+                showError(
+                    "Couldn't connect to the registration database. If you're opening this file directly on your computer, serve it through a local web server (e.g. VS Code's \"Live Server\" extension, or `npx serve`) or view it on the live deployed site — the database connection is blocked when opening the HTML file directly."
+                    );
+            }
+        })();
+
+        /* ---------- Duplicate email check ---------- */
+        const emailInput = document.getElementById("email");
+        const emailHint = document.getElementById("emailHint");
+        let emailTaken = false;
+
+        function sanitizeEmailId(email) {
+            return email.trim().toLowerCase().replace(/[^a-z0-9]/g, "_");
+        }
+
+        emailInput.addEventListener("blur", async () => {
+            const email = emailInput.value.trim();
+            if (!email || !email.includes("@")) return;
+            if (!firebaseReady) return;
+            emailHint.textContent = "Checking…";
+            try {
+                const emailId = sanitizeEmailId(email);
+                const snap = await fsGetDoc(fsDoc(db, "registeredEmails", emailId));
+                if (snap.exists()) {
+                    emailTaken = true;
+                    emailInput.classList.add("field-error");
+                    emailHint.textContent = "This email has already been used to register. Only one response per person is allowed.";
+                    emailHint.style.color = "var(--clr-danger)";
+                } else {
+                    emailTaken = false;
+                    emailInput.classList.remove("field-error");
+                    emailHint.textContent = "Looks good — this email hasn't registered yet.";
+                    emailHint.style.color = "var(--clr-highlight)";
+                }
+            } catch (err) {
+                emailHint.textContent = "Couldn't verify email right now — you can still try submitting.";
+            }
+        });
+
+        /* ---------- Submit ---------- */
+        document.getElementById("regForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            clearError();
+
+            if (!firebaseReady) {
+                showError("Still connecting to the registration database — please wait a moment and try again.");
+                return;
+            }
+            if (!updateCountdown()) {
+                showError("Registration is closed.");
+                return;
+            }
+            if (!checkEligibility()) {
+                showError("Please resolve the eligibility warning above before submitting.");
+                return;
+            }
+
+            const email = emailInput.value.trim();
+            const fullName = document.getElementById("fullName").value.trim();
+            const contactNumber = document.getElementById("contactNumber").value.trim();
+            const batch = batchSelect.value;
+            const hall = document.getElementById("hall").value;
+            const photoLink = document.getElementById("photoLink").value.trim();
+            const role = currentRole();
+
+            if (!email || !fullName || !contactNumber || !batch || !hall || !photoLink) {
+                showError("Please fill in all required fields.");
+                return;
+            }
+            if (!PHONE_REGEX.test(contactNumber)) {
+                showError("Please enter a valid Bangladeshi WhatsApp number (e.g. 01712345678).");
+                return;
+            }
+            if (!/^https:\/\/.*drive\.google\.com\/.+/.test(photoLink)) {
+                showError("Please provide a valid Google Drive link for your photo.");
+                return;
+            }
+
+            let preferredPositions = [];
+            if (role === "player" || role === "both") {
+                preferredPositions = Array.from(document.querySelectorAll('input[name="preferredPositions"]:checked')).map(
+                    cb => cb.value);
+                if (preferredPositions.length === 0) {
+                    showError("Please select at least one preferred position.");
+                    return;
+                }
+            }
+
+            if (emailTaken) {
+                showError("This email has already registered.");
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitStatus.textContent = "Submitting…";
+
+            try {
+                const emailId = sanitizeEmailId(email);
+
+                // Final race-condition-safe duplicate check right before writing
+                const existing = await fsGetDoc(fsDoc(db, "registeredEmails", emailId));
+                if (existing.exists()) {
+                    showError("This email has already registered.");
+                    submitBtn.disabled = false;
+                    submitStatus.textContent = "";
+                    return;
+                }
+
+                const isOwnerEligible = !RESTRICTED_OWNER_BATCHES.includes(batch);
+                const skillRatingValue = (role === "player" || role === "both") ? Number(skillRating.value) : null;
+                const auctionStatus = (role === "owner") ? "not_applicable" : "unsold";
+
+                const newDocRef = fsDoc(fsCollection(db, "players"));
+                const playerId = newDocRef.id;
+
+                const playersData = {
+                    fullName,
+                    email,
+                    contactNumber,
+                    role,
+                    batch,
+                    hall,
+                    preferredPositions,
+                    photoLink,
+                    skillRating: skillRatingValue,
+                    isOwnerEligible,
+                    registeredAt: fsServerTimestamp(),
+                    status: "registered",
+                    teamId: null,
+                    soldPrice: null,
+                    auctionStatus
+                };
+
+                const publicData = {
+                    fullName,
+                    photoLink,
+                    batch,
+                    hall,
+                    role,
+                    preferredPositions,
+                    teamId: null,
+                    teamName: null,
+                    status: "registered"
+                };
+
+                const batchWrite = fsWriteBatch(db);
+                batchWrite.set(fsDoc(db, "players", playerId), playersData);
+                batchWrite.set(fsDoc(db, "publicPlayers", playerId), publicData);
+                batchWrite.set(fsDoc(db, "registeredEmails", emailId), { exists: true, registeredAt: fsServerTimestamp() });
+
+                await batchWrite.commit();
+
+                document.getElementById("regForm").style.display = "none";
+                successScreen.classList.add("show");
+                submitStatus.textContent = "";
+            } catch (err) {
+                console.error(err);
+                showError("Something went wrong while submitting. Please check your connection and try again.");
+                submitBtn.disabled = false;
+                submitStatus.textContent = "";
+            }
+        });
+    </script>
+
+</body>
+</html>
