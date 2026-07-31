@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Import</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --clr-canvas: #162235; --clr-surface: #1E2D42; --clr-surface-alt: #253850;
+    --clr-accent-primary: #A1C4C7; --clr-accent-interactive: #34DFEC; --clr-highlight: #2A8042;
+    --clr-danger: #E24C4C; --clr-warning: #E2B04C; --clr-text-muted: #7E8B9B; --clr-text-primary: #EAF2F2;
+    --radius-md: 12px; --radius-lg: 20px;
+    --font-display: 'Orbitron', sans-serif; --font-body: 'Inter', sans-serif; --font-mono: 'IBM Plex Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--clr-canvas); color: var(--clr-text-primary); font-family: var(--font-body);
+    line-height: 1.55; min-height: 100vh; padding: 0 0 80px;
+  }
+  a { color: var(--clr-accent-interactive); }
+
+  header.tool-header {
+    padding: 22px 5vw; border-bottom: 1px solid rgba(161,196,199,0.15);
+    background: rgba(30,45,66,0.5); backdrop-filter: blur(10px);
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+  }
+  header.tool-header h1 { font-family: var(--font-display); font-size: 1.2rem; letter-spacing: 0.02em; }
+  .tool-badge {
+    font-family: var(--font-mono); font-size: 0.7rem; color: var(--clr-danger);
+    border: 1px solid rgba(226,76,76,0.4); background: rgba(226,76,76,0.08);
+    padding: 3px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.06em;
+  }
+
+  main { max-width: 1180px; margin: 0 auto; padding: 0 5vw; }
+
+  .callout {
+    margin-top: 26px; padding: 18px 22px; border-radius: var(--radius-md);
+    background: rgba(226,176,76,0.08); border: 1px solid rgba(226,176,76,0.3);
+    font-size: 0.85rem; color: #F3D28A;
+  }
+  .callout b { color: #FFE7B3; }
+  .callout ul { margin: 8px 0 0 18px; }
+
+  .step-card {
+    margin-top: 24px; padding: clamp(18px, 3vw, 30px);
+    background: rgba(30,45,66,0.55); border: 1px solid rgba(161,196,199,0.15);
+    border-radius: var(--radius-lg); backdrop-filter: blur(10px);
+  }
+  .step-card h2 {
+    font-family: var(--font-display); font-size: 1rem; letter-spacing: 0.02em; margin-bottom: 6px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .step-num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 26px; height: 26px; border-radius: 8px; font-family: var(--font-mono); font-size: 0.8rem;
+    background: rgba(52,223,236,0.12); border: 1px solid rgba(52,223,236,0.3); color: var(--clr-accent-interactive);
+  }
+  .step-card p.step-desc { font-size: 0.85rem; color: var(--clr-text-muted); margin-bottom: 14px; }
+
+  textarea#sheetInput {
+    width: 100%; min-height: 160px; resize: vertical;
+    background: var(--clr-surface); border: 1px solid rgba(161,196,199,0.2); border-radius: var(--radius-md);
+    color: var(--clr-text-primary); font-family: var(--font-mono); font-size: 0.75rem; padding: 14px; line-height: 1.5;
+  }
+  textarea#sheetInput:focus { outline: none; border-color: var(--clr-accent-interactive); }
+
+  .btn {
+    font-family: var(--font-display); font-weight: 700; font-size: 0.82rem; letter-spacing: 0.02em;
+    padding: 12px 26px; border-radius: 999px; cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 8px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+  }
+  .btn-primary { color: var(--clr-canvas); background: linear-gradient(135deg, var(--clr-accent-interactive), #6BEFF7); box-shadow: 0 0 20px rgba(52,223,236,0.3); }
+  .btn-primary:hover:not(:disabled) { transform: scale(1.02); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+  .btn-danger { color: var(--clr-canvas); background: linear-gradient(135deg, #FF8A8A, var(--clr-danger)); box-shadow: 0 0 20px rgba(226,76,76,0.3); }
+  .btn-danger:hover:not(:disabled) { transform: scale(1.02); }
+  .btn-danger:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+  .btn-ghost {
+    color: var(--clr-accent-primary); background: transparent; border: 1px solid rgba(161,196,199,0.3);
+  }
+  .btn-ghost:hover { border-color: var(--clr-accent-interactive); color: var(--clr-accent-interactive); }
+
+  .action-row { margin-top: 16px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+
+  .summary-strip {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-top: 20px;
+  }
+  .summary-box {
+    padding: 14px; border-radius: var(--radius-md); text-align: center;
+    background: var(--clr-surface); border: 1px solid rgba(161,196,199,0.15);
+  }
+  .summary-box .s-num { font-family: var(--font-mono); font-weight: 700; font-size: 1.4rem; display: block; }
+  .summary-box .s-label { font-size: 0.68rem; color: var(--clr-text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .summary-box.ok .s-num { color: #9CF0B0; }
+  .summary-box.warn .s-num { color: var(--clr-warning); }
+  .summary-box.err .s-num { color: var(--clr-danger); }
+  .summary-box.skip .s-num { color: var(--clr-text-muted); }
+
+  .table-wrap { margin-top: 20px; overflow-x: auto; border-radius: var(--radius-md); border: 1px solid rgba(161,196,199,0.15); }
+  table.preview-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; min-width: 900px; }
+  table.preview-table th {
+    text-align: left; font-family: var(--font-mono); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--clr-text-muted); background: rgba(255,255,255,0.03); padding: 10px 12px; position: sticky; top: 0;
+  }
+  table.preview-table td { padding: 10px 12px; border-top: 1px solid rgba(161,196,199,0.08); vertical-align: top; }
+  table.preview-table tr.row-error td { background: rgba(226,76,76,0.06); }
+  table.preview-table tr.row-warning td { background: rgba(226,176,76,0.05); }
+  table.preview-table tr.row-skip td { opacity: 0.45; }
+  .tag { display: inline-block; font-family: var(--font-mono); font-size: 0.65rem; padding: 2px 7px; border-radius: 5px; margin: 1px 3px 1px 0; }
+  .tag-role-player { background: rgba(52,223,236,0.1); color: var(--clr-accent-interactive); border: 1px solid rgba(52,223,236,0.25); }
+  .tag-role-owner { background: rgba(42,128,66,0.15); color: #9CF0B0; border: 1px solid rgba(42,128,66,0.4); }
+  .tag-role-both { background: rgba(226,176,76,0.1); color: #F3D28A; border: 1px solid rgba(226,176,76,0.35); }
+  .tag-pos { background: rgba(42,128,66,0.15); color: #9CF0B0; }
+  .warn-note { color: var(--clr-warning); font-size: 0.72rem; display: block; }
+  .err-note { color: var(--clr-danger); font-size: 0.72rem; display: block; font-weight: 600; }
+  .skip-note { color: var(--clr-text-muted); font-size: 0.72rem; display: block; font-style: italic; }
+
+  #logBox {
+    margin-top: 16px; background: #0F1A29; border: 1px solid rgba(161,196,199,0.15); border-radius: var(--radius-md);
+    padding: 14px 16px; font-family: var(--font-mono); font-size: 0.78rem; max-height: 260px; overflow-y: auto;
+  }
+  #logBox .log-line { padding: 2px 0; }
+  #logBox .log-ok { color: #9CF0B0; }
+  #logBox .log-err { color: #FF9A9A; }
+  #logBox .log-skip { color: var(--clr-text-muted); }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<header class="tool-header">
+  <h1>PHY-LIGA — Bulk Player Import</h1>
+  <span class="tool-badge">Admin utility · not linked from the public site</span>
+</header>
+
+<main>
+  <div class="callout">
+    <b>Before you run this:</b> it writes directly to your live Firestore (<code>players</code>, <code>publicPlayers</code>, <code>registeredEmails</code>), exactly the way <code>register.html</code> does.
+    <ul>
+      <li>Review every row in the preview table below — rows with a warning or error are highlighted.</li>
+      <li>Rows already found in <code>registeredEmails</code> are skipped automatically (won't be double-imported).</li>
+      <li>Uncheck any row you don't want imported (e.g. a duplicate submission, or one with a typo you'd rather fix by hand afterward in <code>admin/manage-players.html</code>).</li>
+      <li>Once you've imported, move or delete this file (or password-protect the <code>/admin/</code> folder) — it has no login gate of its own, same as your registration rules currently allow.</li>
+    </ul>
+  </div>
+
+  <section class="step-card">
+    <h2><span class="step-num">1</span> Paste your sheet data</h2>
+    <p class="step-desc">This box is pre-filled with the 60 responses you shared. To re-run for a different batch of registrations later, select all in your Google Sheet (including the header row) and paste it here instead.</p>
+    <textarea id="sheetInput" spellcheck="false"></textarea>
+    <div class="action-row">
+      <button class="btn btn-primary" id="parseBtn">Parse &amp; Preview</button>
+      <button class="btn btn-ghost" id="clearBtn" type="button">Clear box</button>
+    </div>
+  </section>
+
+  <section class="step-card hidden" id="previewSection">
+    <h2><span class="step-num">2</span> Review before importing</h2>
+    <p class="step-desc">Check names, batches, positions, and flagged issues. Uncheck anything you don't want written to the database.</p>
+
+    <div class="summary-strip" id="summaryStrip"></div>
+
+    <div class="action-row">
+      <button class="btn-ghost btn" id="checkExistingBtn" type="button">Check which emails already exist in the database</button>
+    </div>
+
+    <div class="table-wrap">
+      <table class="preview-table">
+        <thead>
+          <tr>
+            <th></th><th>Row</th><th>Timestamp</th><th>Email</th><th>Role</th><th>Name</th>
+            <th>Batch</th><th>Hall</th><th>Positions</th><th>Skill</th><th>Notes</th>
+          </tr>
+        </thead>
+        <tbody id="previewBody"></tbody>
+      </table>
+    </div>
+
+    <div class="action-row">
+      <button class="btn btn-danger" id="importBtn" disabled>Import checked rows to Firestore</button>
+      <span id="importHint" style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--clr-text-muted);">Connecting to Firebase…</span>
+    </div>
+
+    <div id="logBox" class="hidden"></div>
+  </section>
+</main>
+
+<script>
+/* 
+   CONFIG
+ */
+const VALID_BATCHES = ["99", "100", "101", "102", "103", "104", "105"];
+const RESTRICTED_OWNER_BATCHES = ["103", "104", "105"];
+const PHONE_REGEX = /^01[3-9]\d{8}$/;
+const VALID_POSITIONS = ["GK","CB","LB","RB","AMF","DMF","CM","LM","RM","LW","RW","ST","CF"];
+
+const COLS = {
+  timestamp: 0,
+  email: 1,
+  roleRaw: 2,
+  player: [3, 4, 5, 6, 7, 8, 9],       // name, contact, batch, hall, position, photo, skill
+  owner:  [10, 11, 12, 13, -1, 14, -1], // name, contact, batch, hall, (no position), photo, (no skill)
+  both:   [15, 16, 17, 18, 19, 20, 21]
+};
+
+const DEFAULT_SHEET_DATA = `Timestamp\tEmail Address\tRegister yourself --\tFull Name\tContact Number (WhatsApp)\tBatch\tHall\tPreferred Position\tProvide a square-size photo\tRate your playing\tFull Name\tContact Number (WhatsApp)\tBatch\tHall\tProvide a square-size photo\tFull Name\tContact Number (WhatsApp)\tBatch\tHall\tPreferred Position\tProvide a square-size photo\tRate your playing
+7/28/2026 5:33:20\trsshanto176@gmail.com\tAs a Player\tMd Ataur Rahman Shanto \t01616618107\t105\tSH\tRM\thttps://drive.google.com/open?id=1RaXxvMYkkK0cgNqRtpTkV4mAy1E_MsKQ\t8\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 6:01:07\tmdashfiqul22@gmail.com\tAs a Player\tMD ASHFIQUL ISLAM SHEAM \t01307539066\t105\tSH\tCB\thttps://drive.google.com/open?id=14IYtqTv-8u-JjWhYAoK_-BXPRSA-7DTD\t8\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 6:27:13\tsharifalif1234@gmail.com\tAs a Player\tSharif Ashfakur Rahman Alif \t01572969773\t105\tSH\tLW, RW, CF\thttps://drive.google.com/open?id=1yqkOKBJdVil7Hs1Gc8OfUlhNLVEc80dW\t9\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 6:45:36\tturjoychowdhury31@gmail.com\tAs a Player\tTurjoy Chowdhury \t01409750105\t104\tJN\tAMF, RW, CF\thttps://drive.google.com/open?id=1h5Lt__rC8Y2K7KPTloa9j-OHRrtli9Zq\t10\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 7:57:27\tmadmaxbadhon@gmail.com\tAs a Player\tSheikh Mahmood Noor Badhon\t01786781601\t103\tSH\tAMF, LW\thttps://drive.google.com/open?id=15jfHndTysFd15N7JNOgYyI-o8oknKqDm\t7\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 9:03:42\tmasudul.du.105@gmail.com\tAs a Player\tMasudul Hasan\t01740369106\t105\tSH\tLM, RM\thttps://drive.google.com/open?id=1K-igvAZi4xGmayD5FLZ68RvtsLUm-OR0\t4\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 9:36:29\tmdibnahossainemonstudy@gmail.com\tAs a Player\tMd. Ibna Hossain Emon \t01887856338\t102\tAE\tAMF, LW\thttps://drive.google.com/open?id=15f7lpBCBI4oYoPAym2S2zji9cstlRrYy\t5\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 9:38:03\tsajidomar111@gmail.com\tAs a Player\tOmar Sajid \t01674054377\t103\tAE\tCB, LB, DMF, LM, LW\thttps://drive.google.com/open?id=1a5t9uVEVvNt-Zi1CahDVHpzMJsF-pAod\t6\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 9:47:16\tsiamiftikahmed@gmail.com\tAs a Player\tIftik Ahmed Siam \t01314126689\t105\tAE\tRB\thttps://drive.google.com/open?id=1fGs46ofccm8ecupqESLtpdLMQBMz022J\t3\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 10:16:09\tkhalidsaifullah66446@gmail.com\tAs a Player\tKhalid Saifullah\t01572903031\t102\tFH\tCB, LB, RB, CM, RM, RW, CF\thttps://drive.google.com/open?id=1wwCXIKMaySTX6KalQ0xcBCUQ6ihHy5N6\t7\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 10:28:35\thasibulislam.43sm@gmail.com\tAs a Player\tMd.Hasibul Islam \t01614893207\t105\tSH\tLB\thttps://drive.google.com/open?id=1El9zFki1bd6cc2Dmq4bnQHo2Ex6DjZh4\t8\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 10:32:19\tmdsheshirahmed6@gmail.com\tAs a Player\tMd Shishir Ahmed \t01400296686\t100\tFH\tCB\thttps://drive.google.com/open?id=1f1VYE5heD4TwotJ2KU0CxlyJMUBfHD0p\t6\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 10:33:07\ts-2021311659@phy.du.ac.bd\tAs a Player\tMd Akash Mia \t01580876949\t101\tSH\tAMF\thttps://drive.google.com/open?id=14mbw7zNy0ObN7fYgH6RfTXoUbF7auGov\t8\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 10:34:46\tabusayednazim222@gmail.com\tBoth\t\t\t\t\t\t\t\t\t\t\t\t\tMd Abu Sayed Nazim\t01618624547\t99\tFH\tCM, RM, RW\thttps://drive.google.com/open?id=1vpG0H2sphwx5dLPJbnYPF5RKmoGH8oS4\t6
+7/28/2026 10:36:40\tfahimv345@gmail.com\tAs a Player\tMd. Fahim Sarker\t01842641482\t103\tFH\tCM\thttps://drive.google.com/open?id=1TV8MQ0VV2_clF63RbzDpkYtc2klhf3ej\t6\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 10:40:44\trahatmahmud167@gmail.com\tAs a Player\tRahat Mahmud \t01703896886\t105\tFH\tLW, CF\thttps://drive.google.com/open?id=1TBfeOh-n28dJdEQ9MEqmEw9BRdyUQKSN\t7\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 10:42:12\tashrafhossainpatwary12@gmail.com\tAs a Player\tMuhammad Ashraf Hossain \t01949161695\t99\tFH\tGK, LB, RB\thttps://drive.google.com/open?id=1YNPAcXT9QBkwmtU1RHE0OV6EVO9niqMc\t6\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 10:50:52\tpromitovighanroy@gmail.com\tAs a Player\tPromit Parker\t01805124771\t104\tJN\tAMF, DMF, CM\thttps://drive.google.com/open?id=1IztqrvsatfthMogSHhKdxk03AkozgfE-\t2\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 10:53:19\tjhparvez1111@gmail.com\tAs a Player\tMd Junayet Hossen\t01914295963\t105\tFH\tLW\thttps://drive.google.com/open?id=177kIL3rUpW0bPm1R15gnCRYbCv-pEUgw\t9\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 10:58:20\trezaulfuad73@gmail.com\tAs a Player\tMd Rezaul Islam Mazumder\t01895447118\t103\tSH\tAMF, LM, LW\thttps://drive.google.com/open?id=1ZcEh5ynf9Zw2EZpvnofMTD_SJRoUEy5d\t7\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 11:21:39\tfahadhasnaen1092@gmail.com\tAs a Player\tFahad Hasnaen Srabon \t01759606775\t105\tSH\tGK, CB, RB, DMF\thttps://drive.google.com/open?id=1d1ljTy2kNnHRnI5NwbZ-1mPP1F1ixBpV\t4\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 11:33:04\tarafatrahman2953@gmail.com\tAs a Player\tArafat Rahman\t01986149436\t99\tSH\tAMF, DMF, CM\thttps://drive.google.com/open?id=1Z7BXtzhUHHMBXzmFWd15myW8qkUMoKxQ\t7\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 11:34:34\tjewelhasanjewel15@gmail.com\tAs a Player\tJewel Hasan \t01944186008\t100\tAE\tAMF, LW\thttps://drive.google.com/open?id=1mzjEjFrDfPbbBlAn6PvOFOG9cCwIQPgI\t3\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 11:38:01\takhirulislamrimon025@gmail.com\tBoth\t\t\t\t\t\t\t\t\t\t\t\t\tAkhirul Islam \t01817584126\t102\tSH\tGK\thttps://drive.google.com/open?id=1gfmW0Kz_uc0c1Rdon-Rp16Bd18IYWIzE\t7
+7/28/2026 11:41:53\tmuhtasimfuadrifat5@gmail.com\tBoth\t\t\t\t\t\t\t\t\t\t\t\t\tMuhtasim Fuad\t01560025076\t100\tAE\tAMF\thttps://drive.google.com/open?id=1kQ7PIbHvRsnGVhTEQFdij7zIFLVDk2va\t10
+7/28/2026 11:54:16\thridoysarkar4575@gmail.com\tAs a Player\tHridoy Sarkar Soumya \t01865278504\t102\tJN\tLW\thttps://drive.google.com/open?id=1ALORVYffaMnVfNtL487ZGCucFdM0agVd\t7\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 11:54:26\tmehadimeraz18@gmail.com\tAs a Player\tMehadi Hasan Meraz \t01846580369\t100\tSH\tCM\thttps://drive.google.com/open?id=1wm_Saf6mQhlNXzq3WuC9zm3sLa4YBxAP\t10\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 11:58:32\tletter.rashed@gmail.com\tAs a Player\tMD. MAHBUBUL ALAM RASHED\t01560063103\t97\tFH\tLW, RW\thttps://drive.google.com/open?id=1cM5X28cHZb9st-1grlKgst8GE9gVMIw3\t9\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 12:57:51\takash95th@gmail.com\tAs a Player\tMD. MAHBUBUL ALAM RASHED \t01560063103\t95\tFH\tLW, RW\thttps://drive.google.com/open?id=1D9M7pJAQaD0rRkmrq_D2Y9OpgLEc1Laf\t2\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 12:58:51\tmdtuhinhasanmunna56@gmail.com\tAs a Player\tMd Tuhin Hasan\t01319985394\t103\tAE\tRB\thttps://drive.google.com/open?id=1ogvu89UU7STGcyuQrnMMbLubV19TO5aU\t8\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 12:59:05\trahatmahmud167@gmail.com\tAs a Player\tRahat Mahmud\t01703896886\t105\tFH\tLW, CF\thttps://drive.google.com/open?id=1Rag3HtxH4veA7vaFJ86RT8hY79Ec5Ot_\t4\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 13:58:12\tfnpo.ml@gmail.com\tAs a Player\tMd. Nahid Iskandar Emon\t01645191220\t103\tSH\tLB, RB, LW\thttps://drive.google.com/open?id=15u-ruqYDUE1xusgLMMO3es8EXlojTl40\t8\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 14:06:16\tmobasherdipto143@gmail.com\tAs a Player\tMd. Mobasher Alam\t01534977903\t105\tFH\tDMF\thttps://drive.google.com/open?id=1zJh3yQROIavCh-hTJJn5VCw85l-48p9v\t4\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 14:14:21\ticnabil20@gmail.com\tAs a Player\tIbtisham Chowdhury Nabil\t01755097724\t103\tSH\tST\thttps://drive.google.com/open?id=1xAbWH0joecRnEHCjctKkCVw3ANVOf8Wh\t2\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 15:12:06\tmdrabbiprodhan407@gnail.com\tAs a Player\tGOLAM RABBY \t01318796588\t103\tSH\tAMF\thttps://drive.google.com/open?id=1MbGazN-1j6iQuvdHIema_MbEXzzFY3Zq\t7\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 15:16:36\tsabbirhossain126690@gmail.com\tAs a Player\tMD.SABBIR HOSSAIN\t01767914379\t103\tFH\tAMF, DMF, CM, LM\thttps://drive.google.com/open?id=1bl9SwO6h3bbx88ViS7kvhFidMnanN-MW\t8\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 15:26:18\tarikhossain2.0@gmail.com\tAs a Player\tTahsin Ittehad Hossain Arik \t01647015566\t104\tAE\tGK, CB, LB, RB, AMF, DMF\thttps://drive.google.com/open?id=1ecW0TZUBWPJoY_scQVZ5c9IKLXk88a5O\t6\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 15:27:26\tmahfuzurrahmansiyam2005@gmail.com\tAs a Player\tSiyam\t01975835598\t104\tFH\tRW\thttps://drive.google.com/open?id=1-HsBuEvyKpV84uT3qIn2GUHBGc9QIhqG\t8\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 15:30:29\talahsanabhro@gmail.com\tAs a Player\tA.H. Al-Ahsan Abhro\t01798077396\t104\tFH\tAMF, CM, LM\thttps://drive.google.com/open?id=1_BwWGUB8bQjthwJ0UW_ELq41dSzB6m5H\t4\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 15:41:11\talpha1616161616@gmail.com\tAs a Player\tGourab Das Argha\t01806012029\t104\tJN\tAMF, LW, CF\thttps://drive.google.com/open?id=1oLimZYImourMfht3NkiGwv_rJ489G-Hb\t7\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 16:01:06\tneeennn2@gmail.com\tAs a Player\tRidwan Ahmed Neon\t01912806095\t104\tFH\tCB\thttps://drive.google.com/open?id=15rS88R1lrA-tv6n0GdXCV_h9Y49W91Tf\t1\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 16:24:46\tshowmikk768@gmail.com\tAs a Player\tShowmik Hasan Sajin\t01952259712\t103\tFH\tCB, LB\thttps://drive.google.com/open?id=1KQNQvV74fQcCqHgA4S5XcmRvCkyUfozP\t10\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 16:30:21\tsajidomar111@gmail.com\tAs a Player\tOmar Sajid \t01674054377\t103\tAE\tCB, LB, LM, LW\thttps://drive.google.com/open?id=1RmtaoZ1BAaFs6ifuX725kmpqBlFk8kfx\t8\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 16:40:17\tsoumitrodey03@gmail.com\tAs a Player\tSoumitro Dey\t01731049434\t104\tJN\tRB, AMF, DMF, CM\thttps://drive.google.com/open?id=1AXZiHjQq0unpUaTItnkWaY5ZMGriHuCZ\t5\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 16:40:57\tmdrabiul197078@gmail.com\tAs a Player\tRabiul Islam Ridoy \t01845197078\t105\tSH\tLM\thttps://drive.google.com/open?id=19GnDK9yfiYt0Jk6T4Vxq1Zi01tkhC_4n\t1\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 16:44:52\tkazihemel525@gmail.com\tAs a Player\tKazi Hemel\t01300322181\t105\tAE\tDMF, LM\thttps://drive.google.com/open?id=189EkOd8gHyc4vKbh4GP2PfPF-BsDExZL\t3\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 17:14:44\tsabbir3716@gmail.com\tAs a Player\tMD. SABBIR AHMED SIAM\t01321703716\t105\tAE\tRB\thttps://drive.google.com/open?id=1P1fQEncBYXWVQCJXHzp0xp8Sa-tTqNOh\t2\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 17:36:39\tpeyaspeam@gmail.com\tAs a Player\tMd.Peam Akhendo \t01521708030\t100\tSH\tST\thttps://drive.google.com/open?id=1tyACmYNHWX2XmbFGkQC2uZ6DCpU-9nut\t7\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 18:59:12\ts7345268@gmail.com\tAs a Player\tRakib Anuwer Sagar\t01318717496\t102\tAE\tCB, RB\thttps://drive.google.com/open?id=1AxtnwAok4Dj3i1a83O47WxwlhUkpJvFd\t7\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 19:30:20\tzrutsho24@gmail.com\tAs a Player\tMd. Zarif Rafid Utsho\t01992829099\t101\tAE\tLB, RB, DMF, CM\thttps://drive.google.com/open?id=15yUuHrDppgWh-15_kgfgzZH24l9Wvdl7\t8\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 21:14:52\te57214805@gmail.com\tAs a Player\tSarouar Hossain Emon \t01617255647\t103\tFH\tAMF\thttps://drive.google.com/open?id=1LsiL60lBtaEFUbuHLPe7th1PqTcR_FFo\t7\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 22:28:14\tronyhasan1086@gmail.com\tAs a Player\tMd. Rony Hasan \t01953382419\t100\tAE\tAMF, LW\thttps://drive.google.com/open?id=1IDFuOUB-BqESAWfvYvXwHYfcYM1FNWEM\t5\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 22:29:41\tprotikkundu2009@gmail.com\tAs a Player\tSUJOY\t01590065655\t103\tJN\tGK, CB, ST, CF\thttps://drive.google.com/open?id=1wj7cqkAjt9UQi6RgKvT7wo4r913wHV3H\t10\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 22:36:43\tjitubarua2224@gmail.com\tAs a Player\tChinmoy barua jitu\t01616871555\t103\tJN\tAMF, CM, LW, ST, CF\thttps://drive.google.com/open?id=12tr5tqB0HzRVfIbrpnK1pdPyltzyX9Jp\t7\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 22:50:08\takaidrahman122@gmail.com\tAs a Player\tMD AKAID RAHMAN \t01324689877\t105\tSH\tCM\thttps://drive.google.com/open?id=12TCS3ZgUMdcmMpEqpQWjvywKhIOVchh1\t1\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 23:05:26\ts-2024413473@phy.du.ac.bd\tAs a Player\tBikrom Karmaker\t01725121438\t104\tJN\tCB\thttps://drive.google.com/open?id=1KlGnyIChPGMlI8Fqkx7L9CFQgaS0J5K3\t7\t\t\t\t\t\t\t\t\t\t\t\t
+7/28/2026 23:09:30\trahmantarek2003@gmail.com\tAs a Player\tMd Tarek Rahman\t01846275764\t102\tFH\tCM, LW\thttps://drive.google.com/open?id=1TZuMncVy-Ih_7KZJJ_ExZykb8GVKwWQ4\t8\t\t\t\t\t\t\t\t\t\t\t\t
+7/29/2026 0:16:28\timtiyazshihab1122@gmail.com\tAs a Player\tImtiyaz Ahmed Shihab \t01311763270\t103\tFH\tCB\thttps://drive.google.com/open?id=1WL8RREvETQ2HOG3seCowtWBV2oua3z8i\t5\t\t\t\t\t\t\t\t\t\t\t\t
+7/29/2026 0:38:30\tmdtawkirhossain10@gmail.com\tAs a Player\tTawkir Hossain Rahat\t01575045403\t104\tSH\tAMF, LW, ST, CF\thttps://drive.google.com/open?id=1IHwFYeoQYfc803X9b7juYHzmsUHLFeDa\t8\t\t\t\t\t\t\t\t\t\t\t\t
+7/29/2026 3:23:31\timdrafiul13@gmail.com\tAs a Player\tMd Rafiul Islam \t1981922335\t104\tSH\tLM\thttps://drive.google.com/open?id=1mjxEKY3lB4t_msCP9CNbvkJAo8PE24gA\t10\t\t\t\t\t\t\t\t\t\t\t\t`;
+
+document.getElementById("sheetInput").value = DEFAULT_SHEET_DATA;
+
+/* 
+   PARSING
+*/
+function escapeHtml(str) {
+  return String(str ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+function sanitizeEmailId(email) {
+  return email.trim().toLowerCase().replace(/[^a-z0-9]/g, "_");
+}
+
+function pick(cols, idxArr) {
+  return idxArr.map(i => (i === -1 ? "" : (cols[i] || "")));
+}
+
+function parseSheet(text) {
+  const lines = text.replace(/\r/g, "").split("\n").filter(l => l.trim().length > 0);
+  const dataLines = lines.slice(1); // drop header row
+
+  return dataLines.map((line, i) => {
+    const rowNum = i + 2; // matches spreadsheet row number (1 = header)
+    const cols = line.split("\t");
+    while (cols.length < 22) cols.push("");
+
+    const timestamp = (cols[COLS.timestamp] || "").trim();
+    const email = (cols[COLS.email] || "").trim();
+    const roleRaw = (cols[COLS.roleRaw] || "").trim().toLowerCase();
+
+    let role = "player";
+    if (roleRaw.includes("both")) role = "both";
+    else if (roleRaw.includes("owner")) role = "owner";
+
+    const blockIdx = role === "both" ? COLS.both : role === "owner" ? COLS.owner : COLS.player;
+    const [nameRaw, contactRaw, batchRaw, hallRaw, posRaw, photoRaw, skillRaw] = pick(cols, blockIdx);
+
+    const fullName = nameRaw.trim();
+    const contactNumber = contactRaw.trim();
+    const batch = batchRaw.trim();
+    const hall = hallRaw.trim();
+    const photoLink = photoRaw.trim();
+    const preferredPositions = role === "owner" ? [] :
+      posRaw.split(",").map(p => p.trim().toUpperCase()).filter(Boolean);
+    const skillRating = (role === "owner" || !skillRaw.trim()) ? null : Number(skillRaw.trim());
+
+    const errors = [];
+    const warnings = [];
+
+    if (!email || !email.includes("@")) errors.push("Missing/invalid email");
+    if (!fullName) errors.push("Missing full name");
+    if (!contactNumber) errors.push("Missing contact number");
+    if (!batch) errors.push("Missing batch");
+    if (!hall) errors.push("Missing hall");
+    if (!photoLink) errors.push("Missing photo link");
+
+    if (contactNumber && !PHONE_REGEX.test(contactNumber)) warnings.push(`Phone "${contactNumber}" doesn't match 01XXXXXXXXX`);
+    if (batch && !VALID_BATCHES.includes(batch)) warnings.push(`Unexpected batch "${batch}" (expected 99–105)`);
+    if (photoLink && !photoLink.includes("drive.google.com")) warnings.push("Photo link isn't a Google Drive link");
+    if (role !== "owner" && preferredPositions.length === 0) warnings.push("No preferred position selected");
+    if (preferredPositions.some(p => !VALID_POSITIONS.includes(p))) warnings.push("Unrecognized position code in list");
+
+    const isOwnerEligible = batch ? !RESTRICTED_OWNER_BATCHES.includes(batch) : true;
+    if ((role === "owner" || role === "both") && !isOwnerEligible) {
+      warnings.push(`Batch ${batch} is not owner-eligible but role is "${role}" — will still import as-is; review manually`);
+    }
+
+    return {
+      rowNum, timestamp, email, emailId: email ? sanitizeEmailId(email) : "",
+      role, fullName, contactNumber, batch, hall, preferredPositions, photoLink, skillRating,
+      isOwnerEligible, errors, warnings,
+      include: true, // checkbox state, mutated by UI
+      skipReason: null // set later: 'duplicate-in-sheet' or 'already-in-db'
+    };
+  });
+}
+
+/* 
+   STATE
+*/
+let parsedRows = [];
+let firebaseReady = false;
+let db, fsDoc, fsGetDoc, fsWriteBatch, fsServerTimestamp, fsCollection, fsTimestamp;
+
+const previewSection = document.getElementById("previewSection");
+const summaryStrip = document.getElementById("summaryStrip");
+const previewBody = document.getElementById("previewBody");
+const importBtn = document.getElementById("importBtn");
+const importHint = document.getElementById("importHint");
+const logBox = document.getElementById("logBox");
+
+/* 
+   RENDER PREVIEW
+ */
+function renderSummary() {
+  const total = parsedRows.length;
+  const errorRows = parsedRows.filter(r => r.errors.length > 0).length;
+  const warnRows = parsedRows.filter(r => r.errors.length === 0 && r.warnings.length > 0).length;
+  const skipRows = parsedRows.filter(r => r.skipReason).length;
+  const readyRows = parsedRows.filter(r => r.include && r.errors.length === 0 && !r.skipReason).length;
+
+  summaryStrip.innerHTML = `
+    <div class="summary-box"><span class="s-num">${total}</span><span class="s-label">Parsed Rows</span></div>
+    <div class="summary-box err"><span class="s-num">${errorRows}</span><span class="s-label">Blocking Errors</span></div>
+    <div class="summary-box warn"><span class="s-num">${warnRows}</span><span class="s-label">Warnings Only</span></div>
+    <div class="summary-box skip"><span class="s-num">${skipRows}</span><span class="s-label">Will Be Skipped</span></div>
+    <div class="summary-box ok"><span class="s-num">${readyRows}</span><span class="s-label">Ready To Import</span></div>
+  `;
+
+  importBtn.disabled = !firebaseReady || readyRows === 0;
+}
+
+function renderTable() {
+  previewBody.innerHTML = parsedRows.map((r) => {
+    const rowClass = r.errors.length ? "row-error" : r.skipReason ? "row-skip" : r.warnings.length ? "row-warning" : "";
+    const roleTagClass = r.role === "owner" ? "tag-role-owner" : r.role === "both" ? "tag-role-both" : "tag-role-player";
+    const posTags = r.preferredPositions.map(p => `<span class="tag tag-pos">${escapeHtml(p)}</span>`).join("") || "—";
+    const notes = [
+      ...r.errors.map(e => `<span class="err-note">✕ ${escapeHtml(e)}</span>`),
+      ...r.warnings.map(w => `<span class="warn-note">⚠ ${escapeHtml(w)}</span>`),
+      r.skipReason ? `<span class="skip-note">${escapeHtml(r.skipReason)}</span>` : ""
+    ].join("");
+
+    const disableCheckbox = r.errors.length > 0;
+
+    return `
+      <tr class="${rowClass}" data-row="${r.rowNum}">
+        <td><input type="checkbox" class="row-check" data-row="${r.rowNum}" ${r.include && !disableCheckbox ? "checked" : ""} ${disableCheckbox ? "disabled" : ""} /></td>
+        <td>${r.rowNum}</td>
+        <td style="white-space:nowrap;">${escapeHtml(r.timestamp)}</td>
+        <td>${escapeHtml(r.email)}</td>
+        <td><span class="tag ${roleTagClass}">${r.role}</span></td>
+        <td>${escapeHtml(r.fullName)}</td>
+        <td>${escapeHtml(r.batch)}</td>
+        <td>${escapeHtml(r.hall)}</td>
+        <td>${posTags}</td>
+        <td>${r.skillRating ?? "—"}</td>
+        <td>${notes || "—"}</td>
+      </tr>
+    `;
+  }).join("");
+
+  previewBody.querySelectorAll(".row-check").forEach(cb => {
+    cb.addEventListener("change", () => {
+      const row = parsedRows.find(r => String(r.rowNum) === cb.dataset.row);
+      if (row) row.include = cb.checked;
+      renderSummary();
+    });
+  });
+}
+
+/* 
+   DEDUPE WITHIN SHEET (same email submitted more than once — keep latest)
+*/
+function markInSheetDuplicates() {
+  const byEmail = {};
+  parsedRows.forEach(r => {
+    if (!r.emailId) return;
+    (byEmail[r.emailId] = byEmail[r.emailId] || []).push(r);
+  });
+  Object.values(byEmail).forEach(group => {
+    if (group.length < 2) return;
+    // Latest by timestamp string parse; fall back to row order if unparsable
+    const sorted = [...group].sort((a, b) => {
+      const ta = Date.parse(a.timestamp), tb = Date.parse(b.timestamp);
+      if (!isNaN(ta) && !isNaN(tb)) return ta - tb;
+      return a.rowNum - b.rowNum;
+    });
+    sorted.slice(0, -1).forEach(r => {
+      r.skipReason = "Duplicate submission in sheet — superseded by a later row with the same email";
+      r.include = false;
+    });
+  });
+}
+
+/* 
+   PARSE BUTTON
+*/
+document.getElementById("parseBtn").addEventListener("click", () => {
+  const raw = document.getElementById("sheetInput").value;
+  parsedRows = parseSheet(raw);
+  markInSheetDuplicates();
+  previewSection.classList.remove("hidden");
+  renderSummary();
+  renderTable();
+  previewSection.scrollIntoView({ behavior: "smooth", block: "start" });
+});
+
+document.getElementById("clearBtn").addEventListener("click", () => {
+  document.getElementById("sheetInput").value = "";
+});
+
+/* 
+   CHECK AGAINST EXISTING DATABASE (registeredEmails)
+ */
+document.getElementById("checkExistingBtn").addEventListener("click", async () => {
+  if (!firebaseReady) { alert("Still connecting to Firebase — wait a moment and try again."); return; }
+  const btn = document.getElementById("checkExistingBtn");
+  btn.disabled = true;
+  btn.textContent = "Checking…";
+
+  for (const r of parsedRows) {
+    if (!r.emailId || r.errors.length || r.skipReason) continue;
+    try {
+      const snap = await fsGetDoc(fsDoc(db, "registeredEmails", r.emailId));
+      if (snap.exists()) {
+        r.skipReason = "Already registered in the database — skipped";
+        r.include = false;
+      }
+    } catch (err) {
+      console.error("Existence check failed for", r.email, err);
+    }
+  }
+
+  btn.disabled = false;
+  btn.textContent = "Re-check existing emails";
+  renderSummary();
+  renderTable();
+});
+
+/*
+   IMPORT
+*/
+function log(msg, cls) {
+  logBox.classList.remove("hidden");
+  const line = document.createElement("div");
+  line.className = "log-line " + (cls || "");
+  line.textContent = msg;
+  logBox.appendChild(line);
+  logBox.scrollTop = logBox.scrollHeight;
+}
+
+function toRegisteredAtValue(timestampStr) {
+  const d = new Date(timestampStr);
+  if (isNaN(d.getTime())) return fsServerTimestamp();
+  return fsTimestamp.fromDate(d);
+}
+
+importBtn.addEventListener("click", async () => {
+  if (!firebaseReady) return;
+  const rowsToImport = parsedRows.filter(r => r.include && r.errors.length === 0 && !r.skipReason);
+  if (!rowsToImport.length) return;
+
+  if (!confirm(`This will write ${rowsToImport.length} player(s) to Firestore (players + publicPlayers + registeredEmails). Continue?`)) return;
+
+  importBtn.disabled = true;
+  importHint.textContent = "Importing…";
+  logBox.innerHTML = "";
+  logBox.classList.remove("hidden");
+
+  const CHUNK_SIZE = 100; // 100 players x 3 writes = 300 ops per batch, safely under Firestore's 500 limit
+  let successCount = 0, failCount = 0;
+
+  for (let i = 0; i < rowsToImport.length; i += CHUNK_SIZE) {
+    const chunk = rowsToImport.slice(i, i + CHUNK_SIZE);
+    const batch = fsWriteBatch(db);
+
+    for (const r of chunk) {
+      try {
+        // Final race-condition check right before batching this doc
+        const existing = await fsGetDoc(fsDoc(db, "registeredEmails", r.emailId));
+        if (existing.exists()) {
+          log(`SKIP  ${r.fullName} (${r.email}) — already exists`, "log-skip");
+          continue;
+        }
+
+        const newDocRef = fsDoc(fsCollection(db, "players"));
+        const playerId = newDocRef.id;
+        const registeredAt = toRegisteredAtValue(r.timestamp);
+        const auctionStatus = r.role === "owner" ? "not_applicable" : "unsold";
+
+        const playersData = {
+          fullName: r.fullName,
+          email: r.email,
+          contactNumber: r.contactNumber,
+          role: r.role,
+          batch: r.batch,
+          hall: r.hall,
+          preferredPositions: r.preferredPositions,
+          photoLink: r.photoLink,
+          skillRating: r.skillRating,
+          isOwnerEligible: r.isOwnerEligible,
+          registeredAt,
+          status: "registered",
+          teamId: null,
+          soldPrice: null,
+          auctionStatus
+        };
+
+        const publicData = {
+          fullName: r.fullName,
+          photoLink: r.photoLink,
+          batch: r.batch,
+          hall: r.hall,
+          role: r.role,
+          preferredPositions: r.preferredPositions,
+          teamId: null,
+          teamName: null,
+          status: "registered"
+        };
+
+        batch.set(fsDoc(db, "players", playerId), playersData);
+        batch.set(fsDoc(db, "publicPlayers", playerId), publicData);
+        batch.set(fsDoc(db, "registeredEmails", r.emailId), { exists: true, registeredAt: fsServerTimestamp() });
+
+        successCount++;
+        log(`OK    ${r.fullName} (${r.email}) → ${r.role}, batch ${r.batch}`, "log-ok");
+      } catch (err) {
+        failCount++;
+        log(`ERROR ${r.fullName} (${r.email}) — ${err.message}`, "log-err");
+      }
+    }
+
+    try {
+      await batch.commit();
+    } catch (err) {
+      log(`ERROR committing batch starting at row ${chunk[0]?.rowNum} — ${err.message}`, "log-err");
+    }
+  }
+
+  importHint.textContent = `Done — ${successCount} imported, ${failCount} failed.`;
+  log(`\nFinished. ${successCount} imported, ${failCount} failed.`, successCount ? "log-ok" : "log-err");
+  importBtn.disabled = false;
+});
+
+/* 
+   FIREBASE INIT
+*/
+(async function initFirebase() {
+  try {
+    const [{ db: dbInstance }, firestoreMod] = await Promise.all([
+      import("../assets/js/firebase-config.js"),
+      import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js")
+    ]);
+    db = dbInstance;
+    fsDoc = firestoreMod.doc;
+    fsGetDoc = firestoreMod.getDoc;
+    fsWriteBatch = firestoreMod.writeBatch;
+    fsServerTimestamp = firestoreMod.serverTimestamp;
+    fsCollection = firestoreMod.collection;
+    fsTimestamp = firestoreMod.Timestamp;
+    firebaseReady = true;
+    importHint.textContent = "Connected to Firebase — ready to import.";
+    renderSummary();
+  } catch (err) {
+    console.error("Firebase failed to load:", err);
+    importHint.textContent = "Couldn't connect to Firebase. Serve this file through a local web server (e.g. Live Server) or your live site — it won't work opened directly from disk.";
+  }
+})();
+</script>
+
+</body>
+</html>
