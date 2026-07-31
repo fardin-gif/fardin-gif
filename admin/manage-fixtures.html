@@ -1,0 +1,3095 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Manage Fixtures — PHY-LIGA Admin</title>
+    <meta name="description" content="PHY-LIGA Season 01 — create fixtures, assign referees, run the live scoreboard, and finalize results." />
+    <link rel="icon" type="image/png" href="admin.png" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --clr-canvas: #162235;
+            --clr-surface: #1E2D42;
+            --clr-surface-alt: #253850;
+            --clr-accent-primary: #A1C4C7;
+            --clr-accent-interactive: #34DFEC;
+            --clr-highlight: #2A8042;
+            --clr-danger: #E24C4C;
+            --clr-paused: #F3A65C;
+            --clr-delayed: #F0C850;
+            --clr-text-muted: #7E8B9B;
+            --clr-text-primary: #EAF2F2;
+            --radius-md: 12px;
+            --radius-lg: 20px;
+            --shadow-glow: 0 0 24px rgba(52, 223, 236, 0.15);
+            --font-display: 'Orbitron', sans-serif;
+            --font-body: 'Inter', sans-serif;
+            --font-mono: 'IBM Plex Mono', monospace;
+            --header-height: 64px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        html {
+            scroll-behavior: smooth;
+            -webkit-text-size-adjust: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            background-color: var(--clr-canvas);
+            background-image:
+                radial-gradient(circle at 15% 10%, rgba(52, 223, 236, 0.06), transparent 40%),
+                radial-gradient(circle at 85% 30%, rgba(42, 128, 66, 0.08), transparent 45%);
+            color: var(--clr-text-primary);
+            font-family: var(--font-body);
+            line-height: 1.55;
+            min-height: 100vh;
+            overflow-x: hidden;
+            width: 100%;
+            padding-top: var(--header-height);
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+        ::selection {
+            background: var(--clr-accent-interactive);
+            color: var(--clr-canvas);
+        }
+        :focus-visible {
+            outline: 2px solid var(--clr-accent-interactive);
+            outline-offset: 3px;
+        }
+        .hidden {
+            display: none !important;
+        }
+
+        /* ---------- HEADER ---------- */
+        header.site-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 5vw;
+            height: var(--header-height);
+            background: rgba(22, 34, 53, 0.94);
+            backdrop-filter: blur(14px);
+            border-bottom: 1px solid rgba(161, 196, 199, 0.12);
+            gap: 8px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .brand {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            min-width: 0;
+        }
+        .logo-img {
+            display: block;
+            height: 32px;
+            width: auto;
+            max-width: 120px;
+            flex-shrink: 1;
+        }
+        .brand .season-tag {
+            font-family: var(--font-mono);
+            font-size: 0.62rem;
+            color: var(--clr-text-muted);
+            border: 1px solid rgba(161, 196, 199, 0.25);
+            padding: 2px 8px;
+            border-radius: 20px;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .header-nav {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex: 1;
+            justify-content: center;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            padding: 0 4px;
+        }
+        .header-nav::-webkit-scrollbar {
+            display: none;
+        }
+
+        .nav-link {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--clr-text-muted);
+            padding: 6px 12px;
+            border-radius: 999px;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+            letter-spacing: 0.03em;
+            border: 1px solid transparent;
+        }
+        .nav-link:hover {
+            color: var(--clr-text-primary);
+            border-color: rgba(161, 196, 199, 0.2);
+        }
+        .nav-link.active {
+            color: var(--clr-accent-interactive);
+            border-color: rgba(52, 223, 236, 0.3);
+            background: rgba(52, 223, 236, 0.06);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .account-chip {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--clr-accent-primary);
+            border: 1px solid rgba(161, 196, 199, 0.2);
+            padding: 5px 10px;
+            border-radius: 20px;
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            display: none;
+        }
+
+        .btn-ghost-sm {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--clr-accent-primary);
+            background: transparent;
+            border: 1px solid rgba(161, 196, 199, 0.2);
+            border-radius: 999px;
+            padding: 6px 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            min-height: 32px;
+        }
+        .btn-ghost-sm:hover {
+            border-color: var(--clr-accent-interactive);
+            color: var(--clr-accent-interactive);
+        }
+        .btn-ghost-sm.is-active {
+            border-color: var(--clr-accent-interactive);
+            color: var(--clr-accent-interactive);
+            background: rgba(52, 223, 236, 0.08);
+        }
+
+        .hamburger-btn {
+            display: none;
+            background: transparent;
+            border: 1px solid rgba(161, 196, 199, 0.2);
+            border-radius: 8px;
+            color: var(--clr-text-primary);
+            font-size: 1.3rem;
+            padding: 4px 8px;
+            cursor: pointer;
+            line-height: 1;
+            min-height: 34px;
+            min-width: 38px;
+        }
+        .hamburger-btn:hover {
+            border-color: var(--clr-accent-interactive);
+            color: var(--clr-accent-interactive);
+        }
+
+        .nav-overlay {
+            display: none;
+            position: fixed;
+            top: var(--header-height);
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 999;
+            background: rgba(10, 16, 26, 0.7);
+            backdrop-filter: blur(4px);
+        }
+        .nav-overlay.open {
+            display: block;
+        }
+
+        .nav-drawer {
+            position: fixed;
+            top: var(--header-height);
+            right: 0;
+            bottom: 0;
+            width: 280px;
+            max-width: 80vw;
+            background: var(--clr-surface);
+            border-left: 1px solid rgba(161, 196, 199, 0.15);
+            padding: 20px 18px;
+            transform: translateX(100%);
+            transition: transform 0.25s ease;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+        .nav-drawer.open {
+            transform: translateX(0);
+        }
+        .nav-drawer .nav-link {
+            display: block;
+            padding: 12px 14px;
+            font-size: 0.85rem;
+            border-radius: var(--radius-md);
+            border: 1px solid transparent;
+            margin-bottom: 4px;
+        }
+        .nav-drawer .nav-link:hover {
+            border-color: rgba(161, 196, 199, 0.2);
+            background: rgba(255, 255, 255, 0.03);
+        }
+        .nav-drawer .nav-link.active {
+            border-color: rgba(52, 223, 236, 0.3);
+            background: rgba(52, 223, 236, 0.06);
+        }
+        .nav-drawer .drawer-divider {
+            height: 1px;
+            background: rgba(161, 196, 199, 0.12);
+            margin: 14px 0;
+        }
+        .nav-drawer .drawer-account {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--clr-text-muted);
+            padding: 8px 14px;
+            word-break: break-all;
+        }
+        .nav-drawer .drawer-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .nav-drawer .drawer-actions .btn-ghost-sm {
+            text-align: center;
+            padding: 10px;
+            font-size: 0.78rem;
+            width: 100%;
+        }
+
+        /* ---------- PAGE CHECKING ---------- */
+        .page-checking {
+            text-align: center;
+            padding: 120px 20px;
+            color: var(--clr-text-muted);
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+        }
+
+        /* ---------- PAGE INTRO ---------- */
+        .page-intro {
+            max-width: 1180px;
+            margin: 20px auto 0;
+            padding: 0 5vw;
+        }
+        .page-intro .eyebrow {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--clr-accent-interactive);
+            margin-bottom: 8px;
+        }
+        .page-intro h1 {
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: clamp(1.3rem, 3vw, 2rem);
+            letter-spacing: 0.02em;
+            margin-bottom: 6px;
+        }
+        .page-intro .page-desc {
+            color: var(--clr-text-muted);
+            font-size: 0.85rem;
+            max-width: 680px;
+        }
+
+        /* ---------- SECTION SHELL ---------- */
+        .section-wrap {
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 20px 5vw 0;
+        }
+        .section-heading-row {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+        .section-heading-row .eyebrow {
+            font-family: var(--font-mono);
+            font-size: 0.68rem;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--clr-accent-interactive);
+            margin-bottom: 4px;
+            display: block;
+        }
+        .section-heading-row h2 {
+            font-family: var(--font-display);
+            font-size: 1rem;
+            letter-spacing: 0.02em;
+        }
+        #fixtureCountNote {
+            font-family: var(--font-mono);
+            font-size: 0.74rem;
+            color: var(--clr-text-muted);
+        }
+        #fixtureCountNote strong {
+            color: var(--clr-accent-interactive);
+        }
+
+        /* ---------- FORM CARD ---------- */
+        .form-card {
+            padding: clamp(16px, 3vw, 28px);
+            background: rgba(30, 45, 66, 0.55);
+            border: 1px solid rgba(161, 196, 199, 0.15);
+            border-radius: var(--radius-lg);
+            backdrop-filter: blur(10px);
+            margin-bottom: 36px;
+        }
+
+        fieldset {
+            border: none;
+            margin-bottom: 18px;
+        }
+        legend {
+            font-family: var(--font-display);
+            font-size: 0.8rem;
+            letter-spacing: 0.02em;
+            color: var(--clr-accent-interactive);
+            margin-bottom: 10px;
+            padding-bottom: 4px;
+            border-bottom: 1px solid rgba(161, 196, 199, 0.15);
+            width: 100%;
+        }
+        .field {
+            margin-bottom: 14px;
+        }
+        .field label.field-label {
+            display: block;
+            font-size: 0.76rem;
+            font-weight: 600;
+            color: var(--clr-accent-primary);
+            margin-bottom: 5px;
+        }
+        .field label.field-label .optional-tag {
+            font-family: var(--font-mono);
+            font-weight: 400;
+            color: var(--clr-text-muted);
+            font-size: 0.64rem;
+            margin-left: 4px;
+        }
+        .field .hint {
+            font-size: 0.7rem;
+            color: var(--clr-text-muted);
+            margin-top: 4px;
+        }
+
+        input[type="text"],
+        input[type="url"],
+        input[type="tel"],
+        input[type="email"],
+        input[type="number"],
+        input[type="date"],
+        input[type="time"],
+        select {
+            width: 100%;
+            padding: 10px 12px;
+            background: var(--clr-surface);
+            border: 1px solid rgba(161, 196, 199, 0.2);
+            border-radius: var(--radius-md);
+            color: var(--clr-text-primary);
+            font-family: var(--font-body);
+            font-size: 0.84rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        input:focus,
+        select:focus {
+            border-color: var(--clr-accent-interactive);
+            box-shadow: 0 0 0 3px rgba(52, 223, 236, 0.15);
+            outline: none;
+        }
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2334DFEC' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            cursor: pointer;
+        }
+        ::-webkit-calendar-picker-indicator {
+            filter: invert(0.8) sepia(1) saturate(3) hue-rotate(140deg);
+            cursor: pointer;
+        }
+
+        .field-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .field-grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 16px;
+        }
+
+        .alert {
+            display: none;
+            padding: 10px 14px;
+            border-radius: var(--radius-md);
+            font-size: 0.78rem;
+            margin-bottom: 14px;
+            border: 1px solid transparent;
+        }
+        .alert.show {
+            display: block;
+        }
+        .alert-error {
+            background: rgba(226, 76, 76, 0.1);
+            border-color: rgba(226, 76, 76, 0.4);
+            color: #FFB4B4;
+        }
+        .alert-warning {
+            background: rgba(226, 176, 76, 0.1);
+            border-color: rgba(226, 176, 76, 0.4);
+            color: #F3D28A;
+        }
+        .alert-info {
+            background: rgba(52, 223, 236, 0.08);
+            border-color: rgba(52, 223, 236, 0.3);
+            color: #AFF0F5;
+        }
+        .alert-success {
+            background: rgba(42, 128, 66, 0.15);
+            border-color: rgba(42, 128, 66, 0.5);
+            color: #9CF0B0;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 4px;
+        }
+        .btn-submit {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 0.8rem;
+            letter-spacing: 0.02em;
+            color: var(--clr-canvas);
+            background: linear-gradient(135deg, var(--clr-accent-interactive), #6BEFF7);
+            border: none;
+            padding: 11px 24px;
+            border-radius: 999px;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(52, 223, 236, 0.3);
+            transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+        }
+        .btn-submit:hover:not(:disabled) {
+            transform: scale(1.02);
+        }
+        .btn-submit:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        .submit-status {
+            font-size: 0.72rem;
+            color: var(--clr-text-muted);
+            font-family: var(--font-mono);
+        }
+
+        /* ---------- FILTER BAR ---------- */
+        .filter-bar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+            align-items: center;
+        }
+        .filter-bar select,
+        .filter-bar input[type="text"] {
+            width: auto;
+            min-width: 130px;
+            padding: 8px 10px;
+            font-size: 0.76rem;
+            flex: 1 1 120px;
+        }
+        .filter-bar .filter-search {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        /* ---------- ROUND GROUPS ---------- */
+        .round-group {
+            margin-bottom: 30px;
+        }
+        .round-group:last-child {
+            margin-bottom: 0;
+        }
+        .round-group-title {
+            font-family: var(--font-display);
+            font-size: 0.9rem;
+            letter-spacing: 0.03em;
+            color: var(--clr-accent-primary);
+            margin-bottom: 12px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid rgba(161, 196, 199, 0.15);
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+        }
+        .round-group-title .rg-count {
+            font-family: var(--font-mono);
+            font-size: 0.66rem;
+            color: var(--clr-text-muted);
+            font-weight: 400;
+        }
+
+        .fixtures-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 16px;
+        }
+
+        /* ---------- FIXTURE CARD ---------- */
+        .fixture-card {
+            position: relative;
+            background: rgba(30, 45, 66, 0.55);
+            border: 1px solid rgba(161, 196, 199, 0.15);
+            border-radius: var(--radius-lg);
+            backdrop-filter: blur(10px);
+            padding: 16px;
+            transition: border-color 0.2s ease, transform 0.2s ease;
+        }
+        .fixture-card:hover {
+            transform: translateY(-2px);
+        }
+        .fixture-card.is-live {
+            border-color: rgba(42, 128, 66, 0.55);
+            box-shadow: 0 0 22px rgba(42, 128, 66, 0.18);
+        }
+        .fixture-card.is-paused {
+            border-color: rgba(243, 166, 92, 0.55);
+            box-shadow: 0 0 22px rgba(243, 166, 92, 0.16);
+        }
+
+        .fc-top-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .fc-match-tag {
+            font-family: var(--font-mono);
+            font-size: 0.64rem;
+            color: var(--clr-text-muted);
+        }
+        .fc-actions {
+            display: flex;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
+        .row-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            background: transparent;
+            border: 1px solid rgba(161, 196, 199, 0.2);
+            color: var(--clr-text-muted);
+            cursor: pointer;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        .row-edit-btn:hover {
+            border-color: var(--clr-accent-interactive);
+            color: var(--clr-accent-interactive);
+        }
+        .row-delete-btn:hover {
+            border-color: var(--clr-danger);
+            color: var(--clr-danger);
+        }
+
+        .fc-vs-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .fc-team {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            flex: 1;
+            min-width: 0;
+            text-align: center;
+        }
+        .fc-team-logo {
+            position: relative;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            overflow: hidden;
+            background: linear-gradient(135deg, rgba(52, 223, 236, 0.18), rgba(42, 128, 66, 0.18));
+            border: 1px solid rgba(161, 196, 199, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .fc-team-logo img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+        }
+        .fc-team-logo-fallback {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: var(--clr-accent-interactive);
+        }
+        .fc-team-name {
+            font-size: 0.74rem;
+            font-weight: 600;
+            line-height: 1.2;
+            word-break: break-word;
+        }
+        .fc-score-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            flex-shrink: 0;
+            padding: 0 4px;
+        }
+        .fc-score {
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--clr-text-primary);
+            white-space: nowrap;
+        }
+        .fc-score .sep {
+            color: var(--clr-text-muted);
+            margin: 0 3px;
+        }
+        .fc-vs-label {
+            font-family: var(--font-mono);
+            font-size: 0.6rem;
+            color: var(--clr-text-muted);
+        }
+        .fc-minute {
+            font-family: var(--font-mono);
+            font-size: 0.6rem;
+            color: #9CF0B0;
+            margin-top: 2px;
+        }
+
+        .fc-meta-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px 12px;
+            font-size: 0.7rem;
+            color: var(--clr-text-muted);
+            margin-bottom: 10px;
+        }
+        .fc-meta-row .meta-icon {
+            opacity: 0.7;
+            margin-right: 3px;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-family: var(--font-mono);
+            font-size: 0.6rem;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 999px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+        }
+        .status-badge.st-upcoming {
+            color: var(--clr-accent-primary);
+            background: rgba(161, 196, 199, 0.1);
+            border: 1px solid rgba(161, 196, 199, 0.25);
+        }
+        .status-badge.st-live {
+            color: #9CF0B0;
+            background: rgba(42, 128, 66, 0.18);
+            border: 1px solid rgba(42, 128, 66, 0.45);
+        }
+        .status-badge.st-halftime {
+            color: #F3D28A;
+            background: rgba(226, 176, 76, 0.12);
+            border: 1px solid rgba(226, 176, 76, 0.35);
+        }
+        .status-badge.st-paused {
+            color: var(--clr-paused);
+            background: rgba(243, 166, 92, 0.14);
+            border: 1px solid rgba(243, 166, 92, 0.4);
+        }
+        .status-badge.st-postponed {
+            color: #FFB4B4;
+            background: rgba(226, 76, 76, 0.12);
+            border: 1px solid rgba(226, 76, 76, 0.35);
+        }
+        .status-badge.st-delayed {
+            color: var(--clr-delayed);
+            background: rgba(240, 200, 80, 0.12);
+            border: 1px solid rgba(240, 200, 80, 0.35);
+        }
+        .status-badge.st-completed {
+            color: var(--clr-accent-interactive);
+            background: rgba(52, 223, 236, 0.08);
+            border: 1px solid rgba(52, 223, 236, 0.25);
+        }
+        .live-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #9CF0B0;
+            animation: pulseDot 1.4s infinite;
+        }
+        @keyframes pulseDot {
+            0%,
+            100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.25;
+            }
+        }
+
+        .fc-prelive-actions {
+            display: flex;
+            gap: 6px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        .fc-go-live-btn {
+            flex: 1;
+            min-width: 100px;
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            padding: 8px 12px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s ease;
+            color: var(--clr-canvas);
+            background: linear-gradient(135deg, #9CF0B0, #2A8042);
+            border: none;
+        }
+        .fc-go-live-btn:hover:not(:disabled) {
+            transform: scale(1.01);
+        }
+        .fc-go-live-btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+        .fc-mini-status-btn {
+            font-family: var(--font-mono);
+            font-size: 0.66rem;
+            padding: 8px 10px;
+            border-radius: var(--radius-md);
+            background: transparent;
+            border: 1px solid rgba(161, 196, 199, 0.2);
+            color: var(--clr-text-muted);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        .fc-mini-status-btn:hover {
+            border-color: var(--clr-accent-interactive);
+            color: var(--clr-accent-interactive);
+        }
+
+        .fc-manage-live-btn {
+            width: 100%;
+            margin-top: 10px;
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            padding: 8px 12px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s ease;
+            background: rgba(42, 128, 66, 0.1);
+            border: 1px solid rgba(42, 128, 66, 0.4);
+            color: #9CF0B0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .fc-manage-live-btn:hover {
+            background: rgba(42, 128, 66, 0.18);
+        }
+        .fc-manage-live-btn.state-paused {
+            background: rgba(243, 166, 92, 0.1);
+            border-color: rgba(243, 166, 92, 0.4);
+            color: var(--clr-paused);
+        }
+        .fc-manage-live-btn.state-paused:hover {
+            background: rgba(243, 166, 92, 0.18);
+        }
+
+        /* ---------- LIVE PANEL ---------- */
+        .live-panel {
+            margin-top: 10px;
+            padding: 14px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px dashed rgba(42, 128, 66, 0.4);
+            border-radius: var(--radius-md);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .lp-section-label {
+            font-family: var(--font-mono);
+            font-size: 0.62rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--clr-text-muted);
+            margin-bottom: 2px;
+        }
+        .lp-inline-label {
+            font-family: var(--font-mono);
+            font-size: 0.62rem;
+            color: var(--clr-text-muted);
+            margin-bottom: 4px;
+        }
+
+        .lp-status-row {
+            display: flex;
+            gap: 4px;
+        }
+        .lp-status-btn {
+            flex: 1;
+            font-family: var(--font-mono);
+            font-size: 0.64rem;
+            font-weight: 600;
+            padding: 6px 4px;
+            border-radius: 999px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: transparent;
+            border: 1px solid rgba(161, 196, 199, 0.2);
+            color: var(--clr-text-muted);
+        }
+        .lp-status-btn.active-live {
+            background: rgba(42, 128, 66, 0.22);
+            border-color: rgba(42, 128, 66, 0.6);
+            color: #9CF0B0;
+        }
+        .lp-status-btn.active-halftime {
+            background: rgba(226, 176, 76, 0.16);
+            border-color: rgba(226, 176, 76, 0.5);
+            color: #F3D28A;
+        }
+        .lp-status-btn.active-paused {
+            background: rgba(243, 166, 92, 0.18);
+            border-color: rgba(243, 166, 92, 0.55);
+            color: var(--clr-paused);
+        }
+
+        .lp-score-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+        }
+        .lp-score-team {
+            text-align: center;
+        }
+        .lp-score-team .lp-team-name {
+            font-size: 0.7rem;
+            color: var(--clr-text-muted);
+            margin-bottom: 4px;
+            max-width: 100px;
+        }
+        .lp-score-num {
+            font-family: var(--font-mono);
+            font-weight: 800;
+            font-size: 1.6rem;
+            color: #9CF0B0;
+        }
+        .lp-score-btns {
+            display: flex;
+            gap: 4px;
+            margin-top: 6px;
+            justify-content: center;
+        }
+        .lp-mini-btn {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(161, 196, 199, 0.25);
+            color: var(--clr-text-primary);
+            cursor: pointer;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .lp-mini-btn:hover {
+            border-color: var(--clr-accent-interactive);
+            color: var(--clr-accent-interactive);
+        }
+        .lp-divider {
+            color: var(--clr-text-muted);
+            font-family: var(--font-mono);
+            font-size: 1.1rem;
+        }
+
+        .lp-row {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .lp-row input[type="text"],
+        .lp-row select {
+            flex: 1;
+            min-width: 80px;
+            padding: 7px 8px;
+            font-size: 0.74rem;
+        }
+        .lp-row .btn-ghost-sm {
+            flex-shrink: 0;
+            padding: 7px 12px;
+            font-size: 0.68rem;
+        }
+        .lp-hint {
+            font-size: 0.66rem;
+            color: var(--clr-text-muted);
+            margin: -4px 0 0;
+        }
+
+        .lp-events-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        .lp-event-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.72rem;
+            padding: 5px 8px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 6px;
+        }
+        .lp-event-row .ev-min {
+            font-family: var(--font-mono);
+            color: var(--clr-text-muted);
+            width: 34px;
+            flex-shrink: 0;
+        }
+        .lp-event-row .ev-icon {
+            width: 16px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        .lp-event-empty {
+            text-align: center;
+            font-size: 0.72rem;
+            color: var(--clr-text-muted);
+            padding: 8px;
+        }
+
+        .lp-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+        .lp-stat-block {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(161, 196, 199, 0.12);
+            border-radius: var(--radius-md);
+            padding: 8px 6px;
+            text-align: center;
+        }
+        .lp-stat-block .lp-stat-label {
+            font-family: var(--font-mono);
+            font-size: 0.56rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--clr-text-muted);
+            margin-bottom: 6px;
+        }
+        .lp-stat-count-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+        .lp-stat-count-row:not(:last-child) {
+            margin-bottom: 4px;
+        }
+        .lp-stat-num {
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 0.85rem;
+            width: 18px;
+            text-align: center;
+        }
+        .lp-stat-mini-btn {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(161, 196, 199, 0.2);
+            color: var(--clr-text-primary);
+            cursor: pointer;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .lp-stat-mini-btn:hover {
+            border-color: var(--clr-accent-interactive);
+            color: var(--clr-accent-interactive);
+        }
+
+        .lp-finalize-box {
+            padding: 12px;
+            background: rgba(226, 76, 76, 0.05);
+            border: 1px solid rgba(226, 76, 76, 0.2);
+            border-radius: var(--radius-md);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .lp-finalize-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .lp-finalize-row input[type="number"] {
+            width: 52px;
+            text-align: center;
+            padding: 6px;
+            flex: none;
+        }
+        .lp-finalize-row span.fname {
+            font-size: 0.7rem;
+            max-width: 80px;
+            text-align: center;
+        }
+        .lp-finalize-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .lp-finalize-actions .btn-submit {
+            padding: 7px 14px;
+            font-size: 0.7rem;
+        }
+
+        .btn-danger-ghost {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: #FFB4B4;
+            background: transparent;
+            border: 1px solid rgba(226, 76, 76, 0.35);
+            border-radius: 999px;
+            padding: 7px 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn-danger-ghost:hover {
+            background: rgba(226, 76, 76, 0.1);
+            border-color: var(--clr-danger);
+        }
+
+        .state-box {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--clr-text-muted);
+        }
+        .state-box .state-icon {
+            font-size: 1.6rem;
+            margin-bottom: 8px;
+        }
+        .state-box h3 {
+            font-family: var(--font-display);
+            font-size: 0.95rem;
+            color: var(--clr-text-primary);
+            margin-bottom: 4px;
+        }
+        .state-box p {
+            font-size: 0.8rem;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        .loading-strip {
+            text-align: center;
+            padding: 30px 20px;
+            color: var(--clr-text-muted);
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+        }
+
+        /* ---------- MODAL ---------- */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            background: rgba(10, 16, 26, 0.75);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .modal-card {
+            width: 100%;
+            max-width: 560px;
+            max-height: 88vh;
+            overflow-y: auto;
+            background: #1b2a3f;
+            border: 1px solid rgba(161, 196, 199, 0.2);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-glow);
+            padding: clamp(18px, 3.5vw, 28px);
+        }
+        .modal-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        .modal-head h2 {
+            font-family: var(--font-display);
+            font-size: 1rem;
+            letter-spacing: 0.02em;
+        }
+        .modal-close {
+            background: none;
+            border: 1px solid rgba(161, 196, 199, 0.25);
+            border-radius: 8px;
+            color: var(--clr-text-muted);
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        .modal-close:hover {
+            border-color: var(--clr-accent-interactive);
+            color: var(--clr-accent-interactive);
+        }
+        .modal-actions {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .modal-actions-right {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        footer.site-footer {
+            text-align: center;
+            padding: 20px 5vw;
+            border-top: 1px solid rgba(161, 196, 199, 0.12);
+            font-size: 0.72rem;
+            color: var(--clr-text-muted);
+            margin-top: 20px;
+        }
+        footer.site-footer a {
+            color: var(--clr-accent-interactive);
+        }
+
+        /* ---------- RESPONSIVE ---------- */
+        @media (min-width: 769px) {
+            .account-chip {
+                display: inline-block;
+            }
+            .nav-drawer,
+            .nav-overlay {
+                display: none !important;
+            }
+            .hamburger-btn {
+                display: none !important;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .header-nav .nav-link {
+                font-size: 0.62rem;
+                padding: 5px 8px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            :root {
+                --header-height: 58px;
+            }
+            .header-nav {
+                display: none;
+            }
+            .hamburger-btn {
+                display: block;
+            }
+            .account-chip {
+                display: none;
+            }
+            .btn-ghost-sm {
+                font-size: 0.65rem;
+                padding: 5px 10px;
+                min-height: 28px;
+            }
+            .logo-img {
+                height: 26px;
+                max-width: 100px;
+            }
+            .brand .season-tag {
+                font-size: 0.55rem;
+                padding: 1px 6px;
+            }
+            .header-actions {
+                gap: 4px;
+            }
+
+            .field-grid-2,
+            .field-grid-3 {
+                grid-template-columns: 1fr;
+            }
+
+            .fixtures-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .lp-stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .lp-score-row {
+                gap: 10px;
+            }
+            .lp-score-num {
+                font-size: 1.3rem;
+            }
+
+            .filter-bar select,
+            .filter-bar input[type="text"] {
+                min-width: 0;
+                flex: 1 1 40%;
+            }
+
+            .page-intro {
+                margin-top: 10px;
+            }
+            .page-intro h1 {
+                font-size: 1.1rem;
+            }
+            .page-intro .page-desc {
+                font-size: 0.78rem;
+            }
+            .section-wrap {
+                padding: 12px 4vw 0;
+            }
+            .form-card {
+                padding: 14px;
+                margin-bottom: 24px;
+            }
+            .fc-team-name {
+                font-size: 0.68rem;
+            }
+            .fc-score {
+                font-size: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            :root {
+                --header-height: 54px;
+            }
+            .logo-img {
+                height: 22px;
+                max-width: 80px;
+            }
+            .brand .season-tag {
+                font-size: 0.5rem;
+                padding: 1px 4px;
+            }
+            .btn-ghost-sm {
+                font-size: 0.58rem;
+                padding: 4px 8px;
+                min-height: 24px;
+            }
+            .hamburger-btn {
+                font-size: 1.1rem;
+                min-height: 28px;
+                min-width: 32px;
+                padding: 2px 6px;
+            }
+
+            .fixture-card {
+                padding: 12px;
+            }
+            .fc-vs-row {
+                gap: 4px;
+            }
+            .fc-team-logo {
+                width: 32px;
+                height: 32px;
+            }
+            .fc-team-name {
+                font-size: 0.62rem;
+            }
+            .fc-score {
+                font-size: 0.9rem;
+            }
+
+            .live-panel {
+                padding: 10px;
+            }
+            .lp-score-num {
+                font-size: 1.1rem;
+            }
+            .lp-finalize-row input[type="number"] {
+                width: 44px;
+            }
+            .lp-finalize-row span.fname {
+                max-width: 60px;
+                font-size: 0.62rem;
+            }
+
+            .modal-card {
+                padding: 14px;
+            }
+            .modal-head h2 {
+                font-size: 0.9rem;
+            }
+
+            .nav-drawer {
+                width: 240px;
+                padding: 14px 12px;
+            }
+            .nav-drawer .nav-link {
+                font-size: 0.76rem;
+                padding: 10px 12px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .fc-vs-row {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            .fc-team {
+                flex: 0 1 40%;
+            }
+            .fc-score-block {
+                order: 3;
+                width: 100%;
+                flex-direction: row;
+                justify-content: center;
+                gap: 8px;
+                padding-top: 6px;
+            }
+            .fc-score {
+                font-size: 1.1rem;
+            }
+            .fc-vs-label {
+                display: none;
+            }
+            .lp-score-team .lp-team-name {
+                max-width: 60px;
+                font-size: 0.62rem;
+            }
+            .lp-score-num {
+                font-size: 0.95rem;
+            }
+            .lp-divider {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="site-header">
+        <div class="header-left">
+            <a href="../index.html" class="brand">
+                <img src="../logo.png" alt="PHY LIGA Logo" class="logo-img" />
+                <span class="season-tag">Admin</span>
+            </a>
+        </div>
+
+        <nav class="header-nav" id="mainNav">
+            <a href="./dashboard.html" class="nav-link">Dashboard</a>
+            <a href="./manage-players.html" class="nav-link">Players</a>
+            <a href="./manage-teams.html" class="nav-link">Teams</a>
+            <a href="./manage-auction.html" class="nav-link">Auction</a>
+            <a href="./manage-fixtures.html" class="nav-link active">Fixtures</a>
+        </nav>
+
+        <div class="header-actions">
+            <span class="account-chip" id="accountChip">…</span>
+            <a href="../index.html" class="btn-ghost-sm">View site</a>
+            <button class="btn-ghost-sm" id="signOutBtn" type="button">Sign out</button>
+            <button class="hamburger-btn" id="hamburgerBtn" type="button" aria-label="Menu">☰</button>
+        </div>
+    </header>
+
+    <div class="nav-overlay" id="navOverlay"></div>
+    <div class="nav-drawer" id="navDrawer">
+        <a href="./dashboard.html" class="nav-link">Dashboard</a>
+        <a href="./manage-players.html" class="nav-link">Manage Players</a>
+        <a href="./manage-teams.html" class="nav-link">Manage Teams</a>
+        <a href="./manage-auction.html" class="nav-link">Manage Auction</a>
+        <a href="./manage-fixtures.html" class="nav-link active">Fixtures &amp; Live Score</a>
+        <div class="drawer-divider"></div>
+        <div class="drawer-account" id="drawerAccount">…</div>
+        <div class="drawer-actions">
+            <a href="../index.html" class="btn-ghost-sm">View site</a>
+            <button class="btn-ghost-sm" id="drawerSignOutBtn" type="button">Sign out</button>
+        </div>
+    </div>
+
+    <div class="page-checking" id="checkingState">Checking session…</div>
+
+    <main id="pageContent" class="hidden">
+
+        <section class="page-intro">
+            <p class="eyebrow">Organizer Console</p>
+            <h1>Manage Fixtures</h1>
+        </section>
+
+        <!-- ============ CREATE FIXTURE ============ -->
+        <section class="section-wrap">
+            <div class="section-heading-row">
+                <div><span class="eyebrow">New Entry</span><h2>Create a Fixture</h2></div>
+            </div>
+
+            <div class="form-card">
+                <div class="alert alert-error" id="createError" role="alert"></div>
+                <div class="alert alert-warning" id="createWarning" role="alert"></div>
+
+                <form id="createFixtureForm" novalidate>
+                    <div class="field-grid-2">
+                        <div class="field">
+                            <label class="field-label" for="matchNumber">Match Number</label>
+                            <input type="number" id="matchNumber" min="1" step="1" required />
+                            <p class="hint">Auto-suggested from the last fixture — feel free to change it.</p>
+                        </div>
+                        <div class="field">
+                            <label class="field-label" for="roundSelect">Round</label>
+                            <select id="roundSelect" required>
+                                <option value="">— Select a round —</option>
+                                <option value="Group Stage">Group Stage</option>
+                                <option value="Quarter Final">Quarter Final</option>
+                                <option value="Semi Final">Semi Final</option>
+                                <option value="Final">Final</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="field-grid-2">
+                        <div class="field">
+                            <label class="field-label" for="teamASelect">Team A</label>
+                            <select id="teamASelect" required><option value="">— Select team —</option></select>
+                        </div>
+                        <div class="field">
+                            <label class="field-label" for="teamBSelect">Team B</label>
+                            <select id="teamBSelect" required><option value="">— Select team —</option></select>
+                        </div>
+                    </div>
+
+                    <div class="field-grid-2">
+                        <div class="field">
+                            <label class="field-label" for="dateInput">Date</label>
+                            <input type="date" id="dateInput" required />
+                        </div>
+                        <div class="field">
+                            <label class="field-label" for="timeInput">Kickoff Time</label>
+                            <input type="time" id="timeInput" required />
+                        </div>
+                    </div>
+
+                    <div class="field-grid-2">
+                        <div class="field">
+                            <label class="field-label" for="venueInput">Venue</label>
+                            <input type="text" id="venueInput" list="venueOptions" placeholder="e.g. DU Physics Ground" required />
+                            <datalist id="venueOptions"></datalist>
+                        </div>
+                        <div class="field">
+                            <label class="field-label" for="refereeInput">Referee <span class="optional-tag">optional</span></label>
+                            <input type="text" id="refereeInput" list="refereeOptions" placeholder="e.g. Dr. Karim Rahman" />
+                            <datalist id="refereeOptions"></datalist>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <span class="submit-status" id="createSubmitStatus"></span>
+                        <button type="submit" class="btn-submit" id="createSubmitBtn">Create Fixture</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- ============ FIXTURES LIST ============ -->
+        <section class="section-wrap">
+            <div class="section-heading-row">
+                <div><span class="eyebrow">Season 01</span><h2>All Fixtures</h2></div>
+                <div id="fixtureCountNote"></div>
+            </div>
+
+            <div class="filter-bar">
+                <select id="filterRound">
+                    <option value="all">All rounds</option>
+                    <option value="Group Stage">Group Stage</option>
+                    <option value="Quarter Final">Quarter Final</option>
+                    <option value="Semi Final">Semi Final</option>
+                    <option value="Final">Final</option>
+                </select>
+                <select id="filterStatus">
+                    <option value="all">All statuses</option>
+                    <option value="upcoming">Upcoming</option>
+                    <option value="postponed">Postponed</option>
+                    <option value="delayed">Delayed</option>
+                    <option value="live">Live / In-play</option>
+                    <option value="completed">Completed</option>
+                </select>
+                <select id="filterTeam"><option value="all">All teams</option></select>
+                <input type="text" id="filterSearch" class="filter-search" placeholder="Search team, venue or referee…" />
+            </div>
+
+            <div id="fixturesListWrap">
+                <div class="loading-strip">Loading fixtures…</div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="site-footer">
+        © 2026 PHY-LIGA · Developed by <a href="https://www.facebook.com/fardin.0112" target="_blank" rel="noopener">Fardin Hossain</a> · Feathered by <a href="https://www.facebook.com/tawkir.hossain.16" target="_blank" rel="noopener">Tawkir Hossain Rahat</a>
+    </footer>
+
+    <!-- ============ EDIT FIXTURE MODAL ============ -->
+    <div class="modal-overlay hidden" id="editOverlay">
+        <div class="modal-card">
+            <div class="modal-head">
+                <h2>Edit Fixture</h2>
+                <button class="modal-close" id="modalCloseBtn" type="button" aria-label="Close">✕</button>
+            </div>
+
+            <div class="alert alert-error" id="editError" role="alert"></div>
+            <div class="alert alert-warning" id="editWarning" role="alert"></div>
+            <div class="alert alert-info" id="editInfo" role="status"></div>
+
+            <form id="editForm" novalidate>
+                <div class="field-grid-2">
+                    <div class="field">
+                        <label class="field-label" for="editMatchNumber">Match Number</label>
+                        <input type="number" id="editMatchNumber" min="1" step="1" required />
+                    </div>
+                    <div class="field">
+                        <label class="field-label" for="editRoundSelect">Round</label>
+                        <select id="editRoundSelect" required>
+                            <option value="">— Select a round —</option>
+                            <option value="Group Stage">Group Stage</option>
+                            <option value="Quarter Final">Quarter Final</option>
+                            <option value="Semi Final">Semi Final</option>
+                            <option value="Final">Final</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="field-grid-2">
+                    <div class="field">
+                        <label class="field-label" for="editTeamASelect">Team A</label>
+                        <select id="editTeamASelect" required><option value="">— Select team —</option></select>
+                    </div>
+                    <div class="field">
+                        <label class="field-label" for="editTeamBSelect">Team B</label>
+                        <select id="editTeamBSelect" required><option value="">— Select team —</option></select>
+                    </div>
+                </div>
+
+                <div class="field-grid-2">
+                    <div class="field">
+                        <label class="field-label" for="editDateInput">Date</label>
+                        <input type="date" id="editDateInput" required />
+                    </div>
+                    <div class="field">
+                        <label class="field-label" for="editTimeInput">Kickoff Time</label>
+                        <input type="time" id="editTimeInput" required />
+                    </div>
+                </div>
+
+                <div class="field-grid-2">
+                    <div class="field">
+                        <label class="field-label" for="editVenueInput">Venue</label>
+                        <input type="text" id="editVenueInput" list="editVenueOptions" required />
+                        <datalist id="editVenueOptions"></datalist>
+                    </div>
+                    <div class="field">
+                        <label class="field-label" for="editRefereeInput">Referee <span class="optional-tag">optional</span></label>
+                        <input type="text" id="editRefereeInput" list="editRefereeOptions" />
+                        <datalist id="editRefereeOptions"></datalist>
+                    </div>
+                </div>
+
+                <fieldset>
+                    <legend>Status &amp; Result</legend>
+                    <div class="field">
+                        <label class="field-label" for="editStatusSelect">Status</label>
+                        <select id="editStatusSelect">
+                            <option value="upcoming">Upcoming</option>
+                            <option value="postponed">Postponed</option>
+                            <option value="delayed">Delayed</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                        <p class="hint">To start or run the live scoreboard (Live / Half-time / Paused), use the fixtures list instead — those in-play states aren't set here. Choosing "Completed" here will end any active live session for this match.</p>
+                    </div>
+                    <div class="field-grid-2 hidden" id="editScoreFieldsRow">
+                        <div class="field">
+                            <label class="field-label" for="editScoreA">Team A Score</label>
+                            <input type="number" id="editScoreA" min="0" step="1" />
+                        </div>
+                        <div class="field">
+                            <label class="field-label" for="editScoreB">Team B Score</label>
+                            <input type="number" id="editScoreB" min="0" step="1" />
+                        </div>
+                    </div>
+                    <p class="hint" id="editStatsHint">Saving a completed result here updates both teams' standings, replacing any previous result recorded for this match.</p>
+                </fieldset>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-danger-ghost" id="deleteFixtureBtn">Delete Fixture</button>
+                    <div class="modal-actions-right">
+                        <span class="submit-status" id="editSubmitStatus"></span>
+                        <button type="button" class="btn-ghost-sm" id="cancelEditBtn">Cancel</button>
+                        <button type="submit" class="btn-submit" id="saveEditBtn">Save Changes</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        // ---- Hamburger menu ----
+        const hamburgerBtn = document.getElementById("hamburgerBtn");
+        const navOverlay = document.getElementById("navOverlay");
+        const navDrawer = document.getElementById("navDrawer");
+
+        function toggleMenu(open) {
+            const isOpen = typeof open === "boolean" ? open : navDrawer.classList.contains("open");
+            if (isOpen) {
+                navDrawer.classList.remove("open");
+                navOverlay.classList.remove("open");
+                document.body.style.overflow = "";
+            } else {
+                navDrawer.classList.add("open");
+                navOverlay.classList.add("open");
+                document.body.style.overflow = "hidden";
+            }
+        }
+
+        hamburgerBtn.addEventListener("click", () => toggleMenu());
+        navOverlay.addEventListener("click", () => toggleMenu(false));
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape" && navDrawer.classList.contains("open")) toggleMenu(false);
+        });
+
+        // ---- Firebase / Auth (imported via dynamic imports) ----
+        const checkingState = document.getElementById("checkingState");
+        const pageContent = document.getElementById("pageContent");
+        const accountChip = document.getElementById("accountChip");
+        const drawerAccount = document.getElementById("drawerAccount");
+        const signOutBtn = document.getElementById("signOutBtn");
+        const drawerSignOutBtn = document.getElementById("drawerSignOutBtn");
+
+        // ---- Constants ----
+        const ROUND_ORDER = ["Group Stage", "Quarter Final", "Semi Final", "Final"];
+        const EVENT_ICON = { goal: "⚽", penalty: "⚽🎯", owngoal: "⚽", yellow: "🟨", red: "🟥", sub: "🔄" };
+        const LIVE_DOC_STATES = ["live", "half-time", "paused"];
+        const PRE_LIVE_STATES = ["upcoming", "postponed", "delayed"];
+        const EMPTY_STATS = () => ({ corners: { A: 0, B: 0 }, offsides: { A: 0, B: 0 }, fouls: { A: 0, B: 0 } });
+
+        // ---- Elements ----
+        const createError = document.getElementById("createError");
+        const createWarning = document.getElementById("createWarning");
+        const createFixtureForm = document.getElementById("createFixtureForm");
+        const matchNumberInput = document.getElementById("matchNumber");
+        const roundSelect = document.getElementById("roundSelect");
+        const teamASelect = document.getElementById("teamASelect");
+        const teamBSelect = document.getElementById("teamBSelect");
+        const dateInput = document.getElementById("dateInput");
+        const timeInput = document.getElementById("timeInput");
+        const venueInput = document.getElementById("venueInput");
+        const venueOptions = document.getElementById("venueOptions");
+        const refereeInput = document.getElementById("refereeInput");
+        const refereeOptions = document.getElementById("refereeOptions");
+        const createSubmitBtn = document.getElementById("createSubmitBtn");
+        const createSubmitStatus = document.getElementById("createSubmitStatus");
+
+        const fixtureCountNote = document.getElementById("fixtureCountNote");
+        const fixturesListWrap = document.getElementById("fixturesListWrap");
+        const filterRoundSelect = document.getElementById("filterRound");
+        const filterStatusSelect = document.getElementById("filterStatus");
+        const filterTeamSelect = document.getElementById("filterTeam");
+        const filterSearchInput = document.getElementById("filterSearch");
+
+        const editOverlay = document.getElementById("editOverlay");
+        const editForm = document.getElementById("editForm");
+        const editError = document.getElementById("editError");
+        const editWarning = document.getElementById("editWarning");
+        const editInfo = document.getElementById("editInfo");
+        const editMatchNumber = document.getElementById("editMatchNumber");
+        const editRoundSelect = document.getElementById("editRoundSelect");
+        const editTeamASelect = document.getElementById("editTeamASelect");
+        const editTeamBSelect = document.getElementById("editTeamBSelect");
+        const editDateInput = document.getElementById("editDateInput");
+        const editTimeInput = document.getElementById("editTimeInput");
+        const editVenueInput = document.getElementById("editVenueInput");
+        const editVenueOptions = document.getElementById("editVenueOptions");
+        const editRefereeInput = document.getElementById("editRefereeInput");
+        const editRefereeOptions = document.getElementById("editRefereeOptions");
+        const editStatusSelect = document.getElementById("editStatusSelect");
+        const editScoreFieldsRow = document.getElementById("editScoreFieldsRow");
+        const editScoreA = document.getElementById("editScoreA");
+        const editScoreB = document.getElementById("editScoreB");
+        const modalCloseBtn = document.getElementById("modalCloseBtn");
+        const cancelEditBtn = document.getElementById("cancelEditBtn");
+        const saveEditBtn = document.getElementById("saveEditBtn");
+        const deleteFixtureBtn = document.getElementById("deleteFixtureBtn");
+        const editSubmitStatus = document.getElementById("editSubmitStatus");
+
+        // ---- State ----
+        let allTeams = [];
+        let allFixtures = [];
+        let allPlayers = [];
+        let playersMap = new Map();
+        let liveMatchData = null;
+        let openLiveIds = new Set();
+        let editingFixtureId = null;
+        let matchNumberTouched = false;
+        let filterState = { round: "all", status: "all", team: "all", search: "" };
+        let db, doc, addDoc, updateDoc, deleteDoc, writeBatch, onSnapshot, collection, serverTimestamp, increment, arrayUnion;
+
+        // ---- Helpers ----
+        function escapeHtml(str) {
+            return String(str ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;",
+                "'": "&#39;" }[c]));
+        }
+
+        function initialOf(name) { return (name || "?").trim().charAt(0).toUpperCase() || "?"; }
+
+        function driveThumb(link) {
+            if (!link) return null;
+            const m = link.match(/\/d\/([a-zA-Z0-9_-]+)/) || link.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+            if (m && m[1]) return `https://drive.google.com/thumbnail?id=${m[1]}&sz=w200`;
+            return link;
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return "—";
+            const d = new Date(dateStr + "T00:00:00");
+            if (isNaN(d.getTime())) return dateStr;
+            return d.toLocaleDateString("en-GB", { weekday: "short", day: "2-digit", month: "short", year: "numeric" });
+        }
+
+        function clearAlerts(...els) { els.forEach(el => { el.classList.remove("show");
+                el.textContent = ""; }); }
+
+        function showAlert(el, msg) { el.textContent = msg;
+            el.classList.add("show"); }
+
+        function getTeamRoster(teamId) {
+            const team = allTeams.find(t => t.id === teamId);
+            if (!team || !Array.isArray(team.playerIds)) return [];
+            return team.playerIds.map(id => playersMap.get(id)).filter(Boolean).sort((a, b) => (a.fullName || "").localeCompare(
+                b.fullName || ""));
+        }
+
+        function playerOptionLabel(p) {
+            const pos = Array.isArray(p.preferredPositions) && p.preferredPositions.length ? ` (${p.preferredPositions[0]})` :
+                "";
+            return `${p.fullName || "Unnamed"}${pos}`;
+        }
+
+        function rosterOptionsHtml(roster) {
+            return roster.length ? roster.map(p => `<option value="${p.id}">${escapeHtml(playerOptionLabel(p))}</option>`).join(
+                "") : `<option value="" disabled>No players in this team's roster yet</option>`;
+        }
+
+        function statusBadgeInfo(displayStatus) {
+            switch (displayStatus) {
+                case "live":
+                    return { cls: "st-live", label: "Live", dot: true };
+                case "half-time":
+                    return { cls: "st-halftime", label: "Half-time", dot: false };
+                case "paused":
+                    return { cls: "st-paused", label: "Paused", dot: false };
+                case "postponed":
+                    return { cls: "st-postponed", label: "Postponed", dot: false };
+                case "delayed":
+                    return { cls: "st-delayed", label: "Delayed", dot: false };
+                case "completed":
+                    return { cls: "st-completed", label: "Completed", dot: false };
+                default:
+                    return { cls: "st-upcoming", label: "Upcoming", dot: false };
+            }
+        }
+
+        function fixtureEffectiveStatus(f) {
+            const isLiveNow = liveMatchData && liveMatchData.fixtureId === f.id && LIVE_DOC_STATES.includes(liveMatchData
+            .status);
+            return isLiveNow ? liveMatchData.status : f.status;
+        }
+
+        function populateTeamSelects() {
+            const options = allTeams.map(t => `<option value="${t.id}">${escapeHtml(t.teamName || "Unnamed")}</option>`).join(
+                "");
+
+            [teamASelect, teamBSelect, editTeamASelect, editTeamBSelect].forEach(sel => {
+                const current = sel.value;
+                sel.innerHTML = `<option value="">— Select team —</option>` + options;
+                if (allTeams.some(t => t.id === current)) sel.value = current;
+            });
+
+            const current = filterTeamSelect.value;
+            filterTeamSelect.innerHTML = `<option value="all">All teams</option>` + options;
+            if (current && [...filterTeamSelect.options].some(o => o.value === current)) filterTeamSelect.value = current;
+        }
+
+        function refreshVenueAndRefereeLists() {
+            const venues = [...new Set(allFixtures.map(f => f.venue).filter(Boolean))].sort();
+            const venueHtml = venues.map(v => `<option value="${escapeHtml(v)}"></option>`).join("");
+            venueOptions.innerHTML = venueHtml;
+            editVenueOptions.innerHTML = venueHtml;
+
+            const referees = [...new Set(allFixtures.map(f => f.referee).filter(Boolean))].sort();
+            const refHtml = referees.map(r => `<option value="${escapeHtml(r)}"></option>`).join("");
+            refereeOptions.innerHTML = refHtml;
+            editRefereeOptions.innerHTML = refHtml;
+        }
+
+        function suggestNextMatchNumber() {
+            if (matchNumberTouched) return;
+            const max = allFixtures.reduce((m, f) => Math.max(m, Number(f.matchNumber) || 0), 0);
+            matchNumberInput.value = max + 1;
+        }
+        matchNumberInput.addEventListener("input", () => { matchNumberTouched = true; });
+
+        function checkScheduleClash(teamAId, teamBId, date, excludeId, warnEl) {
+            let msg = "";
+            if (teamAId && date) {
+                const clash = allFixtures.find(f => f.id !== excludeId && f.date === date && (f.teamAId === teamAId || f
+                    .teamBId === teamAId));
+                if (clash) msg += `Team A already has Match #${clash.matchNumber} scheduled on this date. `;
+            }
+            if (teamBId && date) {
+                const clash = allFixtures.find(f => f.id !== excludeId && f.date === date && (f.teamAId === teamBId || f
+                    .teamBId === teamBId));
+                if (clash) msg += `Team B already has Match #${clash.matchNumber} scheduled on this date. `;
+            }
+            if (msg) { showAlert(warnEl, msg.trim() + " You can still proceed if this is intentional."); } else { warnEl
+                    .classList.remove("show");
+                warnEl.textContent = ""; }
+        }
+        [teamASelect, teamBSelect, dateInput].forEach(el => el.addEventListener("change", () =>
+            checkScheduleClash(teamASelect.value, teamBSelect.value, dateInput.value, null, createWarning)));
+        [editTeamASelect, editTeamBSelect, editDateInput].forEach(el => el.addEventListener("change", () =>
+            checkScheduleClash(editTeamASelect.value, editTeamBSelect.value, editDateInput.value, editingFixtureId,
+                editWarning)));
+
+        // ---- Auth + Firebase init ----
+        (async function init() {
+            let requireAdmin, adminSignOut;
+            try {
+                const [guardMod, configMod, firestoreMod] = await Promise.all([
+                    import("../assets/js/admin-guard.js"),
+                    import("../assets/js/firebase-config.js"),
+                    import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js")
+                ]);
+                requireAdmin = guardMod.requireAdmin;
+                adminSignOut = guardMod.adminSignOut;
+                db = configMod.db;
+                ({ collection, onSnapshot, doc, addDoc, updateDoc, deleteDoc, writeBatch, serverTimestamp, increment,
+                    arrayUnion } = firestoreMod);
+            } catch (err) {
+                console.error("Firebase failed to load:", err);
+                checkingState.textContent =
+                    "Couldn't connect to Firebase. If you're opening this file directly on your computer, serve it through a local web server (e.g. VS Code's \"Live Server\" extension, or `npx serve`) or view it on the live deployed site.";
+                return;
+            }
+
+            const user = await requireAdmin();
+            const email = user.email || "Signed in";
+            accountChip.textContent = email;
+            drawerAccount.textContent = email;
+            signOutBtn.addEventListener("click", () => adminSignOut());
+            drawerSignOutBtn.addEventListener("click", () => adminSignOut());
+
+            checkingState.classList.add("hidden");
+            pageContent.classList.remove("hidden");
+
+            onSnapshot(collection(db, "teams"), (snap) => {
+                allTeams = [];
+                snap.forEach(d => allTeams.push({ id: d.id, ...d.data() }));
+                allTeams.sort((a, b) => (a.teamName || "").localeCompare(b.teamName || ""));
+                populateTeamSelects();
+                renderFixtures();
+            }, (err) => console.error("teams listener error:", err));
+
+            onSnapshot(collection(db, "fixtures"), (snap) => {
+                allFixtures = [];
+                snap.forEach(d => allFixtures.push({ id: d.id, ...d.data() }));
+                suggestNextMatchNumber();
+                refreshVenueAndRefereeLists();
+                renderFixtures();
+            }, (err) => {
+                console.error("fixtures listener error:", err);
+                fixturesListWrap.innerHTML =
+                    `<div class="state-box"><div class="state-icon">⚠️</div><h3>Couldn't load fixtures</h3><p>Check your connection or admin access, then refresh.</p></div>`;
+            });
+
+            onSnapshot(doc(db, "liveMatch", "current"), (snap) => {
+                liveMatchData = snap.exists() ? snap.data() : null;
+                if (liveMatchData && liveMatchData.fixtureId && LIVE_DOC_STATES.includes(liveMatchData.status)) {
+                    openLiveIds.add(liveMatchData.fixtureId);
+                }
+                renderFixtures();
+            }, (err) => console.error("liveMatch listener error:", err));
+
+            onSnapshot(collection(db, "players"), (snap) => {
+                allPlayers = [];
+                snap.forEach(d => allPlayers.push({ id: d.id, ...d.data() }));
+                playersMap = new Map(allPlayers.map(p => [p.id, p]));
+                renderFixtures();
+            }, (err) => console.error("players listener error:", err));
+        })();
+
+        // ---- Create fixture ----
+        createFixtureForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            clearAlerts(createError);
+
+            const matchNumber = parseInt(matchNumberInput.value, 10);
+            const round = roundSelect.value;
+            const teamAId = teamASelect.value;
+            const teamBId = teamBSelect.value;
+            const date = dateInput.value;
+            const time = timeInput.value;
+            const venue = venueInput.value.trim();
+            const referee = refereeInput.value.trim();
+
+            if (!matchNumber || matchNumber < 1) { showAlert(createError, "Please enter a valid match number.");
+                matchNumberInput.focus(); return; }
+            if (allFixtures.some(f => Number(f.matchNumber) === matchNumber)) { showAlert(createError,
+                    "This match number is already used."); matchNumberInput.focus(); return; }
+            if (!round) { showAlert(createError, "Please select a round."); return; }
+            if (!teamAId || !teamBId) { showAlert(createError, "Please select both teams."); return; }
+            if (teamAId === teamBId) { showAlert(createError, "Team A and Team B must be different."); return; }
+            if (!date) { showAlert(createError, "Please pick a date."); dateInput.focus(); return; }
+            if (!time) { showAlert(createError, "Please pick a kickoff time."); timeInput.focus(); return; }
+            if (!venue) { showAlert(createError, "Please enter a venue."); venueInput.focus(); return; }
+
+            const teamA = allTeams.find(t => t.id === teamAId);
+            const teamB = allTeams.find(t => t.id === teamBId);
+
+            createSubmitBtn.disabled = true;
+            createSubmitStatus.textContent = "Creating…";
+
+            try {
+                await addDoc(collection(db, "fixtures"), {
+                    matchNumber,
+                    round,
+                    teamAId,
+                    teamAName: teamA ? teamA.teamName : "Unnamed",
+                    teamBId,
+                    teamBName: teamB ? teamB.teamName : "Unnamed",
+                    date,
+                    time,
+                    venue,
+                    referee: referee || null,
+                    status: "upcoming",
+                    scoreA: null,
+                    scoreB: null,
+                    statsApplied: false,
+                    createdAt: serverTimestamp()
+                });
+
+                createFixtureForm.reset();
+                matchNumberTouched = false;
+                suggestNextMatchNumber();
+                createWarning.classList.remove("show");
+                createSubmitStatus.textContent = "Fixture created ✓";
+                setTimeout(() => { createSubmitStatus.textContent = ""; }, 3000);
+            } catch (err) {
+                console.error(err);
+                showAlert(createError, "Something went wrong creating the fixture. Please try again.");
+            } finally {
+                createSubmitBtn.disabled = false;
+            }
+        });
+
+        // ---- Filters ----
+        filterRoundSelect.addEventListener("change", () => { filterState.round = filterRoundSelect.value;
+            renderFixtures(); });
+        filterStatusSelect.addEventListener("change", () => { filterState.status = filterStatusSelect.value;
+            renderFixtures(); });
+        filterTeamSelect.addEventListener("change", () => { filterState.team = filterTeamSelect.value;
+            renderFixtures(); });
+        filterSearchInput.addEventListener("input", () => { filterState.search = filterSearchInput.value.trim();
+            renderFixtures(); });
+
+        function getFilteredFixtures() {
+            return allFixtures.filter(f => {
+                if (filterState.round !== "all" && f.round !== filterState.round) return false;
+                if (filterState.status !== "all") {
+                    const eff = fixtureEffectiveStatus(f);
+                    if (filterState.status === "live") { if (!LIVE_DOC_STATES.includes(eff)) return false; } else if (
+                        eff !== filterState.status) return false;
+                }
+                if (filterState.team !== "all" && f.teamAId !== filterState.team && f.teamBId !== filterState.team)
+                    return false;
+                if (filterState.search) {
+                    const s = filterState.search.toLowerCase();
+                    const hay =
+                        `${f.teamAName || ""} ${f.teamBName || ""} ${f.venue || ""} ${f.referee || ""}`.toLowerCase();
+                    if (!hay.includes(s)) return false;
+                }
+                return true;
+            });
+        }
+
+        function sortFixtures(a, b) {
+            const da = a.date || "",
+                db_ = b.date || "";
+            if (da !== db_) return da.localeCompare(db_);
+            const ta = a.time || "",
+                tb = b.time || "";
+            if (ta !== tb) return ta.localeCompare(tb);
+            return (Number(a.matchNumber) || 0) - (Number(b.matchNumber) || 0);
+        }
+
+        // ---- Render ----
+        function renderFixtures() {
+            fixtureCountNote.innerHTML =
+                `<strong>${allFixtures.length}</strong> fixture${allFixtures.length === 1 ? "" : "s"} total`;
+
+            if (!allFixtures.length) {
+                fixturesListWrap.innerHTML =
+                    `<div class="state-box"><div class="state-icon">🗓️</div><h3>No fixtures yet</h3><p>Create the first Season 01 fixture using the form above.</p></div>`;
+                return;
+            }
+
+            const filtered = getFilteredFixtures();
+            if (!filtered.length) {
+                fixturesListWrap.innerHTML =
+                    `<div class="state-box"><div class="state-icon">🔎</div><h3>No fixtures match your filters</h3><p>Try clearing a filter to see more matches.</p></div>`;
+                return;
+            }
+
+            const groups = ROUND_ORDER.map(round => ({ round, items: filtered.filter(f => f.round === round).sort(
+                    sortFixtures) })).filter(g => g.items.length);
+
+            const known = new Set(ROUND_ORDER);
+            const other = filtered.filter(f => !known.has(f.round)).sort(sortFixtures);
+            if (other.length) groups.push({ round: "Other", items: other });
+
+            fixturesListWrap.innerHTML = groups.map(g =>
+                `<div class="round-group"><div class="round-group-title">${escapeHtml(g.round)} <span class="rg-count">${g.items.length} match${g.items.length === 1 ? "" : "es"}</span></div><div class="fixtures-grid">${g.items.map(renderFixtureCard).join("")}</div></div>`
+            ).join("");
+
+            // Re-bind event listeners for cards after re-render
+            document.querySelectorAll("[data-action]").forEach(el => {
+                el.addEventListener("click", handleCardAction);
+            });
+            document.querySelectorAll("[data-change-target]").forEach(el => {
+                el.addEventListener("change", handleCardChange);
+            });
+        }
+
+        function renderFixtureCard(fixture) {
+            const teamA = allTeams.find(t => t.id === fixture.teamAId);
+            const teamB = allTeams.find(t => t.id === fixture.teamBId);
+            const thumbA = driveThumb(teamA?.logoLink);
+            const thumbB = driveThumb(teamB?.logoLink);
+
+            const isLiveNow = !!(liveMatchData && liveMatchData.fixtureId === fixture.id && LIVE_DOC_STATES.includes(
+                liveMatchData.status));
+            const displayStatus = isLiveNow ? liveMatchData.status : fixture.status;
+            const showScore = displayStatus === "completed" || isLiveNow;
+            const scoreA = isLiveNow ? (liveMatchData.scoreA ?? 0) : fixture.scoreA;
+            const scoreB = isLiveNow ? (liveMatchData.scoreB ?? 0) : fixture.scoreB;
+            const anotherLiveActive = !!(liveMatchData && liveMatchData.fixtureId && liveMatchData.fixtureId !== fixture
+                .id && LIVE_DOC_STATES.includes(liveMatchData.status));
+            const isPanelOpen = openLiveIds.has(fixture.id);
+            const badge = statusBadgeInfo(displayStatus);
+
+            return `
+            <div class="fixture-card ${isLiveNow ? "is-live" : ""} ${isLiveNow && liveMatchData.status === "paused" ? "is-paused" : ""}">
+              <div class="fc-top-row">
+                <span class="fc-match-tag">Match #${escapeHtml(fixture.matchNumber ?? "—")} · ${escapeHtml(fixture.round || "—")}</span>
+                <div class="fc-actions">
+                  <button class="row-btn row-edit-btn" data-action="edit" data-fixture-id="${fixture.id}" type="button" title="Edit fixture">✎</button>
+                  <button class="row-btn row-delete-btn" data-action="delete" data-fixture-id="${fixture.id}" type="button" title="Delete fixture">🗑</button>
+                </div>
+              </div>
+
+              <div class="fc-vs-row">
+                <div class="fc-team">
+                  <div class="fc-team-logo">
+                    ${thumbA ? `<img src="${thumbA}" alt="" loading="lazy" onerror="this.remove();" />` : ""}
+                    <span class="fc-team-logo-fallback">${escapeHtml(initialOf(fixture.teamAName))}</span>
+                  </div>
+                  <div class="fc-team-name">${escapeHtml(fixture.teamAName || "TBD")}</div>
+                </div>
+                <div class="fc-score-block">
+                  ${showScore
+                    ? `<div class="fc-score">${scoreA ?? 0}<span class="sep">:</span>${scoreB ?? 0}</div>${isLiveNow ? `<div class="fc-minute">${escapeHtml(liveMatchData.minute || "")}</div>` : ""}`
+                    : `<div class="fc-vs-label">VS</div>`}
+                </div>
+                <div class="fc-team">
+                  <div class="fc-team-logo">
+                    ${thumbB ? `<img src="${thumbB}" alt="" loading="lazy" onerror="this.remove();" />` : ""}
+                    <span class="fc-team-logo-fallback">${escapeHtml(initialOf(fixture.teamBName))}</span>
+                  </div>
+                  <div class="fc-team-name">${escapeHtml(fixture.teamBName || "TBD")}</div>
+                </div>
+              </div>
+
+              <div class="fc-meta-row">
+                <span><span class="meta-icon">📅</span>${escapeHtml(formatDate(fixture.date))}</span>
+                <span><span class="meta-icon">⏰</span>${escapeHtml(fixture.time || "—")}</span>
+                <span><span class="meta-icon">📍</span>${escapeHtml(fixture.venue || "—")}</span>
+                <span><span class="meta-icon">🧑‍⚖️</span>${fixture.referee ? escapeHtml(fixture.referee) : "No referee assigned"}</span>
+              </div>
+
+              <span class="status-badge ${badge.cls}">${badge.dot ? `<span class="live-dot"></span>` : ""}${badge.label}</span>
+
+              ${isLiveNow
+                ? `<button type="button" class="fc-manage-live-btn ${liveMatchData.status === "paused" ? "state-paused" : ""}" data-action="toggle-live-panel" data-fixture-id="${fixture.id}"><span>⚡ Manage live match</span><span>${isPanelOpen ? "▴" : "▾"}</span></button>`
+                : renderPreLiveActions(fixture, anotherLiveActive)}
+
+              ${isLiveNow && isPanelOpen ? renderLivePanel(fixture) : ""}
+            </div>
+          `;
+        }
+
+        function renderPreLiveActions(fixture, anotherLiveActive) {
+            if (fixture.status === "completed") return "";
+
+            const goLiveBtn =
+                `<button type="button" class="fc-go-live-btn" data-action="go-live" data-fixture-id="${fixture.id}" ${anotherLiveActive ? "disabled" : ""} title="${anotherLiveActive ? "Another match is currently live" : ""}">▶ Go Live</button>`;
+
+            if (fixture.status === "postponed" || fixture.status === "delayed") {
+                return `
+              <div class="fc-prelive-actions">
+                ${goLiveBtn}
+                <button type="button" class="fc-mini-status-btn" data-action="set-pre-status" data-status="upcoming" data-fixture-id="${fixture.id}">↺ Revert to Upcoming</button>
+              </div>`;
+            }
+
+            return `
+            <div class="fc-prelive-actions">
+              ${goLiveBtn}
+              <button type="button" class="fc-mini-status-btn" data-action="set-pre-status" data-status="postponed" data-fixture-id="${fixture.id}">Postpone</button>
+              <button type="button" class="fc-mini-status-btn" data-action="set-pre-status" data-status="delayed" data-fixture-id="${fixture.id}">Delay</button>
+            </div>`;
+        }
+
+        function renderLivePanel(fixture) {
+            const lm = liveMatchData;
+            const scoreA = lm?.scoreA ?? 0;
+            const scoreB = lm?.scoreB ?? 0;
+            const minute = lm?.minute || "";
+            const events = Array.isArray(lm?.events) ? lm.events : [];
+            const stats = lm?.matchStats || EMPTY_STATS();
+            const status = lm?.status || "live";
+
+            return `
+            <div class="live-panel">
+              <div>
+                <div class="lp-section-label">Match state</div>
+                <div class="lp-status-row">
+                  <button type="button" class="lp-status-btn ${status === "live" ? "active-live" : ""}" data-action="set-live-status" data-status="live" data-fixture-id="${fixture.id}">▶ Live</button>
+                  <button type="button" class="lp-status-btn ${status === "half-time" ? "active-halftime" : ""}" data-action="set-live-status" data-status="half-time" data-fixture-id="${fixture.id}">⏸ Half-time</button>
+                  <button type="button" class="lp-status-btn ${status === "paused" ? "active-paused" : ""}" data-action="set-live-status" data-status="paused" data-fixture-id="${fixture.id}">⏹ Paused</button>
+                </div>
+              </div>
+
+              <div>
+                <div class="lp-section-label">Score</div>
+                <div class="lp-score-row">
+                  <div class="lp-score-team">
+                    <div class="lp-team-name">${escapeHtml(fixture.teamAName)}</div>
+                    <div class="lp-score-num">${scoreA}</div>
+                    <div class="lp-score-btns">
+                      <button type="button" class="lp-mini-btn" data-action="score-minus" data-fixture-id="${fixture.id}" data-team="A" title="-1">−</button>
+                      <button type="button" class="lp-mini-btn" data-action="score-plus" data-fixture-id="${fixture.id}" data-team="A" title="+1">+</button>
+                    </div>
+                  </div>
+                  <div class="lp-divider">:</div>
+                  <div class="lp-score-team">
+                    <div class="lp-team-name">${escapeHtml(fixture.teamBName)}</div>
+                    <div class="lp-score-num">${scoreB}</div>
+                    <div class="lp-score-btns">
+                      <button type="button" class="lp-mini-btn" data-action="score-minus" data-fixture-id="${fixture.id}" data-team="B" title="-1">−</button>
+                      <button type="button" class="lp-mini-btn" data-action="score-plus" data-fixture-id="${fixture.id}" data-team="B" title="+1">+</button>
+                    </div>
+                  </div>
+                </div>
+                <p class="lp-hint">Use +/− for a quick score fix, or log a goal below to also add it to the events ticker.</p>
+              </div>
+
+              <div class="lp-row">
+                <input type="text" id="minute-input-${fixture.id}" placeholder="Minute e.g. 63 or 45+2" value="${escapeHtml(minute)}" />
+                <button type="button" class="btn-ghost-sm" data-action="update-minute" data-fixture-id="${fixture.id}">Update minute</button>
+              </div>
+
+              <div>
+                <div class="lp-section-label">Player events — goals, assists &amp; cards</div>
+                <div class="lp-row">
+                  <select id="ev-team-${fixture.id}" data-change-target="${fixture.id}">
+                    <option value="A">${escapeHtml(fixture.teamAName)}</option>
+                    <option value="B">${escapeHtml(fixture.teamBName)}</option>
+                  </select>
+                  <select id="ev-type-${fixture.id}" data-change-target="${fixture.id}">
+                    <option value="goal">⚽ Goal</option>
+                    <option value="penalty">🎯 Penalty Goal</option>
+                    <option value="owngoal">🔴 Own Goal</option>
+                    <option value="yellow">🟨 Yellow Card</option>
+                    <option value="red">🟥 Red Card</option>
+                    <option value="sub">🔄 Substitution</option>
+                  </select>
+                  <input type="text" id="ev-minute-${fixture.id}" placeholder="Min" style="max-width:56px;flex:0 0 56px;" />
+                </div>
+
+                <div class="lp-row" style="margin-top:6px;">
+                  <div style="flex:1;min-width:120px;">
+                    <div class="lp-inline-label" id="ev-player-label-${fixture.id}">Player</div>
+                    <select id="ev-player-${fixture.id}">
+                      <option value="">— Select player —</option>
+                      ${rosterOptionsHtml(getTeamRoster(fixture.teamAId))}
+                    </select>
+                  </div>
+                  <div id="ev-assist-wrap-${fixture.id}" style="flex:1;min-width:120px;">
+                    <div class="lp-inline-label">Assisted by <span style="opacity:0.7;">(optional)</span></div>
+                    <select id="ev-assist-${fixture.id}">
+                      <option value="">— No assist —</option>
+                      ${rosterOptionsHtml(getTeamRoster(fixture.teamAId))}
+                    </select>
+                  </div>
+                  <div id="ev-subin-wrap-${fixture.id}" class="hidden" style="flex:1;min-width:120px;">
+                    <div class="lp-inline-label">Player on</div>
+                    <select id="ev-subin-${fixture.id}">
+                      <option value="">— Select player —</option>
+                      ${rosterOptionsHtml(getTeamRoster(fixture.teamAId))}
+                    </select>
+                  </div>
+                </div>
+                <div class="lp-row" style="margin-top:6px; justify-content:flex-end;">
+                  <button type="button" class="btn-ghost-sm" data-action="add-event" data-fixture-id="${fixture.id}">Add Event</button>
+                </div>
+                <p class="lp-hint">Own goal: pick the player who put it in their own net — the goal is credited to the opposing team's score automatically.</p>
+
+                <div class="lp-events-list">
+                  ${events.length
+                    ? events.slice().reverse().map((ev, i) => {
+                        const realIndex = events.length - 1 - i;
+                        return `
+                        <div class="lp-event-row">
+                          <span class="ev-min">${escapeHtml(ev.minute || "—")}'</span>
+                          <span class="ev-icon">${EVENT_ICON[ev.type] || "•"}</span>
+                          ${renderEventLine(ev, fixture)}
+                          <button type="button" class="row-btn row-delete-btn" style="width:22px;height:22px;font-size:0.65rem;" data-action="remove-event" data-fixture-id="${fixture.id}" data-event-index="${realIndex}" title="Remove event">✕</button>
+                        </div>`;
+                      }).join("")
+                    : `<div class="lp-event-empty">No events logged yet.</div>`}
+                </div>
+              </div>
+
+              <div>
+                <div class="lp-section-label">Match stats</div>
+                <div class="lp-stats-grid">
+                  ${renderStatBlock(fixture, "Corners", "corners", stats.corners)}
+                  ${renderStatBlock(fixture, "Offsides", "offsides", stats.offsides)}
+                  ${renderStatBlock(fixture, "Fouls", "fouls", stats.fouls)}
+                </div>
+              </div>
+
+              ${renderMotmBlock(fixture)}
+
+              <div class="lp-finalize-box">
+                <p class="lp-hint" style="margin:0;">Ending the match locks in the final score and updates both teams' standings.</p>
+                <div class="lp-finalize-row">
+                  <span class="fname">${escapeHtml(fixture.teamAName)}</span>
+                  <input type="number" id="final-a-${fixture.id}" min="0" step="1" value="${scoreA}" />
+                  <span>–</span>
+                  <input type="number" id="final-b-${fixture.id}" min="0" step="1" value="${scoreB}" />
+                  <span class="fname">${escapeHtml(fixture.teamBName)}</span>
+                </div>
+                <div class="lp-finalize-actions">
+                  <button type="button" class="btn-submit" data-action="finalize-match" data-fixture-id="${fixture.id}">End Match &amp; Save Result</button>
+                  <button type="button" class="btn-danger-ghost" data-action="cancel-live" data-fixture-id="${fixture.id}">Cancel live match</button>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+
+        function renderEventLine(ev, fixture) {
+            const teamName = ev.team === "A" ? fixture.teamAName : fixture.teamBName;
+            let main = escapeHtml(ev.playerName || "Unnamed");
+
+            if (ev.type === "sub") {
+                main =
+                    `${escapeHtml(ev.subInPlayerName || "—")} <span style="color:var(--clr-text-muted);">on for</span> ${escapeHtml(ev.playerName || "—")}`;
+            } else if (ev.type === "owngoal") {
+                main += ` <span style="color:var(--clr-danger);">(own goal)</span>`;
+            } else if ((ev.type === "goal" || ev.type === "penalty") && ev.assistPlayerName) {
+                main += ` <span style="color:var(--clr-text-muted);">(assist: ${escapeHtml(ev.assistPlayerName)})</span>`;
+            }
+
+            return `<span style="flex:1;">${main} <span style="color:var(--clr-text-muted);">— ${escapeHtml(teamName)}</span></span>`;
+        }
+
+        function renderMotmBlock(fixture) {
+            const teamARoster = getTeamRoster(fixture.teamAId);
+            const teamBRoster = getTeamRoster(fixture.teamBId);
+            const currentId = liveMatchData?.motm?.playerId || "";
+            const optionFor = (p, team) =>
+                `<option value="${p.id}|${team}" ${currentId === p.id ? "selected" : ""}>${escapeHtml(playerOptionLabel(p))}</option>`;
+
+            return `
+            <div>
+              <div class="lp-section-label">Man of the Match <span style="text-transform:none;letter-spacing:0;">(optional)</span></div>
+              <div class="lp-row">
+                <select id="motm-select-${fixture.id}">
+                  <option value="">— Not selected —</option>
+                  <optgroup label="${escapeHtml(fixture.teamAName)}">
+                    ${teamARoster.map(p => optionFor(p, "A")).join("")}
+                  </optgroup>
+                  <optgroup label="${escapeHtml(fixture.teamBName)}">
+                    ${teamBRoster.map(p => optionFor(p, "B")).join("")}
+                  </optgroup>
+                </select>
+                <button type="button" class="btn-ghost-sm" data-action="set-motm" data-fixture-id="${fixture.id}">Save</button>
+              </div>
+              ${liveMatchData?.motm?.playerName ? `<p class="lp-hint">Currently: ⭐ ${escapeHtml(liveMatchData.motm.playerName)} — ${escapeHtml(liveMatchData.motm.team === "A" ? fixture.teamAName : fixture.teamBName)}</p>` : ""}
+            </div>`;
+        }
+
+        function renderStatBlock(fixture, label, key, val) {
+            const a = val?.A ?? 0;
+            const b = val?.B ?? 0;
+            return `
+            <div class="lp-stat-block">
+              <div class="lp-stat-label">${escapeHtml(label)}</div>
+              <div class="lp-stat-count-row">
+                <button type="button" class="lp-stat-mini-btn" data-action="stat-minus" data-fixture-id="${fixture.id}" data-stat="${key}" data-team="A">−</button>
+                <span class="lp-stat-num">${a}</span>
+                <button type="button" class="lp-stat-mini-btn" data-action="stat-plus" data-fixture-id="${fixture.id}" data-stat="${key}" data-team="A">+</button>
+              </div>
+              <div class="lp-stat-count-row">
+                <button type="button" class="lp-stat-mini-btn" data-action="stat-minus" data-fixture-id="${fixture.id}" data-stat="${key}" data-team="B">−</button>
+                <span class="lp-stat-num">${b}</span>
+                <button type="button" class="lp-stat-mini-btn" data-action="stat-plus" data-fixture-id="${fixture.id}" data-stat="${key}" data-team="B">+</button>
+              </div>
+            </div>`;
+        }
+
+        // ---- Event handling ----
+        function handleCardAction(e) {
+            const btn = e.currentTarget;
+            const action = btn.dataset.action;
+            const fixtureId = btn.dataset.fixtureId;
+
+            if (action === "edit") return openEditModal(fixtureId);
+            if (action === "delete") return handleDeleteFixture(fixtureId);
+            if (action === "go-live") return handleGoLive(fixtureId);
+            if (action === "set-pre-status") return handleSetPreLiveStatus(fixtureId, btn.dataset.status);
+            if (action === "toggle-live-panel") {
+                if (openLiveIds.has(fixtureId)) openLiveIds.delete(fixtureId);
+                else openLiveIds.add(fixtureId);
+                return renderFixtures();
+            }
+            if (action === "set-live-status") return handleSetLiveStatus(fixtureId, btn.dataset.status);
+            if (action === "score-plus" || action === "score-minus") return handleScoreAdjust(fixtureId, btn.dataset
+                .team, action === "score-plus" ? 1 : -1);
+            if (action === "stat-plus" || action === "stat-minus") return handleStatAdjust(fixtureId, btn.dataset.stat,
+                btn.dataset.team, action === "stat-plus" ? 1 : -1);
+            if (action === "update-minute") {
+                const val = document.getElementById(`minute-input-${fixtureId}`).value.trim();
+                return handleUpdateMinute(val);
+            }
+            if (action === "add-event") return handleAddEvent(fixtureId);
+            if (action === "remove-event") return handleRemoveEvent(fixtureId, parseInt(btn.dataset.eventIndex, 10));
+            if (action === "set-motm") return handleSetMotm(fixtureId);
+            if (action === "finalize-match") return handleFinalizeMatch(fixtureId);
+            if (action === "cancel-live") return handleCancelLive(fixtureId);
+        }
+
+        function handleCardChange(e) {
+            const el = e.currentTarget;
+            const id = el.id;
+            if (!id) return;
+            const match = id.match(/^(ev-team|ev-type)-(.+)$/);
+            if (!match) return;
+            const fixtureId = match[2];
+            if (id.startsWith("ev-team-")) {
+                updateEventTeamOptions(fixtureId);
+            } else if (id.startsWith("ev-type-")) {
+                updateEventTypeVisibility(fixtureId);
+            }
+        }
+
+        // ---- Event helper functions ----
+        function updateEventTeamOptions(fixtureId) {
+            const fixture = allFixtures.find(f => f.id === fixtureId);
+            if (!fixture) return;
+            const team = document.getElementById(`ev-team-${fixtureId}`)?.value || "A";
+            const roster = getTeamRoster(team === "A" ? fixture.teamAId : fixture.teamBId);
+            const optsHtml = rosterOptionsHtml(roster);
+
+            const playerSel = document.getElementById(`ev-player-${fixtureId}`);
+            const assistSel = document.getElementById(`ev-assist-${fixtureId}`);
+            const subInSel = document.getElementById(`ev-subin-${fixtureId}`);
+            if (playerSel) playerSel.innerHTML = `<option value="">— Select player —</option>` + optsHtml;
+            if (assistSel) assistSel.innerHTML = `<option value="">— No assist —</option>` + optsHtml;
+            if (subInSel) subInSel.innerHTML = `<option value="">— Select player —</option>` + optsHtml;
+        }
+
+        function updateEventTypeVisibility(fixtureId) {
+            const type = document.getElementById(`ev-type-${fixtureId}`)?.value;
+            const assistWrap = document.getElementById(`ev-assist-wrap-${fixtureId}`);
+            const subInWrap = document.getElementById(`ev-subin-wrap-${fixtureId}`);
+            const playerLabel = document.getElementById(`ev-player-label-${fixtureId}`);
+            if (assistWrap) assistWrap.classList.toggle("hidden", !(type === "goal" || type === "penalty"));
+            if (subInWrap) subInWrap.classList.toggle("hidden", type !== "sub");
+            if (playerLabel) playerLabel.textContent = type === "sub" ? "Player off" : (type === "owngoal" ?
+                "Player (own goal by)" : "Player");
+        }
+
+        function scoringTeamForEvent(ev) {
+            if (ev.type === "goal" || ev.type === "penalty") return ev.team;
+            if (ev.type === "owngoal") return ev.team === "A" ? "B" : "A";
+            return null;
+        }
+
+        // ---- Action handlers ----
+        async function handleSetPreLiveStatus(fixtureId, newStatus) {
+            if (!PRE_LIVE_STATES.includes(newStatus)) return;
+            try {
+                await updateDoc(doc(db, "fixtures", fixtureId), { status: newStatus });
+            } catch (err) { console.error(err);
+                alert("Couldn't update the fixture status. Please try again."); }
+        }
+
+        async function handleGoLive(fixtureId) {
+            if (liveMatchData && liveMatchData.fixtureId && liveMatchData.fixtureId !== fixtureId && LIVE_DOC_STATES
+                .includes(liveMatchData.status)) {
+                alert("Another match is currently live. End it before starting a new one.");
+                return;
+            }
+            const fixture = allFixtures.find(f => f.id === fixtureId);
+            if (!fixture) return;
+            try {
+                const batch = writeBatch(db);
+                batch.set(doc(db, "liveMatch", "current"), {
+                    fixtureId,
+                    teamAName: fixture.teamAName,
+                    teamBName: fixture.teamBName,
+                    referee: fixture.referee || null,
+                    scoreA: 0,
+                    scoreB: 0,
+                    minute: "0'",
+                    status: "live",
+                    events: [],
+                    matchStats: EMPTY_STATS(),
+                    updatedAt: serverTimestamp()
+                });
+                batch.update(doc(db, "fixtures", fixtureId), { status: "live", scoreA: 0, scoreB: 0 });
+                await batch.commit();
+                openLiveIds.add(fixtureId);
+            } catch (err) { console.error(err);
+                alert("Couldn't start the live match. Please try again."); }
+        }
+
+        async function handleSetLiveStatus(fixtureId, newStatus) {
+            if (!liveMatchData || liveMatchData.fixtureId !== fixtureId) return;
+            if (!LIVE_DOC_STATES.includes(newStatus)) return;
+            try {
+                const batch = writeBatch(db);
+                batch.update(doc(db, "liveMatch", "current"), { status: newStatus, updatedAt: serverTimestamp() });
+                batch.update(doc(db, "fixtures", fixtureId), { status: newStatus });
+                await batch.commit();
+            } catch (err) { console.error(err);
+                alert("Couldn't update the match state. Please try again."); }
+        }
+
+        async function handleScoreAdjust(fixtureId, team, delta) {
+            if (!liveMatchData || liveMatchData.fixtureId !== fixtureId) return;
+            const field = team === "A" ? "scoreA" : "scoreB";
+            const current = liveMatchData[field] ?? 0;
+            const next = Math.max(0, current + delta);
+            try {
+                const batch = writeBatch(db);
+                batch.update(doc(db, "liveMatch", "current"), { [field]: next, updatedAt: serverTimestamp() });
+                batch.update(doc(db, "fixtures", fixtureId), { [field]: next });
+                await batch.commit();
+            } catch (err) { console.error(err); }
+        }
+
+        async function handleStatAdjust(fixtureId, statKey, team, delta) {
+            if (!liveMatchData || liveMatchData.fixtureId !== fixtureId) return;
+            if (!["corners", "offsides", "fouls"].includes(statKey)) return;
+            const current = liveMatchData.matchStats?.[statKey]?.[team] ?? 0;
+            const next = Math.max(0, current + delta);
+            try {
+                await updateDoc(doc(db, "liveMatch", "current"), {
+                    [`matchStats.${statKey}.${team}`]: next,
+                    updatedAt: serverTimestamp()
+                });
+            } catch (err) { console.error(err); }
+        }
+
+        async function handleUpdateMinute(minuteStr) {
+            if (!liveMatchData) return;
+            try {
+                await updateDoc(doc(db, "liveMatch", "current"), { minute: minuteStr, updatedAt: serverTimestamp() });
+            } catch (err) { console.error(err); }
+        }
+
+        async function handleAddEvent(fixtureId) {
+            if (!liveMatchData || liveMatchData.fixtureId !== fixtureId) return;
+            const fixture = allFixtures.find(f => f.id === fixtureId);
+            if (!fixture) return;
+
+            const type = document.getElementById(`ev-type-${fixtureId}`).value;
+            const team = document.getElementById(`ev-team-${fixtureId}`).value;
+            const playerSel = document.getElementById(`ev-player-${fixtureId}`);
+            const minuteEl = document.getElementById(`ev-minute-${fixtureId}`);
+            const playerId = playerSel.value;
+            const playerName = playerSel.selectedOptions[0]?.textContent || "";
+            const minute = minuteEl.value.trim();
+
+            if (!playerId) {
+                alert(type === "sub" ? "Please select the player coming off." : "Please select a player.");
+                playerSel.focus();
+                return;
+            }
+
+            const event = { type, team, playerId, playerName, minute };
+
+            if (type === "goal" || type === "penalty") {
+                const assistSel = document.getElementById(`ev-assist-${fixtureId}`);
+                if (assistSel && assistSel.value) {
+                    event.assistPlayerId = assistSel.value;
+                    event.assistPlayerName = assistSel.selectedOptions[0]?.textContent || "";
+                }
+            }
+
+            if (type === "sub") {
+                const subInSel = document.getElementById(`ev-subin-${fixtureId}`);
+                if (!subInSel.value) { alert("Please select the player coming on.");
+                    subInSel.focus(); return; }
+                if (subInSel.value === playerId) { alert(
+                        "The player coming on can't be the same as the player going off.");
+                    subInSel.focus(); return; }
+                event.subInPlayerId = subInSel.value;
+                event.subInPlayerName = subInSel.selectedOptions[0]?.textContent || "";
+            }
+
+            const scoringTeam = scoringTeamForEvent(event);
+
+            try {
+                const batch = writeBatch(db);
+                const liveUpdates = { events: arrayUnion(event), updatedAt: serverTimestamp() };
+                if (scoringTeam) liveUpdates[scoringTeam === "A" ? "scoreA" : "scoreB"] = increment(1);
+                batch.update(doc(db, "liveMatch", "current"), liveUpdates);
+                if (scoringTeam) {
+                    batch.update(doc(db, "fixtures", fixtureId), { [scoringTeam === "A" ? "scoreA" : "scoreB"]: increment(
+                            1) });
+                }
+                await batch.commit();
+
+                playerSel.value = "";
+                minuteEl.value = "";
+                const assistSel = document.getElementById(`ev-assist-${fixtureId}`);
+                if (assistSel) assistSel.value = "";
+                const subInSel = document.getElementById(`ev-subin-${fixtureId}`);
+                if (subInSel) subInSel.value = "";
+            } catch (err) { console.error(err);
+                alert("Couldn't add that event. Please try again."); }
+        }
+
+        async function handleRemoveEvent(fixtureId, eventIndex) {
+            if (!liveMatchData || liveMatchData.fixtureId !== fixtureId) return;
+            const events = Array.isArray(liveMatchData.events) ? liveMatchData.events : [];
+            const target = events[eventIndex];
+            if (!target) return;
+            const ok = confirm(`Remove this ${target.type} event for ${target.playerName || "this player"}?`);
+            if (!ok) return;
+
+            const nextEvents = events.slice();
+            nextEvents.splice(eventIndex, 1);
+
+            const scoringTeam = scoringTeamForEvent(target);
+
+            try {
+                const batch = writeBatch(db);
+                const liveUpdates = { events: nextEvents, updatedAt: serverTimestamp() };
+                if (scoringTeam) {
+                    const field = scoringTeam === "A" ? "scoreA" : "scoreB";
+                    liveUpdates[field] = Math.max(0, (liveMatchData[field] ?? 0) - 1);
+                }
+                batch.update(doc(db, "liveMatch", "current"), liveUpdates);
+                if (scoringTeam) {
+                    const field = scoringTeam === "A" ? "scoreA" : "scoreB";
+                    batch.update(doc(db, "fixtures", fixtureId), { [field]: Math.max(0, (liveMatchData[field] ?? 0) -
+                            1) });
+                }
+                await batch.commit();
+            } catch (err) { console.error(err);
+                alert("Couldn't remove that event. Please try again."); }
+        }
+
+        async function handleSetMotm(fixtureId) {
+            if (!liveMatchData || liveMatchData.fixtureId !== fixtureId) return;
+            const sel = document.getElementById(`motm-select-${fixtureId}`);
+            const val = sel.value;
+
+            if (!val) {
+                try { await updateDoc(doc(db, "liveMatch", "current"), { motm: null, updatedAt: serverTimestamp() }); } catch (
+                    err) { console.error(err); }
+                return;
+            }
+
+            const [playerId, team] = val.split("|");
+            const fixture = allFixtures.find(f => f.id === fixtureId);
+            if (!fixture) return;
+            const roster = getTeamRoster(team === "A" ? fixture.teamAId : fixture.teamBId);
+            const player = roster.find(p => p.id === playerId);
+
+            try {
+                await updateDoc(doc(db, "liveMatch", "current"), {
+                    motm: { playerId, playerName: player?.fullName || "", team },
+                    updatedAt: serverTimestamp()
+                });
+            } catch (err) { console.error(err);
+                alert("Couldn't save Man of the Match. Please try again."); }
+        }
+
+        async function handleCancelLive(fixtureId) {
+            const ok = confirm(
+                "Cancel this live match and revert it to Upcoming? The score, events and match stats recorded so far will be discarded."
+                );
+            if (!ok) return;
+            try {
+                const batch = writeBatch(db);
+                batch.set(doc(db, "liveMatch", "current"), { status: "ended", updatedAt: serverTimestamp() }, { merge: true });
+                batch.update(doc(db, "fixtures", fixtureId), { status: "upcoming", scoreA: null, scoreB: null });
+                await batch.commit();
+                openLiveIds.delete(fixtureId);
+            } catch (err) { console.error(err);
+                alert("Couldn't cancel the live match. Please try again."); }
+        }
+
+        async function handleFinalizeMatch(fixtureId) {
+            const aInput = document.getElementById(`final-a-${fixtureId}`);
+            const bInput = document.getElementById(`final-b-${fixtureId}`);
+            const scoreA = Math.max(0, parseInt(aInput.value, 10) || 0);
+            const scoreB = Math.max(0, parseInt(bInput.value, 10) || 0);
+            const ok = confirm(`Finalize this match ${scoreA} – ${scoreB}? This updates both teams' standings.`);
+            if (!ok) return;
+            try {
+                await finalizeFixtureResult(fixtureId, scoreA, scoreB, true);
+                openLiveIds.delete(fixtureId);
+            } catch (err) { console.error(err);
+                alert("Couldn't finalize the match. Please try again."); }
+        }
+
+        // ---- Shared result / stats helpers ----
+        function computeResultDelta(scoreA, scoreB) {
+            let aWon = 0,
+                aDrawn = 0,
+                aLost = 0,
+                bWon = 0,
+                bDrawn = 0,
+                bLost = 0;
+            if (scoreA > scoreB) { aWon = 1;
+                bLost = 1; } else if (scoreA < scoreB) { bWon = 1;
+                aLost = 1; } else { aDrawn = 1;
+                bDrawn = 1; }
+            return {
+                a: { played: 1, won: aWon, drawn: aDrawn, lost: aLost, goalsFor: scoreA, goalsAgainst: scoreB,
+                    points: aWon * 3 + aDrawn },
+                b: { played: 1, won: bWon, drawn: bDrawn, lost: bLost, goalsFor: scoreB, goalsAgainst: scoreA,
+                    points: bWon * 3 + bDrawn }
+            };
+        }
+
+        function scaleDelta(obj, sign) {
+            const out = {};
+            for (const k in obj) out[k] = obj[k] * sign;
+            return out;
+        }
+
+        function applyStatsDelta(batch, teamId, delta) {
+            if (!teamId) return;
+            const update = {};
+            for (const [k, v] of Object.entries(delta)) { if (v) update[`stats.${k}`] = increment(v); }
+            if (Object.keys(update).length) batch.update(doc(db, "teams", teamId), update);
+        }
+
+        function queueResultDelta(batch, teamAId, teamBId, scoreA, scoreB, sign) {
+            const delta = computeResultDelta(scoreA, scoreB);
+            applyStatsDelta(batch, teamAId, scaleDelta(delta.a, sign));
+            applyStatsDelta(batch, teamBId, scaleDelta(delta.b, sign));
+        }
+
+        async function finalizeFixtureResult(fixtureId, scoreA, scoreB, endingLive) {
+            const fixture = allFixtures.find(f => f.id === fixtureId);
+            if (!fixture || !fixture.teamAId || !fixture.teamBId) {
+                alert("Both teams must be set on this fixture before it can be completed.");
+                return;
+            }
+            const batch = writeBatch(db);
+
+            if (fixture.statsApplied && fixture.scoreA != null && fixture.scoreB != null) {
+                queueResultDelta(batch, fixture.teamAId, fixture.teamBId, fixture.scoreA, fixture.scoreB, -1);
+            }
+            queueResultDelta(batch, fixture.teamAId, fixture.teamBId, scoreA, scoreB, 1);
+
+            const fixtureUpdate = { status: "completed", scoreA, scoreB, statsApplied: true };
+
+            const isThisMatchLive = liveMatchData && liveMatchData.fixtureId === fixtureId;
+            if (isThisMatchLive) {
+                fixtureUpdate.events = Array.isArray(liveMatchData.events) ? liveMatchData.events : [];
+                fixtureUpdate.matchStats = liveMatchData.matchStats || EMPTY_STATS();
+                fixtureUpdate.motm = liveMatchData.motm || null;
+            }
+
+            batch.update(doc(db, "fixtures", fixtureId), fixtureUpdate);
+
+            if (endingLive || isThisMatchLive) {
+                batch.set(doc(db, "liveMatch", "current"), { status: "ended", updatedAt: serverTimestamp() }, { merge: true });
+            }
+
+            await batch.commit();
+        }
+
+        async function revertFixtureToStatus(fixtureId, status) {
+            const fixture = allFixtures.find(f => f.id === fixtureId);
+            if (!fixture) return;
+            const batch = writeBatch(db);
+            if (fixture.statsApplied && fixture.scoreA != null && fixture.scoreB != null) {
+                queueResultDelta(batch, fixture.teamAId, fixture.teamBId, fixture.scoreA, fixture.scoreB, -1);
+            }
+            const wasLive = liveMatchData && liveMatchData.fixtureId === fixtureId && LIVE_DOC_STATES.includes(liveMatchData
+                .status);
+            if (wasLive) {
+                batch.set(doc(db, "liveMatch", "current"), { status: "ended", updatedAt: serverTimestamp() }, { merge: true });
+            }
+            batch.update(doc(db, "fixtures", fixtureId), { status, scoreA: null, scoreB: null, statsApplied: false });
+            await batch.commit();
+            if (wasLive) openLiveIds.delete(fixtureId);
+        }
+
+        // ---- Delete fixture ----
+        async function handleDeleteFixture(fixtureId) {
+            const fixture = allFixtures.find(f => f.id === fixtureId);
+            if (!fixture) return;
+            const isCurrentlyLive = !!(liveMatchData && liveMatchData.fixtureId === fixtureId && LIVE_DOC_STATES.includes(
+                liveMatchData.status));
+
+            const ok = confirm(
+                `Delete Match #${fixture.matchNumber ?? "—"} (${fixture.teamAName} vs ${fixture.teamBName})?\n\n` +
+                (isCurrentlyLive ? "This match is currently live — it will be ended first. " : "") +
+                `This can't be undone.`
+            );
+            if (!ok) return;
+
+            try {
+                const batch = writeBatch(db);
+                if (fixture.statsApplied && fixture.scoreA != null && fixture.scoreB != null) {
+                    queueResultDelta(batch, fixture.teamAId, fixture.teamBId, fixture.scoreA, fixture.scoreB, -1);
+                }
+                if (isCurrentlyLive) {
+                    batch.set(doc(db, "liveMatch", "current"), { status: "ended", updatedAt: serverTimestamp() },
+                    { merge: true });
+                }
+                batch.delete(doc(db, "fixtures", fixtureId));
+                await batch.commit();
+                openLiveIds.delete(fixtureId);
+                if (editingFixtureId === fixtureId) closeEditModal();
+            } catch (err) { console.error(err);
+                alert("Couldn't delete this fixture. Please try again."); }
+        }
+
+        // ---- Edit modal ----
+        function toggleEditScoreFields() {
+            editScoreFieldsRow.classList.toggle("hidden", editStatusSelect.value !== "completed");
+        }
+        editStatusSelect.addEventListener("change", toggleEditScoreFields);
+
+        function openEditModal(fixtureId) {
+            const fixture = allFixtures.find(f => f.id === fixtureId);
+            if (!fixture) return;
+            editingFixtureId = fixtureId;
+            clearAlerts(editError, editWarning, editInfo);
+            editSubmitStatus.textContent = "";
+            saveEditBtn.disabled = false;
+
+            const isLiveNow = !!(liveMatchData && liveMatchData.fixtureId === fixtureId && LIVE_DOC_STATES.includes(
+                liveMatchData.status));
+            if (isLiveNow) {
+                showAlert(editInfo,
+                    `This match is currently ${liveMatchData.status === "half-time" ? "at half-time" : liveMatchData.status}. You can still edit its details here — score, minute, events and match stats stay managed from the live panel on the fixtures list. Choosing "Completed" below will end the live session and lock in the score you enter here.`
+                    );
+            }
+
+            editMatchNumber.value = fixture.matchNumber ?? "";
+            editRoundSelect.value = fixture.round || "";
+            populateTeamSelects();
+            editTeamASelect.value = fixture.teamAId || "";
+            editTeamBSelect.value = fixture.teamBId || "";
+            editDateInput.value = fixture.date || "";
+            editTimeInput.value = fixture.time || "";
+            editVenueInput.value = fixture.venue || "";
+            editRefereeInput.value = fixture.referee || "";
+
+            const directStatus = PRE_LIVE_STATES.includes(fixture.status) ? fixture.status : (fixture.status ===
+                "completed" ? "completed" : "upcoming");
+            editStatusSelect.value = directStatus;
+            editScoreA.value = fixture.scoreA ?? (isLiveNow ? liveMatchData.scoreA ?? 0 : 0);
+            editScoreB.value = fixture.scoreB ?? (isLiveNow ? liveMatchData.scoreB ?? 0 : 0);
+            toggleEditScoreFields();
+
+            editOverlay.classList.remove("hidden");
+        }
+
+        function closeEditModal() {
+            editOverlay.classList.add("hidden");
+            editingFixtureId = null;
+        }
+        modalCloseBtn.addEventListener("click", closeEditModal);
+        cancelEditBtn.addEventListener("click", closeEditModal);
+        editOverlay.addEventListener("click", (e) => { if (e.target === editOverlay) closeEditModal(); });
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape" && !editOverlay.classList.contains("hidden")) closeEditModal();
+        });
+
+        editForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            clearAlerts(editError);
+            if (!editingFixtureId) return;
+
+            const matchNumber = parseInt(editMatchNumber.value, 10);
+            const round = editRoundSelect.value;
+            const teamAId = editTeamASelect.value;
+            const teamBId = editTeamBSelect.value;
+            const date = editDateInput.value;
+            const time = editTimeInput.value;
+            const venue = editVenueInput.value.trim();
+            const referee = editRefereeInput.value.trim();
+            const status = editStatusSelect.value;
+
+            if (!matchNumber || matchNumber < 1) { showAlert(editError, "Please enter a valid match number."); return; }
+            if (allFixtures.some(f => f.id !== editingFixtureId && Number(f.matchNumber) === matchNumber)) { showAlert(
+                    editError, "Another fixture already uses this match number."); return; }
+            if (!round) { showAlert(editError, "Please select a round."); return; }
+            if (!teamAId || !teamBId) { showAlert(editError, "Please select both teams."); return; }
+            if (teamAId === teamBId) { showAlert(editError, "Team A and Team B must be different."); return; }
+            if (!date) { showAlert(editError, "Please pick a date."); return; }
+            if (!time) { showAlert(editError, "Please pick a kickoff time."); return; }
+            if (!venue) { showAlert(editError, "Please enter a venue."); return; }
+
+            const teamA = allTeams.find(t => t.id === teamAId);
+            const teamB = allTeams.find(t => t.id === teamBId);
+            const fixture = allFixtures.find(f => f.id === editingFixtureId);
+            const wasLive = !!(liveMatchData && liveMatchData.fixtureId === editingFixtureId && LIVE_DOC_STATES.includes(
+                liveMatchData.status));
+
+            saveEditBtn.disabled = true;
+            editSubmitStatus.textContent = "Saving…";
+
+            try {
+                await updateDoc(doc(db, "fixtures", editingFixtureId), {
+                    matchNumber,
+                    round,
+                    teamAId,
+                    teamAName: teamA ? teamA.teamName : "Unnamed",
+                    teamBId,
+                    teamBName: teamB ? teamB.teamName : "Unnamed",
+                    date,
+                    time,
+                    venue,
+                    referee: referee || null
+                });
+
+                if (wasLive) {
+                    await updateDoc(doc(db, "liveMatch", "current"), {
+                        teamAName: teamA ? teamA.teamName : "Unnamed",
+                        teamBName: teamB ? teamB.teamName : "Unnamed",
+                        referee: referee || null,
+                        updatedAt: serverTimestamp()
+                    });
+                }
+
+                if (status === "completed") {
+                    const scoreA = Math.max(0, parseInt(editScoreA.value, 10) || 0);
+                    const scoreB = Math.max(0, parseInt(editScoreB.value, 10) || 0);
+                    await finalizeFixtureResult(editingFixtureId, scoreA, scoreB, wasLive);
+                    openLiveIds.delete(editingFixtureId);
+                } else if (status === "postponed" || status === "delayed") {
+                    if (fixture && (fixture.statsApplied || fixture.status === "completed" || wasLive)) {
+                        await revertFixtureToStatus(editingFixtureId, status);
+                    } else {
+                        await updateDoc(doc(db, "fixtures", editingFixtureId), { status });
+                    }
+                } else if (fixture && (fixture.statsApplied || fixture.status === "completed") && !wasLive) {
+                    await revertFixtureToStatus(editingFixtureId, "upcoming");
+                } else if (!wasLive && PRE_LIVE_STATES.includes(fixture?.status) && fixture.status !== "upcoming") {
+                    await updateDoc(doc(db, "fixtures", editingFixtureId), { status: "upcoming" });
+                }
+
+                closeEditModal();
+            } catch (err) {
+                console.error(err);
+                showAlert(editError, "Something went wrong saving changes. Please try again.");
+                saveEditBtn.disabled = false;
+                editSubmitStatus.textContent = "";
+            }
+        });
+
+        deleteFixtureBtn.addEventListener("click", () => { if (editingFixtureId) handleDeleteFixture(editingFixtureId); });
+
+        // ---- Re-bind event listeners after render ----
+        // The renderFixtures function already uses data-action and data-change-target attributes.
+        // We use event delegation on the fixturesListWrap for all dynamic events.
+        // This avoids needing to re-bind after each render.
+
+        // Set up delegation on the fixtures list wrapper
+        fixturesListWrap.addEventListener("click", (e) => {
+            const btn = e.target.closest("[data-action]");
+            if (btn) {
+                // Use the already-defined handleCardAction
+                const action = btn.dataset.action;
+                const fixtureId = btn.dataset.fixtureId;
+
+                // Map to the handler functions
+                const handlers = {
+                    "edit": () => openEditModal(fixtureId),
+                    "delete": () => handleDeleteFixture(fixtureId),
+                    "go-live": () => handleGoLive(fixtureId),
+                    "set-pre-status": () => handleSetPreLiveStatus(fixtureId, btn.dataset.status),
+                    "toggle-live-panel": () => {
+                        if (openLiveIds.has(fixtureId)) openLiveIds.delete(fixtureId);
+                        else openLiveIds.add(fixtureId);
+                        renderFixtures();
+                    },
+                    "set-live-status": () => handleSetLiveStatus(fixtureId, btn.dataset.status),
+                    "score-plus": () => handleScoreAdjust(fixtureId, btn.dataset.team, 1),
+                    "score-minus": () => handleScoreAdjust(fixtureId, btn.dataset.team, -1),
+                    "stat-plus": () => handleStatAdjust(fixtureId, btn.dataset.stat, btn.dataset.team, 1),
+                    "stat-minus": () => handleStatAdjust(fixtureId, btn.dataset.stat, btn.dataset.team, -1),
+                    "update-minute": () => {
+                        const val = document.getElementById(`minute-input-${fixtureId}`).value.trim();
+                        handleUpdateMinute(val);
+                    },
+                    "add-event": () => handleAddEvent(fixtureId),
+                    "remove-event": () => handleRemoveEvent(fixtureId, parseInt(btn.dataset.eventIndex, 10)),
+                    "set-motm": () => handleSetMotm(fixtureId),
+                    "finalize-match": () => handleFinalizeMatch(fixtureId),
+                    "cancel-live": () => handleCancelLive(fixtureId),
+                };
+
+                const handler = handlers[action];
+                if (handler) handler();
+            }
+        });
+
+        fixturesListWrap.addEventListener("change", (e) => {
+            const el = e.target;
+            if (!el.id) return;
+            const match = el.id.match(/^(ev-team|ev-type)-(.+)$/);
+            if (match) {
+                const fixtureId = match[2];
+                if (el.id.startsWith("ev-team-")) {
+                    updateEventTeamOptions(fixtureId);
+                } else if (el.id.startsWith("ev-type-")) {
+                    updateEventTypeVisibility(fixtureId);
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>
