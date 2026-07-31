@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Admin Login — PHY-LIGA</title>
+<meta name="description" content="Organizer sign-in for the PHY-LIGA Season 01 admin console." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --clr-canvas: #162235;
+    --clr-surface: #1E2D42;
+    --clr-surface-alt: #253850;
+    --clr-accent-primary: #A1C4C7;
+    --clr-accent-interactive: #34DFEC;
+    --clr-highlight: #2A8042;
+    --clr-danger: #E24C4C;
+    --clr-text-muted: #7E8B9B;
+    --clr-text-primary: #EAF2F2;
+    --radius-md: 12px;
+    --radius-lg: 20px;
+    --shadow-glow: 0 0 24px rgba(52, 223, 236, 0.15);
+    --font-display: 'Orbitron', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; overflow-x: hidden; }
+
+  body {
+    background-color: var(--clr-canvas);
+    background-image:
+      radial-gradient(circle at 15% 10%, rgba(52,223,236,0.06), transparent 40%),
+      radial-gradient(circle at 85% 30%, rgba(42,128,66,0.08), transparent 45%);
+    color: var(--clr-text-primary);
+    font-family: var(--font-body);
+    line-height: 1.55;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+    width: 100%;
+  }
+
+  a { color: inherit; text-decoration: none; }
+  img { max-width: 100%; height: auto; }
+  ::selection { background: var(--clr-accent-interactive); color: var(--clr-canvas); }
+  :focus-visible { outline: 2px solid var(--clr-accent-interactive); outline-offset: 3px; }
+
+  /* ---------- HEADER (slim — no public nav on a login screen) ---------- */
+  header.site-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 5vw;
+    background: rgba(22, 34, 53, 0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(161, 196, 199, 0.12);
+  }
+  .brand { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
+  .logo-img { display: block; height: 36px; width: auto; max-width: 140px; flex-shrink: 1; }
+  .brand .season-tag {
+    font-family: var(--font-mono); font-size: 0.7rem; color: var(--clr-text-muted);
+    border: 1px solid rgba(161, 196, 199, 0.25); padding: 2px 8px; border-radius: 20px; letter-spacing: 0.05em;
+    white-space: nowrap; flex-shrink: 0;
+  }
+
+  /* ---------- MAIN / LOGIN CARD ---------- */
+  main.login-main {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 6vw 60px;
+  }
+
+  .login-wrap { width: 100%; max-width: 400px; }
+
+  .login-card {
+    background: rgba(30, 45, 66, 0.6);
+    border: 1px solid rgba(161, 196, 199, 0.15);
+    border-radius: var(--radius-lg);
+    backdrop-filter: blur(10px);
+    box-shadow: var(--shadow-glow);
+    padding: clamp(26px, 5vw, 38px);
+  }
+
+  .checking-state {
+    text-align: center;
+    padding: 30px 10px;
+    color: var(--clr-text-muted);
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+  }
+
+  .login-head { text-align: center; margin-bottom: 26px; }
+
+  .login-icon {
+    width: 50px; height: 50px;
+    margin: 0 auto 16px;
+    border-radius: var(--radius-md);
+    background: rgba(52,223,236,0.1);
+    border: 1px solid rgba(52,223,236,0.25);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+  }
+
+  .login-head h1 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.4rem;
+    letter-spacing: 0.02em;
+    margin-bottom: 6px;
+  }
+
+  .login-head p {
+    font-size: 0.85rem;
+    color: var(--clr-text-muted);
+  }
+
+  .field { margin-bottom: 18px; }
+
+  .field label.field-label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--clr-accent-primary);
+    margin-bottom: 8px;
+  }
+
+  input[type="email"],
+  input[type="password"],
+  input[type="text"] {
+    width: 100%;
+    padding: 12px 14px;
+    background: var(--clr-surface);
+    border: 1px solid rgba(161, 196, 199, 0.2);
+    border-radius: var(--radius-md);
+    color: var(--clr-text-primary);
+    font-family: var(--font-body);
+    font-size: 0.92rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  input::placeholder { color: var(--clr-text-muted); }
+
+  input:focus {
+    border-color: var(--clr-accent-interactive);
+    box-shadow: 0 0 0 3px rgba(52, 223, 236, 0.15);
+    outline: none;
+  }
+
+  input.field-error { border-color: var(--clr-danger); }
+
+  .password-wrap { position: relative; }
+  .password-wrap input { padding-right: 46px; }
+
+  .toggle-password {
+    position: absolute;
+    right: 6px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; cursor: pointer;
+    color: var(--clr-text-muted);
+    font-size: 0.78rem;
+    font-family: var(--font-mono);
+    padding: 8px 10px;
+    border-radius: 8px;
+    transition: color 0.2s ease;
+  }
+  .toggle-password:hover { color: var(--clr-accent-interactive); }
+
+  .field-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  .remember-check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: var(--clr-text-muted);
+    cursor: pointer;
+  }
+  .remember-check input { accent-color: var(--clr-accent-interactive); width: 15px; height: 15px; }
+
+  .link-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    color: var(--clr-accent-interactive);
+    padding: 0;
+  }
+  .link-btn:hover { text-decoration: underline; }
+
+  /* Alerts */
+  .alert {
+    display: none;
+    padding: 12px 16px;
+    border-radius: var(--radius-md);
+    font-size: 0.82rem;
+    margin-bottom: 18px;
+    border: 1px solid transparent;
+  }
+  .alert.show { display: block; }
+  .alert-error {
+    background: rgba(226, 76, 76, 0.1);
+    border-color: rgba(226, 76, 76, 0.4);
+    color: #FFB4B4;
+  }
+  .alert-success {
+    background: rgba(42, 128, 66, 0.15);
+    border-color: rgba(42, 128, 66, 0.5);
+    color: #9CF0B0;
+  }
+  .alert-warning {
+    background: rgba(226, 176, 76, 0.1);
+    border-color: rgba(226, 176, 76, 0.4);
+    color: #F3D28A;
+  }
+
+  button.btn-submit {
+    width: 100%;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.88rem;
+    letter-spacing: 0.03em;
+    color: var(--clr-canvas);
+    background: linear-gradient(135deg, var(--clr-accent-interactive), #6BEFF7);
+    border: none;
+    padding: 14px;
+    border-radius: 999px;
+    cursor: pointer;
+    box-shadow: 0 0 24px rgba(52, 223, 236, 0.35);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+  }
+  button.btn-submit:hover:not(:disabled) {
+    transform: scale(1.02);
+    box-shadow: 0 0 32px rgba(52, 223, 236, 0.5);
+  }
+  button.btn-submit:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
+
+  .submit-status {
+    display: block;
+    text-align: center;
+    margin-top: 12px;
+    font-size: 0.78rem;
+    color: var(--clr-text-muted);
+    font-family: var(--font-mono);
+    min-height: 1.1em;
+  }
+
+  .back-link {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 0.82rem;
+    color: var(--clr-text-muted);
+  }
+  .back-link a { color: var(--clr-accent-interactive); }
+
+  .hidden { display: none !important; }
+
+  /* ---------- FOOTER ---------- */
+  footer.site-footer {
+    text-align: center;
+    padding: 26px 5vw;
+    border-top: 1px solid rgba(161,196,199,0.12);
+    font-size: 0.78rem;
+    color: var(--clr-text-muted);
+  }
+  footer.site-footer a { color: var(--clr-accent-interactive); }
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width: 600px) {
+    header.site-header { padding: 14px 4vw; }
+    .logo-img { max-width: 118px; height: 30px; }
+    .brand { gap: 8px; }
+    .brand .season-tag { font-size: 0.62rem; padding: 2px 6px; }
+    main.login-main { padding: 40px 5vw 48px; }
+  }
+
+  @media (max-width: 380px) {
+    .login-card { padding: 22px 18px; }
+    .login-icon { width: 44px; height: 44px; font-size: 1.2rem; }
+    .login-head h1 { font-size: 1.2rem; }
+  }
+
+  @media (max-width: 340px) {
+    header.site-header { padding: 12px 3.5vw; }
+    .logo-img { max-width: 96px; height: 26px; }
+    .brand .season-tag { display: none; }
+    .field-row { flex-direction: column; align-items: flex-start; gap: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <a href="../index.html" class="brand">
+    <img src="../logo.png" alt="PHY LIGA Logo" class="logo-img" width="140" height="36.46" />
+    <span class="season-tag">Admin</span>
+  </a>
+</header>
+
+<main class="login-main">
+  <div class="login-wrap">
+    <div class="login-card">
+
+      <div class="checking-state" id="checkingState">Checking session…</div>
+
+      <div id="loginFormWrap" class="hidden">
+        <div class="login-head">
+          <div class="login-icon">🔒</div>
+          <h1>Organizer Sign In</h1>
+          <p>PHY-LIGA Season 01 — admin console</p>
+        </div>
+
+        <div class="alert alert-error" id="loginError" role="alert"></div>
+        <div class="alert alert-success" id="loginSuccess" role="status"></div>
+        <div class="alert alert-warning" id="loginWarning" role="alert"></div>
+
+        <form id="loginForm" novalidate>
+          <div class="field">
+            <label class="field-label" for="email">Email</label>
+            <input type="email" id="email" name="email" placeholder="you@example.com" autocomplete="username" required />
+          </div>
+
+          <div class="field">
+            <label class="field-label" for="password">Password</label>
+            <div class="password-wrap">
+              <input type="password" id="password" name="password" placeholder="••••••••" autocomplete="current-password" required />
+              <button type="button" class="toggle-password" id="togglePassword" aria-label="Show password">Show</button>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <label class="remember-check">
+              <input type="checkbox" id="rememberMe" checked />
+              Keep me signed in
+            </label>
+            <button type="button" class="link-btn" id="forgotBtn">Forgot password?</button>
+          </div>
+
+          <button type="submit" class="btn-submit" id="submitBtn">Sign In</button>
+          <span class="submit-status" id="submitStatus"></span>
+        </form>
+      </div>
+
+    </div>
+
+    <p class="back-link"><a href="../index.html">← Back to PHY-LIGA</a></p>
+  </div>
+</main>
+
+<footer class="site-footer">
+  © 2026 PHY-LIGA · Developed by <a href="https://www.facebook.com/fardin.0112" target="_blank" rel="noopener">Fardin Hossain</a> · Feathered by <a href="https://www.facebook.com/tawkir.hossain.16" target="_blank" rel="noopener">Tawkir Hossain Rahat</a>
+</footer>
+
+<script type="module">
+  /* ---------- Elements ---------- */
+  const checkingState = document.getElementById("checkingState");
+  const loginFormWrap = document.getElementById("loginFormWrap");
+  const loginForm = document.getElementById("loginForm");
+  const emailInput = document.getElementById("email");
+  const passwordInput = document.getElementById("password");
+  const rememberMe = document.getElementById("rememberMe");
+  const togglePassword = document.getElementById("togglePassword");
+  const forgotBtn = document.getElementById("forgotBtn");
+  const submitBtn = document.getElementById("submitBtn");
+  const submitStatus = document.getElementById("submitStatus");
+
+  const loginError = document.getElementById("loginError");
+  const loginSuccess = document.getElementById("loginSuccess");
+  const loginWarning = document.getElementById("loginWarning");
+
+  function clearAlerts() {
+    [loginError, loginSuccess, loginWarning].forEach(el => {
+      el.classList.remove("show");
+      el.textContent = "";
+    });
+  }
+  function showAlert(el, msg) {
+    clearAlerts();
+    el.textContent = msg;
+    el.classList.add("show");
+  }
+
+  /* ---------- Redirect target (?redirect=...) ---------- */
+  const params = new URLSearchParams(window.location.search);
+  const redirectTarget = params.get("redirect") || "./dashboard.html";
+
+  function safeRedirect(target) {
+    // Only ever redirect within this same site — never follow an
+    // absolute/external URL that might have been passed in the query string.
+    if (target.startsWith("/") || target.startsWith("./") || target.startsWith("../") || /^[a-zA-Z0-9_-]+\.html/.test(target)) {
+      window.location.replace(target);
+    } else {
+      window.location.replace("./dashboard.html");
+    }
+  }
+
+  /* ---------- Password visibility toggle ---------- */
+  togglePassword.addEventListener("click", () => {
+    const showing = passwordInput.type === "text";
+    passwordInput.type = showing ? "password" : "text";
+    togglePassword.textContent = showing ? "Show" : "Hide";
+    togglePassword.setAttribute("aria-label", showing ? "Show password" : "Hide password");
+  });
+
+  /* ---------- Friendly error messages ---------- */
+  function friendlyAuthError(code) {
+    switch (code) {
+      case "auth/invalid-email":
+        return "That doesn't look like a valid email address.";
+      case "auth/user-not-found":
+      case "auth/wrong-password":
+      case "auth/invalid-credential":
+        return "Incorrect email or password.";
+      case "auth/user-disabled":
+        return "This account has been disabled. Contact another admin.";
+      case "auth/too-many-requests":
+        return "Too many attempts — please wait a bit before trying again.";
+      case "auth/network-request-failed":
+        return "Network error — check your connection and try again.";
+      default:
+        return "Something went wrong signing in. Please try again.";
+    }
+  }
+
+  /* ---------- Firebase init ---------- */
+  let auth, signInWithEmailAndPassword, onAuthStateChanged, sendPasswordResetEmail,
+      setPersistence, browserLocalPersistence, browserSessionPersistence;
+  let firebaseReady = false;
+
+  (async function initFirebase() {
+    try {
+      const [{ auth: authInstance }, authMod] = await Promise.all([
+        import("../assets/js/firebase-config.js"),
+        import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js")
+      ]);
+      auth = authInstance;
+      ({ signInWithEmailAndPassword, onAuthStateChanged, sendPasswordResetEmail,
+         setPersistence, browserLocalPersistence, browserSessionPersistence } = authMod);
+      firebaseReady = true;
+
+      // Fires once immediately with the current session, then on every change.
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          checkingState.textContent = "You're already signed in — redirecting…";
+          safeRedirect(redirectTarget);
+        } else {
+          checkingState.classList.add("hidden");
+          loginFormWrap.classList.remove("hidden");
+        }
+      });
+    } catch (err) {
+      console.error("Firebase failed to load:", err);
+      checkingState.textContent =
+        "Couldn't connect to Firebase. If you're opening this file directly on your computer, serve it through a local web server (e.g. VS Code's \"Live Server\" extension, or `npx serve`) or view it on the live deployed site.";
+    }
+  })();
+
+  /* ---------- Sign in ---------- */
+  loginForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    clearAlerts();
+
+    if (!firebaseReady) {
+      showAlert(loginError, "Still connecting to Firebase — please wait a moment and try again.");
+      return;
+    }
+
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+
+    if (!email || !password) {
+      showAlert(loginError, "Please enter both your email and password.");
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitStatus.textContent = "Signing in…";
+
+    try {
+      await setPersistence(auth, rememberMe.checked ? browserLocalPersistence : browserSessionPersistence);
+      await signInWithEmailAndPassword(auth, email, password);
+      submitStatus.textContent = "Signed in — redirecting…";
+      safeRedirect(redirectTarget);
+      // onAuthStateChanged above will also catch this, but we redirect
+      // immediately here rather than waiting on the next listener tick.
+    } catch (err) {
+      console.error(err);
+      showAlert(loginError, friendlyAuthError(err.code));
+      submitBtn.disabled = false;
+      submitStatus.textContent = "";
+    }
+  });
+
+  /* ---------- Forgot password ---------- */
+  forgotBtn.addEventListener("click", async () => {
+    clearAlerts();
+
+    if (!firebaseReady) {
+      showAlert(loginError, "Still connecting to Firebase — please wait a moment and try again.");
+      return;
+    }
+
+    const email = emailInput.value.trim();
+    if (!email) {
+      showAlert(loginWarning, "Enter your email above first, then click \"Forgot password?\" again.");
+      emailInput.focus();
+      return;
+    }
+
+    forgotBtn.disabled = true;
+    try {
+      await sendPasswordResetEmail(auth, email);
+      showAlert(loginSuccess, "If an account exists for that email, a password reset link has been sent.");
+    } catch (err) {
+      console.error(err);
+      if (err.code === "auth/invalid-email") {
+        showAlert(loginError, "That doesn't look like a valid email address.");
+      } else if (err.code === "auth/user-not-found") {
+        // Same generic message as success, so we don't reveal which emails are registered.
+        showAlert(loginSuccess, "If an account exists for that email, a password reset link has been sent.");
+      } else {
+        showAlert(loginError, "Couldn't send the reset email right now. Please try again shortly.");
+      }
+    } finally {
+      forgotBtn.disabled = false;
+    }
+  });
+</script>
+
+</body>
+</html>
