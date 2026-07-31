@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>PHY-LIGA — Season 01 · Department of Physics, University of Dhaka</title>
+<title>PHY-LIGA — Season 01</title>
+<link rel="icon" type="image/png" href="favicon.png" />
 <meta name="description" content="PHY-LIGA Season 01 — the Intra-Department Football Tournament of the Department of Physics, University of Dhaka. Beyond Equations, Into the Game." />
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -31,7 +32,11 @@
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
-  html { scroll-behavior: smooth; }
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    overflow-x: hidden;
+  }
 
   body {
     background-color: var(--clr-canvas);
@@ -42,9 +47,13 @@
     font-family: var(--font-body);
     line-height: 1.55;
     min-height: 100vh;
+    overflow-x: hidden;
+    width: 100%;
   }
 
   a { color: inherit; text-decoration: none; }
+
+  img { max-width: 100%; height: auto; display: block; }
 
   ::selection { background: var(--clr-accent-interactive); color: var(--clr-canvas); }
 
@@ -55,12 +64,14 @@
 
   /* ---------- HEADER / NAV ---------- */
   header.site-header {
-    position: sticky;
+    position: fixed;
+    width: 100%;
     top: 0;
     z-index: 100;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 10px;
     padding: 18px 5vw;
     background: rgba(22, 34, 53, 0.85);
     backdrop-filter: blur(12px);
@@ -72,6 +83,7 @@
     display: flex;
     align-items: baseline;
     gap: 10px;
+    min-width: 0;
   }
 
   .brand .logo-text {
@@ -93,6 +105,16 @@
     padding: 2px 8px;
     border-radius: 20px;
     letter-spacing: 0.05em;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .logo-img {
+    display: block;
+    height: 36px;
+    width: auto;
+    max-width: 140px;
+    flex-shrink: 1;
   }
 
   nav.main-nav ul {
@@ -127,6 +149,9 @@
     font-size: 1.2rem;
     padding: 6px 10px;
     cursor: pointer;
+    flex-shrink: 0;
+    min-width: 44px;
+    min-height: 40px;
   }
 
   /* ---------- HERO ---------- */
@@ -156,8 +181,6 @@
   }
 
   .hero::before {
-    /* darken + tint the photo so it reads as part of the dark UI, and
-       fade it toward the canvas color at the edges/bottom so text stays legible */
     content: "";
     position: absolute;
     inset: 0;
@@ -467,6 +490,13 @@
     .hero-inner { padding-top: 30vh; }
   }
 
+  @media (max-width: 600px) {
+    header.site-header { padding: 14px 4vw; }
+    .logo-img { max-width: 118px; height: 30px; }
+    .brand { gap: 8px; }
+    .brand .season-tag { font-size: 0.62rem; padding: 2px 6px; }
+  }
+
   @media (max-width: 480px) {
     .cd-unit { min-width: 46px; }
     .cd-unit .cd-num { font-size: 1.3rem; }
@@ -481,10 +511,27 @@
 
     .hero-title { font-size: clamp(2.1rem, 11vw, 2.6rem); }
     .hero-desc { font-size: 0.88rem; }
+
+    .btn { padding: 13px 22px; font-size: 0.8rem; }
+    .hero-ctas { gap: 12px; }
   }
 
   @media (max-width: 380px) {
     .hero { background-position: 70% center; }
+  }
+
+  @media (max-width: 340px) {
+    header.site-header { padding: 12px 3.5vw; }
+    .logo-img { max-width: 96px; height: 26px; }
+    .brand .season-tag { display: none; }
+    .nav-toggle { padding: 5px 8px; font-size: 1.05rem; }
+    .cd-unit { min-width: 40px; }
+    .cd-unit .cd-num { font-size: 1.1rem; }
+    .countdown-strip { padding: 16px; }
+  }
+
+  @media (max-width: 340px) and (orientation: portrait) {
+    .hero-title { font-size: clamp(1.9rem, 12vw, 2.3rem); }
   }
 </style>
 </head>
@@ -493,7 +540,6 @@
 <header class="site-header">
   <a href="index.html" class="brand" style="cursor:pointer;">
     <img src="logo.png" alt="PHY LIGA Logo" class="logo-img" width="140" height="36.46" />
-    <!-- <span class="logo-text">PHY LIGA</span> -->
     <span class="season-tag">Season 01</span>
   </a>
   <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">☰</button>
@@ -506,7 +552,8 @@
       <li><a href="stats.html">Statistics</a></li>
       <li><a href="fixture.html">Fixture</a></li>
       <li><a href="scoreboard.html">Scoreboard</a></li>
-      <li><a href="memory.html">Memory</a></li>
+      <li><a href="memory.html">Memory</a></li>      
+      <li><a href="admin\login.html">Admin</a></li>
     </ul>
   </nav>
 </header>
@@ -656,12 +703,6 @@
   updateCountdown();
   setInterval(updateCountdown, 60000);
 
-  /* ---------- Quick stats (best-effort, read-only, zero writes) ----------
-     If Firebase fails to load (e.g. file opened directly instead of served,
-     or a network block), the stat boxes just stay at their placeholder "–"
-     — nothing above this depends on it, so the rest of the homepage
-     (hero, countdown, nav, feature cards) keeps working regardless.
-  ------------------------------------------------------------------- */
   (async function loadQuickStats() {
     try {
       const [{ db }, firestoreMod] = await Promise.all([
@@ -687,7 +728,7 @@
       document.getElementById("statRegs").textContent = snap.size;
     } catch (err) {
       console.error("Quick stats unavailable:", err);
-      // Leave placeholders as "–" — homepage remains fully usable.
+      
     }
   })();
 </script>

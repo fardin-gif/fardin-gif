@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Players — PHY-LIGA</title>
+<link rel="icon" type="image/png" href="favicon.png" />
 <meta name="description" content="Browse every registered player of PHY-LIGA Season 01 — the Intra-Department Football Tournament of the Department of Physics, University of Dhaka." />
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -30,7 +31,7 @@
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
+  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; overflow-x: hidden; }
 
   body {
     background-color: var(--clr-canvas);
@@ -41,9 +42,12 @@
     font-family: var(--font-body);
     line-height: 1.55;
     min-height: 100vh;
+    overflow-x: hidden;
+    width: 100%;
   }
 
   a { color: inherit; text-decoration: none; }
+  img { max-width: 100%; height: auto; }
   ::selection { background: var(--clr-accent-interactive); color: var(--clr-canvas); }
   :focus-visible { outline: 2px solid var(--clr-accent-interactive); outline-offset: 3px; }
 
@@ -51,16 +55,18 @@
   header.site-header {
     position: sticky; top: 0; z-index: 100;
     display: flex; align-items: center; justify-content: space-between;
+    gap: 10px;
     padding: 18px 5vw;
     background: rgba(22, 34, 53, 0.85);
     backdrop-filter: blur(12px);
     border-bottom: 1px solid rgba(161, 196, 199, 0.12);
   }
-  .brand { display: flex; align-items: baseline; gap: 10px; }
-  .logo-img { display: block; height: 36px; width: auto; }
+  .brand { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
+  .logo-img { display: block; height: 36px; width: auto; max-width: 140px; flex-shrink: 1; }
   .brand .season-tag {
     font-family: var(--font-mono); font-size: 0.7rem; color: var(--clr-text-muted);
     border: 1px solid rgba(161, 196, 199, 0.25); padding: 2px 8px; border-radius: 20px; letter-spacing: 0.05em;
+    white-space: nowrap; flex-shrink: 0;
   }
   nav.main-nav ul { list-style: none; display: flex; gap: clamp(10px, 1.6vw, 26px); flex-wrap: wrap; }
   nav.main-nav a {
@@ -72,6 +78,7 @@
   .nav-toggle {
     display: none; background: none; border: 1px solid rgba(161,196,199,0.3); border-radius: 8px;
     color: var(--clr-text-primary); font-size: 1.2rem; padding: 6px 10px; cursor: pointer;
+    flex-shrink: 0; min-width: 44px; min-height: 40px;
   }
 
   /* ---------- PAGE INTRO ---------- */
@@ -94,7 +101,7 @@
     display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px;
   }
 
-  .toolbar .field-group { display: flex; flex-direction: column; gap: 6px; }
+  .toolbar .field-group { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
   .toolbar .field-group label {
     font-family: var(--font-mono); font-size: 0.68rem; text-transform: uppercase;
     letter-spacing: 0.07em; color: var(--clr-text-muted);
@@ -115,7 +122,7 @@
   }
 
   .toolbar select {
-    padding: 10px 34px 10px 12px; min-width: 118px;
+    padding: 10px 34px 10px 12px; min-width: 118px; max-width: 100%;
     background: var(--clr-surface); border: 1px solid rgba(161, 196, 199, 0.2);
     border-radius: var(--radius-md); color: var(--clr-text-primary);
     font-family: var(--font-body); font-size: 0.85rem; cursor: pointer; appearance: none;
@@ -128,6 +135,7 @@
     font-family: var(--font-mono); font-size: 0.78rem; color: var(--clr-accent-interactive);
     background: transparent; border: 1px solid rgba(52,223,236,0.3); border-radius: var(--radius-md);
     padding: 10px 16px; cursor: pointer; transition: all 0.2s ease; white-space: nowrap;
+    min-height: 40px;
   }
   .toolbar .reset-btn:hover { background: rgba(52,223,236,0.1); border-color: var(--clr-accent-interactive); }
 
@@ -144,6 +152,7 @@
     background: rgba(52,223,236,0.08); border: 1px solid rgba(52,223,236,0.3);
     color: var(--clr-accent-interactive); border-radius: 999px; padding: 4px 10px 4px 12px;
     font-family: var(--font-mono); font-size: 0.72rem;
+    max-width: 100%;
   }
   .chip button {
     background: none; border: none; color: inherit; cursor: pointer; font-size: 0.85rem; line-height: 1; padding: 0;
@@ -166,10 +175,11 @@
     padding: 20px 18px;
     transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
     display: flex; flex-direction: column; gap: 14px;
+    min-width: 0;
   }
   .player-card:hover { transform: translateY(-4px); border-color: rgba(52,223,236,0.4); box-shadow: var(--shadow-glow); }
 
-  .pc-top { display: flex; align-items: center; gap: 14px; }
+  .pc-top { display: flex; align-items: center; gap: 14px; min-width: 0; }
 
   .pc-avatar {
     position: relative; width: 58px; height: 58px; border-radius: 14px; flex-shrink: 0;
@@ -182,7 +192,7 @@
     font-family: var(--font-display); font-weight: 700; font-size: 1.3rem; color: var(--clr-accent-interactive);
   }
 
-  .pc-name-role { min-width: 0; }
+  .pc-name-role { min-width: 0; flex: 1; }
   .pc-name { font-family: var(--font-display); font-size: 0.95rem; font-weight: 700; letter-spacing: 0.01em; line-height: 1.3;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .pc-role {
@@ -204,6 +214,7 @@
   }
   .pc-team {
     font-size: 0.75rem; color: var(--clr-text-muted); padding-top: 10px; border-top: 1px dashed rgba(161,196,199,0.15);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
   .pc-team b { color: var(--clr-accent-primary); }
 
@@ -241,13 +252,30 @@
     .toolbar select { width: 100%; }
   }
 
+  @media (max-width: 600px) {
+    header.site-header { padding: 14px 4vw; }
+    .logo-img { max-width: 118px; height: 30px; }
+    .brand { gap: 8px; }
+    .brand .season-tag { font-size: 0.62rem; padding: 2px 6px; }
+    .result-summary { flex-direction: column; align-items: flex-start; }
+  }
+
   @media (max-width: 480px) {
     .page-intro { margin-top: 32px; }
     .players-grid { grid-template-columns: 1fr 1fr; }
+    .pc-name { font-size: 0.85rem; }
+    .pc-avatar { width: 48px; height: 48px; }
   }
 
   @media (max-width: 360px) {
     .players-grid { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 340px) {
+    header.site-header { padding: 12px 3.5vw; }
+    .logo-img { max-width: 96px; height: 26px; }
+    .brand .season-tag { display: none; }
+    .nav-toggle { padding: 5px 8px; font-size: 1.05rem; }
   }
 </style>
 </head>
@@ -291,6 +319,10 @@
         <label for="batchFilter">Batch</label>
         <select id="batchFilter">
           <option value="">All batches</option>
+          <option value="95">95</option>
+          <option value="96">96</option>
+          <option value="97">97</option>
+          <option value="98">98</option>
           <option value="99">99</option>
           <option value="100">100</option>
           <option value="101">101</option>

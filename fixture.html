@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Fixtures — PHY-LIGA</title>
+<link rel="icon" type="image/png" href="favicon.png" />
+<meta name="description" content="PHY-LIGA Season 01 — full match schedule, grouped by round, with live scores and results." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  /* ===== VARIABLES (match register.html) ===== */
+  :root {
+    --clr-canvas: #162235;
+    --clr-surface: #1E2D42;
+    --clr-surface-alt: #253850;
+    --clr-accent-primary: #A1C4C7;
+    --clr-accent-interactive: #34DFEC;
+    --clr-highlight: #2A8042;
+    --clr-danger: #E24C4C;
+    --clr-paused: #F3A65C;
+    --clr-delayed: #F0C850;
+    --clr-text-muted: #7E8B9B;
+    --clr-text-primary: #EAF2F2;
+    --radius-md: 12px;
+    --radius-lg: 20px;
+    --shadow-glow: 0 0 24px rgba(52, 223, 236, 0.15);
+    --font-display: 'Orbitron', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+  }
+
+  /* ===== RESET & BASE ===== */
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    overflow-x: hidden;
+  }
+  body {
+    background-color: var(--clr-canvas);
+    background-image:
+      radial-gradient(circle at 15% 10%, rgba(52,223,236,0.06), transparent 40%),
+      radial-gradient(circle at 85% 30%, rgba(42,128,66,0.08), transparent 45%);
+    color: var(--clr-text-primary);
+    font-family: var(--font-body);
+    line-height: 1.55;
+    min-height: 100vh;
+    overflow-x: hidden;
+    width: 100%;
+  }
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+  img {
+    max-width: 100%;
+    display: block;
+  }
+  ::selection {
+    background: var(--clr-accent-interactive);
+    color: var(--clr-canvas);
+  }
+  :focus-visible {
+    outline: 2px solid var(--clr-accent-interactive);
+    outline-offset: 3px;
+  }
+  .hidden {
+    display: none !important;
+  }
+
+  /* ===== HEADER / NAV (matches register.html) ===== */
+  header.site-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 18px 5vw;
+    background: rgba(22, 34, 53, 0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(161, 196, 199, 0.12);
+    transition: padding 0.25s ease;
+  }
+  header.site-header.scrolled {
+    padding: 10px 5vw;
+  }
+
+  .brand {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    min-width: 0;
+    cursor: pointer;
+  }
+  .brand .logo-text {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(1.1rem, 2vw, 1.5rem);
+    letter-spacing: 0.06em;
+    background: linear-gradient(135deg, var(--clr-accent-interactive), var(--clr-accent-primary));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .brand .season-tag {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--clr-text-muted);
+    border: 1px solid rgba(161, 196, 199, 0.25);
+    padding: 2px 8px;
+    border-radius: 20px;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .logo-img {
+    display: block;
+    height: 36px;
+    width: auto;
+    max-width: 140px;
+    flex-shrink: 1;
+  }
+
+  nav.main-nav ul {
+    list-style: none;
+    display: flex;
+    gap: clamp(10px, 1.6vw, 26px);
+    flex-wrap: wrap;
+  }
+  nav.main-nav a {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--clr-accent-primary);
+    padding-bottom: 4px;
+    border-bottom: 2px solid transparent;
+    transition: color 0.2s ease, border-color 0.2s ease;
+    white-space: nowrap;
+  }
+  nav.main-nav a:hover,
+  nav.main-nav a.active {
+    color: var(--clr-accent-interactive);
+    border-bottom-color: var(--clr-accent-interactive);
+  }
+
+  .nav-toggle {
+    display: none;
+    background: none;
+    border: 1px solid rgba(161, 196, 199, 0.3);
+    border-radius: 8px;
+    color: var(--clr-text-primary);
+    font-size: 1.2rem;
+    padding: 6px 10px;
+    cursor: pointer;
+    flex-shrink: 0;
+    min-width: 44px;
+    min-height: 40px;
+  }
+
+  /* ===== PAGE INTRO (matches register.html) ===== */
+  .page-intro {
+    max-width: 1180px;
+    margin: 48px auto 0;
+    padding: 0 6vw;
+    text-align: left;
+  }
+  .page-intro .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--clr-accent-interactive);
+    margin-bottom: 10px;
+  }
+  .page-intro h1 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+    letter-spacing: 0.02em;
+    margin-bottom: 8px;
+  }
+  .page-intro .page-desc {
+    color: var(--clr-text-muted);
+    font-size: 0.95rem;
+    max-width: 680px;
+  }
+
+  /* ===== SECTION WRAP ===== */
+  .section-wrap {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 30px 6vw 60px;
+  }
+
+  /* ===== FILTER BAR (glassmorphism like info-card) ===== */
+  .filter-bar {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 30px;
+    padding: 20px clamp(16px, 3vw, 28px);
+    background: rgba(30, 45, 66, 0.55);
+    border: 1px solid rgba(161, 196, 199, 0.15);
+    border-radius: var(--radius-lg);
+    backdrop-filter: blur(10px);
+  }
+  .filter-bar select,
+  .filter-bar input[type="text"] {
+    padding: 10px 13px;
+    background: var(--clr-surface);
+    border: 1px solid rgba(161, 196, 199, 0.2);
+    border-radius: var(--radius-md);
+    color: var(--clr-text-primary);
+    font-family: var(--font-body);
+    font-size: 0.84rem;
+    min-width: 150px;
+  }
+  .filter-bar select {
+    appearance: none;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2334DFEC' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+  }
+  .filter-bar select:focus,
+  .filter-bar input:focus {
+    border-color: var(--clr-accent-interactive);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(52, 223, 236, 0.15);
+  }
+  .filter-bar .filter-search {
+    flex: 1;
+    min-width: 180px;
+  }
+  .filter-bar .filter-reset {
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    color: var(--clr-text-muted);
+    background: transparent;
+    border: 1px solid rgba(161, 196, 199, 0.2);
+    border-radius: 999px;
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+  .filter-bar .filter-reset:hover {
+    border-color: var(--clr-accent-interactive);
+    color: var(--clr-accent-interactive);
+  }
+
+  /* ===== ROUND GROUPS ===== */
+  .round-group {
+    margin-bottom: 44px;
+  }
+  .round-group:last-child {
+    margin-bottom: 0;
+  }
+  .round-group-title {
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    letter-spacing: 0.03em;
+    color: var(--clr-text-primary);
+    margin-bottom: 18px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(161, 196, 199, 0.15);
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .round-group-title .rg-count {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--clr-text-muted);
+    font-weight: 400;
+  }
+
+  .fixtures-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+  }
+
+  /* ===== FIXTURE CARD (glassmorphism, matches register.html cards) ===== */
+  .fixture-card {
+    position: relative;
+    background: rgba(30, 45, 66, 0.55);
+    border: 1px solid rgba(161, 196, 199, 0.15);
+    border-radius: var(--radius-lg);
+    backdrop-filter: blur(10px);
+    padding: 20px;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+  }
+  .fixture-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(161, 196, 199, 0.3);
+  }
+  .fixture-card.is-live {
+    border-color: rgba(42, 128, 66, 0.55);
+    box-shadow: 0 0 24px rgba(42, 128, 66, 0.18);
+  }
+  .fixture-card.is-paused {
+    border-color: rgba(243, 166, 92, 0.55);
+    box-shadow: 0 0 24px rgba(243, 166, 92, 0.16);
+  }
+
+  .fc-top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .fc-match-tag {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--clr-text-muted);
+  }
+
+  /* Status badges (keep existing colors) */
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+  .status-badge.st-upcoming  { color: var(--clr-accent-primary); background: rgba(161,196,199,0.1); border: 1px solid rgba(161,196,199,0.25); }
+  .status-badge.st-live      { color: #9CF0B0; background: rgba(42,128,66,0.18); border: 1px solid rgba(42,128,66,0.45); }
+  .status-badge.st-halftime  { color: #F3D28A; background: rgba(226,176,76,0.12); border: 1px solid rgba(226,176,76,0.35); }
+  .status-badge.st-paused    { color: var(--clr-paused); background: rgba(243,166,92,0.14); border: 1px solid rgba(243,166,92,0.4); }
+  .status-badge.st-postponed { color: #FFB4B4; background: rgba(226,76,76,0.12); border: 1px solid rgba(226,76,76,0.35); }
+  .status-badge.st-delayed   { color: var(--clr-delayed); background: rgba(240,200,80,0.12); border: 1px solid rgba(240,200,80,0.35); }
+  .status-badge.st-completed { color: var(--clr-accent-interactive); background: rgba(52,223,236,0.08); border: 1px solid rgba(52,223,236,0.25); }
+
+  .live-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #9CF0B0;
+    animation: pulseDot 1.4s infinite;
+  }
+  @keyframes pulseDot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.25; }
+  }
+
+  .fc-vs-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .fc-team {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 9px;
+    flex: 1;
+    min-width: 0;
+    text-align: center;
+  }
+  .fc-team-logo {
+    position: relative;
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: linear-gradient(135deg, rgba(52,223,236,0.18), rgba(42,128,66,0.18));
+    border: 1px solid rgba(161,196,199,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .fc-team-logo img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
+  }
+  .fc-team-logo-fallback {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--clr-accent-interactive);
+  }
+  .fc-team-name {
+    font-size: 0.82rem;
+    font-weight: 600;
+    line-height: 1.25;
+    word-break: break-word;
+  }
+  .fc-score-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+    padding: 0 8px;
+  }
+  .fc-score {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 1.6rem;
+    color: var(--clr-text-primary);
+    white-space: nowrap;
+  }
+  .fc-score .sep {
+    color: var(--clr-text-muted);
+    margin: 0 4px;
+  }
+  .fc-vs-label {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--clr-text-muted);
+  }
+  .fc-minute {
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    color: #9CF0B0;
+    margin-top: 2px;
+  }
+
+  .fc-meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    font-size: 0.78rem;
+    color: var(--clr-text-muted);
+    padding-top: 14px;
+    border-top: 1px solid rgba(161,196,199,0.1);
+  }
+  .fc-meta-row .meta-icon {
+    opacity: 0.7;
+    margin-right: 4px;
+  }
+
+  .fc-status-note {
+    font-size: 0.76rem;
+    color: var(--clr-text-muted);
+    margin-top: 10px;
+    padding: 8px 10px;
+    background: rgba(255,255,255,0.03);
+    border-radius: var(--radius-md);
+    border: 1px dashed rgba(161,196,199,0.18);
+  }
+
+  .fc-live-link {
+    display: block;
+    margin-top: 14px;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    padding: 10px 14px;
+    border-radius: var(--radius-md);
+    background: linear-gradient(135deg, #9CF0B0, #2A8042);
+    color: var(--clr-canvas);
+    transition: transform 0.15s ease;
+  }
+  .fc-live-link:hover {
+    transform: scale(1.02);
+  }
+
+  /* ===== STATES (matching register.html style) ===== */
+  .state-box {
+    text-align: center;
+    padding: 70px 20px;
+    color: var(--clr-text-muted);
+    background: rgba(30, 45, 66, 0.5);
+    border: 1px solid rgba(161, 196, 199, 0.15);
+    border-radius: var(--radius-lg);
+    backdrop-filter: blur(10px);
+  }
+  .state-box .state-icon {
+    font-size: 2rem;
+    margin-bottom: 12px;
+  }
+  .state-box h3 {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    color: var(--clr-text-primary);
+    margin-bottom: 8px;
+  }
+  .state-box p {
+    font-size: 0.88rem;
+    max-width: 440px;
+    margin: 0 auto;
+  }
+
+  .loading-strip {
+    text-align: center;
+    padding: 50px 20px;
+    color: var(--clr-text-muted);
+    font-family: var(--font-mono);
+    font-size: 0.88rem;
+  }
+  .skeleton-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+  }
+  .skeleton-card {
+    height: 210px;
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(161,196,199,0.1);
+    background: linear-gradient(90deg, rgba(255,255,255,0.02) 25%, rgba(255,255,255,0.05) 37%, rgba(255,255,255,0.02) 63%);
+    background-size: 400% 100%;
+    animation: shimmer 1.6s ease infinite;
+  }
+  @keyframes shimmer {
+    0% { background-position: 100% 0; }
+    100% { background-position: -100% 0; }
+  }
+
+  /* ===== FOOTER (matches register.html) ===== */
+  footer.site-footer {
+    text-align: center;
+    padding: 26px 5vw;
+    border-top: 1px solid rgba(161, 196, 199, 0.12);
+    font-size: 0.78rem;
+    color: var(--clr-text-muted);
+  }
+  footer.site-footer a {
+    color: var(--clr-accent-interactive);
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 768px) {
+    nav.main-nav {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: rgba(22, 34, 53, 0.97);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(161, 196, 199, 0.12);
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+    nav.main-nav.open {
+      max-height: 400px;
+    }
+    nav.main-nav ul {
+      flex-direction: column;
+      padding: 16px 6vw;
+      gap: 14px;
+    }
+    .nav-toggle {
+      display: block;
+    }
+  }
+
+  @media (max-width: 600px) {
+    header.site-header {
+      padding: 14px 4vw;
+    }
+    .logo-img {
+      max-width: 118px;
+      height: 30px;
+    }
+    .brand {
+      gap: 8px;
+    }
+    .brand .season-tag {
+      font-size: 0.62rem;
+      padding: 2px 6px;
+    }
+    .page-intro {
+      margin-top: 32px;
+    }
+    .filter-bar select,
+    .filter-bar input[type="text"] {
+      min-width: 0;
+      flex: 1 1 45%;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .page-intro {
+      margin-top: 30px;
+    }
+    .fixtures-grid {
+      grid-template-columns: 1fr;
+    }
+    .filter-bar {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .filter-bar .filter-reset {
+      align-self: flex-start;
+    }
+  }
+
+  @media (max-width: 340px) {
+    header.site-header {
+      padding: 12px 3.5vw;
+    }
+    .logo-img {
+      max-width: 96px;
+      height: 26px;
+    }
+    .brand .season-tag {
+      display: none;
+    }
+    .nav-toggle {
+      padding: 5px 8px;
+      font-size: 1.05rem;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header" id="siteHeader">
+  <a href="index.html" class="brand" style="cursor:pointer;">
+    <img src="logo.png" alt="PHY LIGA Logo" class="logo-img" width="140" height="36.46" />
+    <span class="season-tag">Season 01</span>
+  </a>
+  <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+  <nav class="main-nav" id="mainNav">
+    <ul>
+      <li><a href="auction.html">Auction</a></li>
+      <li><a href="register.html">Player Registration</a></li>
+      <li><a href="players.html">Players</a></li>
+      <li><a href="teams.html">Teams</a></li>
+      <li><a href="stats.html">Statistics</a></li>
+      <li><a href="fixture.html" class="active">Fixture</a></li>
+      <li><a href="scoreboard.html">Scoreboard</a></li>
+      <li><a href="memory.html">Memory</a></li>
+      <li><a href="about.html">About</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main>
+  <section class="page-intro">
+    <p class="eyebrow">Season 01</p>
+    <h1>Fixtures</h1>
+    <p class="page-desc">Every PHY-LIGA match, grouped by round. Live matches are marked in green — tap through to the Scoreboard for minute-by-minute updates.</p>
+  </section>
+
+  <section class="section-wrap">
+    <div class="filter-bar">
+      <select id="filterRound" aria-label="Filter by round">
+        <option value="all">All rounds</option>
+        <option value="Group Stage">Group Stage</option>
+        <option value="Quarter Final">Quarter Final</option>
+        <option value="Semi Final">Semi Final</option>
+        <option value="Final">Final</option>
+      </select>
+      <select id="filterStatus" aria-label="Filter by status">
+        <option value="all">All statuses</option>
+        <option value="upcoming">Upcoming</option>
+        <option value="postponed">Postponed</option>
+        <option value="delayed">Delayed</option>
+        <option value="live">Live / In-play</option>
+        <option value="completed">Completed</option>
+      </select>
+      <select id="filterTeam" aria-label="Filter by team"><option value="all">All teams</option></select>
+      <input type="text" id="filterSearch" class="filter-search" placeholder="Search team, venue or referee…" aria-label="Search fixtures" />
+      <button type="button" class="filter-reset" id="filterReset">Reset filters</button>
+    </div>
+
+    <div id="fixturesListWrap">
+      <div class="skeleton-grid">
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  © 2026 PHY-LIGA · Developed by <a href="https://www.facebook.com/fardin.0112" target="_blank" rel="noopener">Fardin Hossain</a> · Feathered by <a href="https://www.facebook.com/tawkir.hossain.16" target="_blank" rel="noopener">Tawkir Hossain Rahat</a>
+</footer>
+
+<script type="module">
+  /* ---------- Constants ---------- */
+  const ROUND_ORDER = ["Group Stage", "Quarter Final", "Semi Final", "Final"];
+  const LIVE_DOC_STATES = ["live", "half-time", "paused"];
+
+  /* ---------- Elements ---------- */
+  const siteHeader = document.getElementById("siteHeader");
+  const navToggle = document.getElementById("navToggle");
+  const mainNav = document.getElementById("mainNav");
+
+  const fixturesListWrap = document.getElementById("fixturesListWrap");
+  const filterRoundSelect = document.getElementById("filterRound");
+  const filterStatusSelect = document.getElementById("filterStatus");
+  const filterTeamSelect = document.getElementById("filterTeam");
+  const filterSearchInput = document.getElementById("filterSearch");
+  const filterResetBtn = document.getElementById("filterReset");
+
+  /* ---------- State ---------- */
+  let allTeams = [];
+  let allFixtures = [];
+  let liveMatchData = null;
+  let teamsLoaded = false;
+  let fixturesLoaded = false;
+  let filterState = { round: "all", status: "all", team: "all", search: "" };
+
+  /* ---------- Helpers ---------- */
+  function escapeHtml(str) {
+    return String(str ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+  function initialOf(name) { return (name || "?").trim().charAt(0).toUpperCase() || "?"; }
+  function driveThumb(link) {
+    if (!link) return null;
+    const m = link.match(/\/d\/([a-zA-Z0-9_-]+)/) || link.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    if (m && m[1]) return `https://drive.google.com/thumbnail?id=${m[1]}&sz=w200`;
+    return link;
+  }
+  function formatDate(dateStr) {
+    if (!dateStr) return "TBD";
+    const d = new Date(dateStr + "T00:00:00");
+    if (isNaN(d.getTime())) return dateStr;
+    return d.toLocaleDateString("en-GB", { weekday: "short", day: "2-digit", month: "short", year: "numeric" });
+  }
+  function formatTime(timeStr) {
+    if (!timeStr) return "";
+    const [h, m] = timeStr.split(":").map(Number);
+    if (Number.isNaN(h) || Number.isNaN(m)) return timeStr;
+    const period = h >= 12 ? "PM" : "AM";
+    const h12 = ((h + 11) % 12) + 1;
+    return `${h12}:${String(m).padStart(2, "0")} ${period}`;
+  }
+
+  /* ---------- Nav ---------- */
+  navToggle.addEventListener("click", () => {
+    const isOpen = mainNav.classList.toggle("open");
+    navToggle.setAttribute("aria-expanded", String(isOpen));
+    navToggle.textContent = isOpen ? "✕" : "☰";
+  });
+
+  // Close nav on link click
+  mainNav.querySelectorAll("a").forEach(link => link.addEventListener("click", () => {
+    mainNav.classList.remove("open");
+    navToggle.setAttribute("aria-expanded", "false");
+    navToggle.textContent = "☰";
+  }));
+
+  // Close nav on Escape
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      mainNav.classList.remove("open");
+      navToggle.setAttribute("aria-expanded", "false");
+      navToggle.textContent = "☰";
+    }
+  });
+
+  window.addEventListener("scroll", () => {
+    siteHeader.classList.toggle("scrolled", window.scrollY > 30);
+  }, { passive: true });
+
+  /* ---------- Firebase init (read-only) ---------- */
+  (async function init() {
+    let db, collection, onSnapshot, doc;
+    try {
+      const [configMod, firestoreMod] = await Promise.all([
+        import("./assets/js/firebase-config.js"),
+        import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js")
+      ]);
+      db = configMod.db;
+      ({ collection, onSnapshot, doc } = firestoreMod);
+    } catch (err) {
+      console.error("Firebase failed to load:", err);
+      fixturesListWrap.innerHTML = `
+        <div class="state-box">
+          <div class="state-icon">⚠️</div>
+          <h3>Couldn't connect</h3>
+          <p>If you're opening this file directly on your computer, serve it through a local web server (e.g. VS Code's "Live Server" extension, or <code>npx serve</code>) or view it on the live deployed site.</p>
+        </div>`;
+      return;
+    }
+
+    onSnapshot(collection(db, "teams"), (snap) => {
+      allTeams = [];
+      snap.forEach(d => allTeams.push({ id: d.id, ...d.data() }));
+      allTeams.sort((a, b) => (a.teamName || "").localeCompare(b.teamName || ""));
+      teamsLoaded = true;
+      populateTeamFilter();
+      renderFixtures();
+    }, (err) => console.error("teams listener error:", err));
+
+    onSnapshot(collection(db, "fixtures"), (snap) => {
+      allFixtures = [];
+      snap.forEach(d => allFixtures.push({ id: d.id, ...d.data() }));
+      fixturesLoaded = true;
+      renderFixtures();
+    }, (err) => {
+      console.error("fixtures listener error:", err);
+      fixturesListWrap.innerHTML = `
+        <div class="state-box">
+          <div class="state-icon">⚠️</div>
+          <h3>Couldn't load fixtures</h3>
+          <p>Please check your connection and try refreshing the page.</p>
+        </div>`;
+    });
+
+    onSnapshot(doc(db, "liveMatch", "current"), (snap) => {
+      liveMatchData = snap.exists() ? snap.data() : null;
+      renderFixtures();
+    }, (err) => console.error("liveMatch listener error:", err));
+  })();
+
+  /* ---------- Filters ---------- */
+  function populateTeamFilter() {
+    const current = filterTeamSelect.value;
+    const options = allTeams.map(t => `<option value="${t.id}">${escapeHtml(t.teamName || "Unnamed")}</option>`).join("");
+    filterTeamSelect.innerHTML = `<option value="all">All teams</option>` + options;
+    if (current && [...filterTeamSelect.options].some(o => o.value === current)) filterTeamSelect.value = current;
+  }
+  filterRoundSelect.addEventListener("change", () => { filterState.round = filterRoundSelect.value; renderFixtures(); });
+  filterStatusSelect.addEventListener("change", () => { filterState.status = filterStatusSelect.value; renderFixtures(); });
+  filterTeamSelect.addEventListener("change", () => { filterState.team = filterTeamSelect.value; renderFixtures(); });
+  filterSearchInput.addEventListener("input", () => { filterState.search = filterSearchInput.value.trim(); renderFixtures(); });
+  filterResetBtn.addEventListener("click", () => {
+    filterState = { round: "all", status: "all", team: "all", search: "" };
+    filterRoundSelect.value = "all"; filterStatusSelect.value = "all"; filterTeamSelect.value = "all"; filterSearchInput.value = "";
+    renderFixtures();
+  });
+
+  function fixtureEffectiveStatus(f) {
+    const isLiveNow = liveMatchData && liveMatchData.fixtureId === f.id && LIVE_DOC_STATES.includes(liveMatchData.status);
+    return isLiveNow ? liveMatchData.status : f.status;
+  }
+
+  function getFilteredFixtures() {
+    return allFixtures.filter(f => {
+      if (filterState.round !== "all" && f.round !== filterState.round) return false;
+      if (filterState.status !== "all") {
+        const eff = fixtureEffectiveStatus(f);
+        if (filterState.status === "live") { if (!LIVE_DOC_STATES.includes(eff)) return false; }
+        else if (eff !== filterState.status) return false;
+      }
+      if (filterState.team !== "all" && f.teamAId !== filterState.team && f.teamBId !== filterState.team) return false;
+      if (filterState.search) {
+        const s = filterState.search.toLowerCase();
+        const hay = `${f.teamAName || ""} ${f.teamBName || ""} ${f.venue || ""} ${f.referee || ""}`.toLowerCase();
+        if (!hay.includes(s)) return false;
+      }
+      return true;
+    });
+  }
+
+  function sortFixtures(a, b) {
+    const da = a.date || "", dbv = b.date || "";
+    if (da !== dbv) return da.localeCompare(dbv);
+    const ta = a.time || "", tb = b.time || "";
+    if (ta !== tb) return ta.localeCompare(tb);
+    return (Number(a.matchNumber) || 0) - (Number(b.matchNumber) || 0);
+  }
+
+  /* ---------- Render ---------- */
+  function renderFixtures() {
+    if (!teamsLoaded || !fixturesLoaded) return;
+
+    if (!allFixtures.length) {
+      fixturesListWrap.innerHTML = `
+        <div class="state-box">
+          <div class="state-icon">🗓️</div>
+          <h3>Fixtures haven't been announced yet</h3>
+          <p>Check back soon — the Season 01 schedule will appear here as soon as it's finalized.</p>
+        </div>`;
+      return;
+    }
+
+    const filtered = getFilteredFixtures();
+    if (!filtered.length) {
+      fixturesListWrap.innerHTML = `
+        <div class="state-box">
+          <div class="state-icon">🔎</div>
+          <h3>No fixtures match your filters</h3>
+          <p>Try clearing a filter to see more matches.</p>
+        </div>`;
+      return;
+    }
+
+    const groups = ROUND_ORDER
+      .map(round => ({ round, items: filtered.filter(f => f.round === round).sort(sortFixtures) }))
+      .filter(g => g.items.length);
+
+    const known = new Set(ROUND_ORDER);
+    const other = filtered.filter(f => !known.has(f.round)).sort(sortFixtures);
+    if (other.length) groups.push({ round: "Other", items: other });
+
+    fixturesListWrap.innerHTML = groups.map(g => `
+      <div class="round-group">
+        <div class="round-group-title">${escapeHtml(g.round)} <span class="rg-count">${g.items.length} match${g.items.length === 1 ? "" : "es"}</span></div>
+        <div class="fixtures-grid">${g.items.map(renderFixtureCard).join("")}</div>
+      </div>
+    `).join("");
+  }
+
+  function statusBadgeInfo(displayStatus) {
+    switch (displayStatus) {
+      case "live":      return { cls: "st-live", label: "Live", dot: true };
+      case "half-time": return { cls: "st-halftime", label: "Half-time", dot: false };
+      case "paused":    return { cls: "st-paused", label: "Paused", dot: false };
+      case "postponed": return { cls: "st-postponed", label: "Postponed", dot: false };
+      case "delayed":   return { cls: "st-delayed", label: "Delayed", dot: false };
+      case "completed": return { cls: "st-completed", label: "Completed", dot: false };
+      default:          return { cls: "st-upcoming", label: "Upcoming", dot: false };
+    }
+  }
+
+  function statusNoteFor(displayStatus) {
+    if (displayStatus === "postponed") return "This match has been postponed — a new date will be announced soon.";
+    if (displayStatus === "delayed") return "Kickoff has been delayed — check back for the updated time.";
+    if (displayStatus === "paused") return "Play is temporarily paused.";
+    return "";
+  }
+
+  function renderFixtureCard(fixture) {
+    const teamA = allTeams.find(t => t.id === fixture.teamAId);
+    const teamB = allTeams.find(t => t.id === fixture.teamBId);
+    const thumbA = driveThumb(teamA?.logoLink);
+    const thumbB = driveThumb(teamB?.logoLink);
+
+    const isLiveNow = !!(liveMatchData && liveMatchData.fixtureId === fixture.id && LIVE_DOC_STATES.includes(liveMatchData.status));
+    const displayStatus = isLiveNow ? liveMatchData.status : fixture.status;
+    const showScore = displayStatus === "completed" || isLiveNow;
+    const scoreA = isLiveNow ? (liveMatchData.scoreA ?? 0) : fixture.scoreA;
+    const scoreB = isLiveNow ? (liveMatchData.scoreB ?? 0) : fixture.scoreB;
+    const badge = statusBadgeInfo(displayStatus);
+    const note = statusNoteFor(displayStatus);
+
+    return `
+      <div class="fixture-card ${isLiveNow ? "is-live" : ""} ${isLiveNow && liveMatchData.status === "paused" ? "is-paused" : ""}">
+        <div class="fc-top-row">
+          <span class="fc-match-tag">Match #${escapeHtml(fixture.matchNumber ?? "—")} · ${escapeHtml(fixture.round || "—")}</span>
+          <span class="status-badge ${badge.cls}">${badge.dot ? `<span class="live-dot"></span>` : ""}${badge.label}</span>
+        </div>
+
+        <div class="fc-vs-row">
+          <div class="fc-team">
+            <div class="fc-team-logo">
+              ${thumbA ? `<img src="${thumbA}" alt="" loading="lazy" onerror="this.remove();" />` : ""}
+              <span class="fc-team-logo-fallback">${escapeHtml(initialOf(fixture.teamAName))}</span>
+            </div>
+            <div class="fc-team-name">${escapeHtml(fixture.teamAName || "TBD")}</div>
+          </div>
+          <div class="fc-score-block">
+            ${showScore
+              ? `<div class="fc-score">${scoreA ?? 0}<span class="sep">:</span>${scoreB ?? 0}</div>${isLiveNow ? `<div class="fc-minute">${escapeHtml(liveMatchData.minute || "")}</div>` : ""}`
+              : `<div class="fc-vs-label">VS</div>`}
+          </div>
+          <div class="fc-team">
+            <div class="fc-team-logo">
+              ${thumbB ? `<img src="${thumbB}" alt="" loading="lazy" onerror="this.remove();" />` : ""}
+              <span class="fc-team-logo-fallback">${escapeHtml(initialOf(fixture.teamBName))}</span>
+            </div>
+            <div class="fc-team-name">${escapeHtml(fixture.teamBName || "TBD")}</div>
+          </div>
+        </div>
+
+        <div class="fc-meta-row">
+          <span><span class="meta-icon">📅</span>${escapeHtml(formatDate(fixture.date))}</span>
+          ${fixture.time ? `<span><span class="meta-icon">⏰</span>${escapeHtml(formatTime(fixture.time))}</span>` : ""}
+          <span><span class="meta-icon">📍</span>${escapeHtml(fixture.venue || "TBD")}</span>
+          <span><span class="meta-icon">🧑‍⚖️</span>${fixture.referee ? escapeHtml(fixture.referee) : "Referee TBA"}</span>
+        </div>
+
+        ${note ? `<p class="fc-status-note">${escapeHtml(note)}</p>` : ""}
+
+        ${isLiveNow ? `<a class="fc-live-link" href="./scoreboard.html">▶ Watch live on the Scoreboard</a>` : ""}
+      </div>
+    `;
+  }
+</script>
+
+</body>
+</html>

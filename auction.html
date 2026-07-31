@@ -1,464 +1,1643 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Auction — PHY-LIGA</title>
-<meta name="description" content="The PHY-LIGA Season 01 player auction. Not yet on the block." />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="PHY-LIGA Season 01 — follow the player auction live, see who's sold to which team, and browse full results." />
+    <title>Auction — PHY-LIGA</title>
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+  
+        :root {
+            --clr-canvas: #162235;
+            --clr-surface: #1E2D42;
+            --clr-surface-alt: #253850;
+            --clr-accent-primary: #A1C4C7;
+            --clr-accent-interactive: #34DFEC;
+            --clr-highlight: #2A8042;
+            --clr-danger: #E24C4C;
+            --clr-text-muted: #7E8B9B;
+            --clr-text-primary: #EAF2F2;
+            --radius-md: 12px;
+            --radius-lg: 20px;
+            --shadow-glow: 0 0 24px rgba(52, 223, 236, 0.15);
+            --font-display: 'Orbitron', sans-serif;
+            --font-body: 'Inter', sans-serif;
+            --font-mono: 'IBM Plex Mono', monospace;
+        }
 
-<style>
-  :root {
-    --clr-canvas: #162235;
-    --clr-surface: #1E2D42;
-    --clr-accent-primary: #A1C4C7;
-    --clr-accent-interactive: #34DFEC;
-    --clr-text-muted: #7E8B9B;
-    --clr-text-primary: #EAF2F2;
-    --font-display: 'Orbitron', sans-serif;
-    --font-body: 'Inter', sans-serif;
-    --font-mono: 'IBM Plex Mono', monospace;
-  }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+        html {
+            scroll-behavior: smooth;
+            -webkit-text-size-adjust: 100%;
+            overflow-x: hidden;
+        }
 
-  html { scroll-behavior: smooth; }
+        body {
+            background-color: var(--clr-canvas);
+            background-image:
+                radial-gradient(circle at 15% 10%, rgba(52, 223, 236, 0.06), transparent 40%),
+                radial-gradient(circle at 85% 30%, rgba(42, 128, 66, 0.08), transparent 45%);
+            color: var(--clr-text-primary);
+            font-family: var(--font-body);
+            line-height: 1.55;
+            min-height: 100vh;
+            overflow-x: hidden;
+            width: 100%;
+        }
 
-  body {
-    background-color: var(--clr-canvas);
-    color: var(--clr-text-primary);
-    font-family: var(--font-body);
-    line-height: 1.55;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
 
-  a { color: inherit; text-decoration: none; }
+        img {
+            max-width: 100%;
+            height: auto;
+        }
 
-  ::selection { background: var(--clr-accent-interactive); color: var(--clr-canvas); }
+        ::selection {
+            background: var(--clr-accent-interactive);
+            color: var(--clr-canvas);
+        }
 
-  :focus-visible {
-    outline: 2px solid var(--clr-accent-interactive);
-    outline-offset: 3px;
-  }
+        :focus-visible {
+            outline: 2px solid var(--clr-accent-interactive);
+            outline-offset: 3px;
+        }
 
-  /* ---------- HEADER / NAV ---------- */
-  header.site-header {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 18px 5vw;
-    background: rgba(22, 34, 53, 0.85);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(161, 196, 199, 0.12);
-  }
+        .hidden {
+            display: none !important;
+        }
 
-  .brand { display: flex; align-items: baseline; gap: 10px; }
 
-  .brand .season-tag {
-    font-family: var(--font-mono);
-    font-size: 0.7rem;
-    color: var(--clr-text-muted);
-    border: 1px solid rgba(161, 196, 199, 0.25);
-    padding: 2px 8px;
-    border-radius: 20px;
-    letter-spacing: 0.05em;
-  }
+        header.site-header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 18px 5vw;
+            background: rgba(22, 34, 53, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(161, 196, 199, 0.12);
+            transition: padding 0.25s ease;
+        }
 
-  .logo-img { display: block; height: 36px; width: auto; }
+        .brand {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+            min-width: 0;
+            cursor: pointer;
+        }
 
-  nav.main-nav ul { list-style: none; display: flex; gap: clamp(10px, 1.6vw, 26px); flex-wrap: wrap; }
+        .brand .logo-text {
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: clamp(1.1rem, 2vw, 1.5rem);
+            letter-spacing: 0.06em;
+            background: linear-gradient(135deg, var(--clr-accent-interactive), var(--clr-accent-primary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
 
-  nav.main-nav a {
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: var(--clr-accent-primary);
-    padding-bottom: 4px;
-    border-bottom: 2px solid transparent;
-    transition: color 0.2s ease, border-color 0.2s ease;
-    white-space: nowrap;
-  }
+        .brand .season-tag {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--clr-text-muted);
+            border: 1px solid rgba(161, 196, 199, 0.25);
+            padding: 2px 8px;
+            border-radius: 20px;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
 
-  nav.main-nav a:hover, nav.main-nav a.active {
-    color: var(--clr-accent-interactive);
-    border-bottom-color: var(--clr-accent-interactive);
-  }
+        .logo-img {
+            display: block;
+            height: 36px;
+            width: auto;
+            max-width: 140px;
+            flex-shrink: 1;
+        }
 
-  .nav-toggle {
-    display: none;
-    background: none;
-    border: 1px solid rgba(161,196,199,0.3);
-    border-radius: 8px;
-    color: var(--clr-text-primary);
-    font-size: 1.2rem;
-    padding: 6px 10px;
-    cursor: pointer;
-  }
+        nav.main-nav ul {
+            list-style: none;
+            display: flex;
+            gap: clamp(10px, 1.6vw, 26px);
+            flex-wrap: wrap;
+        }
 
-  /* ---------- MAIN / LOT CARD ---------- */
-  main.auction-main {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 56px 6vw;
-  }
+        nav.main-nav a {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--clr-accent-primary);
+            padding-bottom: 4px;
+            border-bottom: 2px solid transparent;
+            transition: color 0.2s ease, border-color 0.2s ease;
+            white-space: nowrap;
+        }
 
-  .lot-card {
-    width: 100%;
-    max-width: 560px;
-    background: rgba(30, 45, 66, 0.42);
-    border: 1px solid rgba(161, 196, 199, 0.18);
-    border-radius: 3px;
-    overflow: hidden;
-    opacity: 0;
-    transform: translateY(14px);
-    animation: cardIn 0.7s ease-out 0.1s forwards;
-  }
+        nav.main-nav a:hover,
+        nav.main-nav a.active {
+            color: var(--clr-accent-interactive);
+            border-bottom-color: var(--clr-accent-interactive);
+        }
 
-  @keyframes cardIn {
-    to { opacity: 1; transform: translateY(0); }
-  }
+        .nav-toggle {
+            display: none;
+            background: none;
+            border: 1px solid rgba(161, 196, 199, 0.3);
+            border-radius: 8px;
+            color: var(--clr-text-primary);
+            font-size: 1.2rem;
+            padding: 6px 10px;
+            cursor: pointer;
+            flex-shrink: 0;
+            min-width: 44px;
+            min-height: 40px;
+        }
 
-  /* ---- visual panel: half-drawn pitch diagram ---- */
-  .lot-visual {
-    padding: clamp(20px, 4vw, 30px) clamp(22px, 5vw, 34px) clamp(14px, 3vw, 22px);
-    background: rgba(20, 31, 48, 0.5);
-    border-bottom: 1px solid rgba(161, 196, 199, 0.14);
-  }
 
-  .lot-visual svg { display: block; width: 100%; height: auto; }
+        .page-intro {
+            max-width: 1280px;
+            margin: 48px auto 0;
+            padding: 0 6vw;
+            text-align: left;
+        }
 
-  .pitch-outline, .pitch-halfway, .pitch-circle, .pitch-spot {
-    stroke: var(--clr-accent-primary);
-    stroke-width: 1.25;
-    fill: none;
-    opacity: 0.5;
-  }
-  .pitch-spot { fill: var(--clr-accent-primary); stroke: none; }
+        .page-intro .eyebrow {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--clr-accent-interactive);
+            margin-bottom: 10px;
+        }
 
-  .pitch-built {
-    stroke: var(--clr-accent-interactive);
-    stroke-width: 1.5;
-    fill: none;
-    opacity: 0.9;
-  }
+        .page-intro h1 {
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+            letter-spacing: 0.02em;
+            margin-bottom: 8px;
+        }
 
-  .pitch-draft {
-    stroke: var(--clr-accent-primary);
-    stroke-width: 1.25;
-    fill: none;
-    opacity: 0.55;
-    stroke-dasharray: 4 4;
-    animation: draftMarch 3.2s linear infinite;
-  }
+        .page-intro .page-desc {
+            color: var(--clr-text-muted);
+            font-size: 0.95rem;
+            max-width: 680px;
+        }
 
-  @keyframes draftMarch {
-    to { stroke-dashoffset: -16; }
-  }
 
-  .pitch-label {
-    font-family: var(--font-mono);
-    font-size: 6px;
-    letter-spacing: 0.08em;
-    fill: var(--clr-text-muted);
-    text-transform: uppercase;
-  }
+        .section-wrap {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 26px 6vw 60px;
+        }
 
-  /* ---- body ---- */
-  .lot-body {
-    padding: clamp(26px, 5vw, 40px) clamp(22px, 5vw, 34px) clamp(32px, 6vw, 44px);
-  }
 
-  .lot-row-top {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 12px;
-    flex-wrap: wrap;
-    margin-bottom: 22px;
-  }
+        .state-box {
+            text-align: center;
+            padding: 80px 20px;
+            color: var(--clr-text-muted);
+            background: rgba(30, 45, 66, 0.5);
+            border: 1px solid rgba(161, 196, 199, 0.15);
+            border-radius: var(--radius-lg);
+            backdrop-filter: blur(10px);
+        }
 
-  .lot-tag, .lot-status {
-    font-family: var(--font-mono);
-    font-size: 0.7rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-  }
+        .state-box .state-icon {
+            font-size: 2rem;
+            margin-bottom: 14px;
+        }
 
-  .lot-tag { color: var(--clr-accent-primary); }
-  .lot-status { color: var(--clr-text-muted); }
+        .state-box h3 {
+            font-family: var(--font-display);
+            font-size: 1.1rem;
+            color: var(--clr-text-primary);
+            margin-bottom: 8px;
+        }
 
-  .lot-rule {
-    height: 1px;
-    background: rgba(161, 196, 199, 0.18);
-    transform-origin: left;
-    transform: scaleX(0);
-    animation: ruleIn 0.8s ease-out 0.5s forwards;
-  }
+        .state-box p {
+            font-size: 0.88rem;
+            max-width: 460px;
+            margin: 0 auto;
+        }
 
-  @keyframes ruleIn {
-    to { transform: scaleX(1); }
-  }
+        .ended-banner {
+            text-align: center;
+            padding: 16px 20px;
+            margin-bottom: 24px;
+            background: rgba(42, 128, 66, 0.12);
+            border: 1px solid rgba(42, 128, 66, 0.4);
+            border-radius: var(--radius-md);
+            color: #9CF0B0;
+            font-family: var(--font-display);
+            font-size: 1rem;
+            letter-spacing: 0.02em;
+        }
 
-  .lot-rule.bottom { margin-top: 30px; margin-bottom: 26px; }
+        .round-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            color: var(--clr-accent-interactive);
+            background: rgba(52, 223, 236, 0.08);
+            border: 1px solid rgba(52, 223, 236, 0.25);
+            padding: 5px 12px;
+            border-radius: 999px;
+            margin-bottom: 18px;
+            width: fit-content;
+        }
 
-  .lot-title {
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: clamp(2.2rem, 5.4vw, 3.2rem);
-    line-height: 1.05;
-    letter-spacing: 0.01em;
-    text-transform: uppercase;
-    margin-bottom: 18px;
-  }
 
-  .lot-desc {
-    color: var(--clr-text-muted);
-    font-size: 0.95rem;
-    line-height: 1.65;
-    max-width: 440px;
-  }
+        .auction-layout {
+            display: grid;
+            grid-template-columns: 3fr 2fr;
+            gap: 26px;
+            align-items: start;
+            margin-bottom: 40px;
+        }
 
-  .lot-meta {
-    display: grid;
-    gap: 12px;
-  }
 
-  .lot-meta-row {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 16px;
-  }
+        .slide-wrap {
+            position: sticky;
+            top: 90px;
+        }
 
-  .lot-meta-row dt {
-    font-family: var(--font-mono);
-    font-size: 0.68rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--clr-text-muted);
-    white-space: nowrap;
-  }
+        .slide-waiting {
+            text-align: center;
+            padding: clamp(50px, 8vw, 90px) 20px;
+            background: rgba(30, 45, 66, 0.55);
+            border: 1px solid rgba(161, 196, 199, 0.15);
+            border-radius: var(--radius-lg);
+            backdrop-filter: blur(10px);
+            color: var(--clr-text-muted);
+            font-family: var(--font-mono);
+            font-size: 0.88rem;
+        }
 
-  .lot-meta-row dd {
-    font-size: 0.88rem;
-    font-weight: 500;
-    color: var(--clr-text-primary);
-    text-align: right;
-  }
+        .live-dot {
+            display: inline-block;
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: var(--clr-highlight);
+            box-shadow: 0 0 8px var(--clr-highlight);
+            margin-right: 8px;
+            animation: pulseDot 1.4s infinite;
+        }
 
-  .lot-cta {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 32px;
-    font-family: var(--font-mono);
-    font-size: 0.82rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--clr-accent-interactive);
-    padding-bottom: 3px;
-    background-image: linear-gradient(var(--clr-accent-interactive), var(--clr-accent-interactive));
-    background-size: 0% 1px;
-    background-repeat: no-repeat;
-    background-position: left bottom;
-    transition: background-size 0.25s ease;
-  }
+        @keyframes pulseDot {
+            0%,
+            100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.35;
+            }
+        }
 
-  .lot-cta:hover { background-size: 100% 1px; }
-  .lot-cta .arrow { transition: transform 0.2s ease; }
-  .lot-cta:hover .arrow { transform: translateX(4px); }
+        @keyframes slideReveal {
+            from {
+                opacity: 0;
+                transform: translateY(14px) scale(0.98);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
 
-  .lot-footnote {
-    text-align: center;
-    font-size: 0.8rem;
-    color: var(--clr-text-muted);
-    max-width: 480px;
-    margin: 24px auto 0;
-  }
+        .slide-card {
+            position: relative;
+            overflow: hidden;
+            background: rgba(30, 45, 66, 0.6);
+            border: 1px solid rgba(161, 196, 199, 0.18);
+            border-radius: var(--radius-lg);
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow-glow);
+            padding: clamp(28px, 4vw, 44px);
+            text-align: center;
+            animation: slideReveal 0.45s ease;
+        }
 
-  .lot-footnote a { color: var(--clr-accent-interactive); }
-  .lot-footnote .sep { margin: 0 8px; opacity: 0.4; }
+        .slide-card::before {
+            content: "";
+            position: absolute;
+            top: -40%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 480px;
+            height: 480px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(52, 223, 236, 0.16), transparent 65%);
+            pointer-events: none;
+        }
 
-  @media (prefers-reduced-motion: reduce) {
-    .lot-card { animation: none; opacity: 1; transform: none; }
-    .lot-rule { animation: none; transform: scaleX(1); }
-    .pitch-draft { animation: none; }
-  }
+        .slide-photo {
+            position: relative;
+            width: clamp(150px, 20vw, 210px);
+            height: clamp(150px, 20vw, 210px);
+            margin: 0 auto 22px;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            background: linear-gradient(135deg, rgba(52, 223, 236, 0.2), rgba(42, 128, 66, 0.2));
+            border: 3px solid rgba(52, 223, 236, 0.45);
+            box-shadow: 0 0 34px rgba(52, 223, 236, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-  /* ---------- FOOTER ---------- */
-  footer.site-footer {
-    text-align: center;
-    padding: 26px 5vw;
-    border-top: 1px solid rgba(161,196,199,0.12);
-    font-size: 0.78rem;
-    color: var(--clr-text-muted);
-  }
+        .slide-photo img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+        }
 
-  footer.site-footer a { color: var(--clr-accent-interactive); }
+        .slide-photo-fallback {
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: 3.2rem;
+            color: var(--clr-accent-interactive);
+        }
 
-  /* ---------- RESPONSIVE ---------- */
-  @media (max-width: 768px) {
-    nav.main-nav {
-      position: absolute;
-      top: 100%; left: 0; right: 0;
-      background: rgba(22,34,53,0.97);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid rgba(161,196,199,0.12);
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.3s ease;
-    }
-    nav.main-nav.open { max-height: 400px; }
-    nav.main-nav ul { flex-direction: column; padding: 16px 6vw; gap: 14px; }
-    .nav-toggle { display: block; }
-  }
+        .slide-name {
+            font-family: var(--font-display);
+            font-weight: 800;
+            letter-spacing: 0.01em;
+            font-size: clamp(1.8rem, 4vw, 2.6rem);
+            margin-bottom: 14px;
+            position: relative;
+        }
 
-  @media (max-width: 480px) {
-    .lot-meta-row { flex-direction: column; gap: 2px; }
-    .lot-meta-row dd { text-align: left; }
-  }
-</style>
+        .slide-meta-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+            position: relative;
+        }
+
+        .slide-batch-pill {
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 0.92rem;
+            color: var(--clr-canvas);
+            background: var(--clr-accent-interactive);
+            padding: 7px 16px;
+            border-radius: 999px;
+        }
+
+        .slide-hall-pill {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--clr-text-muted);
+            border: 1px solid rgba(161, 196, 199, 0.3);
+            padding: 6px 14px;
+            border-radius: 999px;
+        }
+
+        .slide-positions {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            position: relative;
+        }
+
+        .slide-pos-tag {
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #9CF0B0;
+            background: rgba(42, 128, 66, 0.2);
+            border: 1px solid rgba(42, 128, 66, 0.45);
+            padding: 6px 14px;
+            border-radius: 999px;
+        }
+
+        .dash-block {
+            padding: 18px 20px;
+            margin-bottom: 18px;
+            background: rgba(30, 45, 66, 0.55);
+            border: 1px solid rgba(161, 196, 199, 0.15);
+            border-radius: var(--radius-lg);
+            backdrop-filter: blur(10px);
+        }
+
+        .dash-block h3 {
+            font-family: var(--font-display);
+            font-size: 0.86rem;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            color: var(--clr-accent-interactive);
+            margin-bottom: 14px;
+        }
+
+        .team-strip {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 12px;
+            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(161, 196, 199, 0.12);
+            border-left: 3px solid var(--team-clr, var(--clr-accent-interactive));
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .team-strip:hover {
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .ts-logo {
+            position: relative;
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            overflow: hidden;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, rgba(52, 223, 236, 0.18), rgba(42, 128, 66, 0.18));
+            border: 1px solid rgba(161, 196, 199, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ts-logo img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+        }
+
+        .ts-logo-fallback {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 0.75rem;
+            color: var(--clr-accent-interactive);
+        }
+
+        .ts-body {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .ts-name {
+            font-weight: 700;
+            font-size: 0.84rem;
+        }
+
+        .ts-meta {
+            font-family: var(--font-mono);
+            font-size: 0.68rem;
+            color: var(--clr-text-muted);
+            margin-top: 3px;
+        }
+
+        .ts-purse {
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .ts-purse .tsp-num {
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 0.88rem;
+            color: var(--clr-accent-interactive);
+        }
+
+        .ts-purse .tsp-label {
+            font-family: var(--font-mono);
+            font-size: 0.6rem;
+            color: var(--clr-text-muted);
+            text-transform: uppercase;
+        }
+
+
+        .feed-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+            border-top: 1px solid rgba(161, 196, 199, 0.08);
+        }
+
+        .feed-row:first-child {
+            border-top: none;
+        }
+
+        .feed-avatar {
+            position: relative;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            overflow: hidden;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, rgba(52, 223, 236, 0.18), rgba(42, 128, 66, 0.18));
+            border: 1px solid rgba(161, 196, 199, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .feed-avatar img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+        }
+
+        .feed-avatar-fallback {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 0.7rem;
+            color: var(--clr-accent-interactive);
+        }
+
+        .feed-body {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .feed-name {
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .feed-meta {
+            font-family: var(--font-mono);
+            font-size: 0.66rem;
+            color: var(--clr-text-muted);
+        }
+
+        .feed-price {
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: #9CF0B0;
+            flex-shrink: 0;
+        }
+
+        .feed-empty {
+            text-align: center;
+            color: var(--clr-text-muted);
+            font-size: 0.78rem;
+            font-family: var(--font-mono);
+            padding: 14px 0;
+        }
+
+        .highest-sale-card {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .highest-sale-card .feed-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            border-color: rgba(52, 223, 236, 0.4);
+        }
+
+        .highest-sale-card .feed-name {
+            font-size: 0.92rem;
+        }
+
+        .highest-sale-card .feed-price {
+            font-size: 1.15rem;
+        }
+
+        /* ===== RESULTS TABLE ===== */
+        .results-heading-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .results-heading-row h2 {
+            font-family: var(--font-display);
+            font-size: 1.1rem;
+            letter-spacing: 0.02em;
+        }
+
+        .results-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .results-controls select {
+            padding: 9px 30px 9px 12px;
+            background: var(--clr-surface);
+            border: 1px solid rgba(161, 196, 199, 0.2);
+            border-radius: var(--radius-md);
+            color: var(--clr-text-primary);
+            font-family: var(--font-body);
+            font-size: 0.82rem;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2334DFEC' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>");
+            background-repeat: no-repeat;
+            background-position: right 9px center;
+        }
+
+        .results-controls select:focus {
+            border-color: var(--clr-accent-interactive);
+            box-shadow: 0 0 0 3px rgba(52, 223, 236, 0.15);
+            outline: none;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            border-radius: var(--radius-md);
+            border: 1px solid rgba(161, 196, 199, 0.15);
+            background: rgba(30, 45, 66, 0.4);
+            backdrop-filter: blur(10px);
+        }
+
+        table.results-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.82rem;
+            min-width: 720px;
+        }
+
+        table.results-table th {
+            text-align: left;
+            font-family: var(--font-mono);
+            font-size: 0.64rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--clr-text-muted);
+            background: rgba(255, 255, 255, 0.03);
+            padding: 11px 12px;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+
+        table.results-table th:hover {
+            color: var(--clr-accent-interactive);
+        }
+
+        table.results-table td {
+            padding: 11px 12px;
+            border-top: 1px solid rgba(161, 196, 199, 0.08);
+            vertical-align: middle;
+        }
+
+        .rt-avatar {
+            position: relative;
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            overflow: hidden;
+            flex-shrink: 0;
+            display: inline-block;
+            background: linear-gradient(135deg, rgba(52, 223, 236, 0.18), rgba(42, 128, 66, 0.18));
+            border: 1px solid rgba(161, 196, 199, 0.2);
+            vertical-align: middle;
+            margin-right: 10px;
+            text-align: center;
+            line-height: 34px;
+        }
+
+        .rt-avatar img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+        }
+
+        .rt-avatar-fallback {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 0.78rem;
+            color: var(--clr-accent-interactive);
+        }
+
+        .mono {
+            font-family: var(--font-mono);
+        }
+
+        .empty-cell,
+        .loading-cell {
+            text-align: center;
+            color: var(--clr-text-muted);
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            padding: 34px !important;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            background: rgba(10, 16, 26, 0.75);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 16px;
+        }
+
+        .modal-card {
+            width: 100%;
+            max-width: 600px;
+            max-height: 88vh;
+            overflow-y: auto;
+            background: #1b2a3f;
+            border: 1px solid rgba(161, 196, 199, 0.2);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-glow);
+            padding: clamp(22px, 4vw, 32px);
+        }
+
+        .modal-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+            gap: 14px;
+        }
+
+        .modal-head-id {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .modal-head h2 {
+            font-family: var(--font-display);
+            font-size: 1.05rem;
+            letter-spacing: 0.02em;
+        }
+
+        .modal-close {
+            background: none;
+            border: 1px solid rgba(161, 196, 199, 0.25);
+            border-radius: 8px;
+            color: var(--clr-text-muted);
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        .modal-close:hover {
+            border-color: var(--clr-accent-interactive);
+            color: var(--clr-accent-interactive);
+        }
+
+        .modal-stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 18px;
+        }
+
+        .ms-box {
+            text-align: center;
+            padding: 10px 4px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+        }
+
+        .ms-box .ms-num {
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--clr-accent-interactive);
+            display: block;
+        }
+
+        .ms-box .ms-label {
+            font-family: var(--font-mono);
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            color: var(--clr-text-muted);
+        }
+
+        .person-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: var(--radius-md);
+            border: 1px solid rgba(161, 196, 199, 0.1);
+        }
+
+        .pr-label {
+            font-family: var(--font-mono);
+            font-size: 0.62rem;
+            text-transform: uppercase;
+            color: var(--clr-text-muted);
+            display: block;
+        }
+
+        .pr-name {
+            font-size: 0.84rem;
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
+        .roster-player-card {
+            padding: 12px 14px;
+            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(161, 196, 199, 0.1);
+            border-radius: var(--radius-md);
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+
+        .rpc-avatar {
+            position: relative;
+            width: 40px;
+            height: 40px;
+            border-radius: 9px;
+            overflow: hidden;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, rgba(52, 223, 236, 0.18), rgba(42, 128, 66, 0.18));
+            border: 1px solid rgba(161, 196, 199, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .rpc-avatar img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+        }
+
+        .rpc-avatar-fallback {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 0.8rem;
+            color: var(--clr-accent-interactive);
+        }
+
+        .rpc-body {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .rpc-name-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .rpc-name {
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .rpc-meta {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--clr-text-muted);
+            margin-top: 3px;
+        }
+
+        .rpc-positions {
+            margin-top: 6px;
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            display: inline-block;
+            font-family: var(--font-mono);
+            font-size: 0.62rem;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            white-space: nowrap;
+        }
+
+        .tag.pos-tag {
+            color: #9CF0B0;
+            background: rgba(42, 128, 66, 0.15);
+            border: 1px solid rgba(42, 128, 66, 0.35);
+            text-transform: none;
+        }
+
+        .tag.price-tag {
+            color: var(--clr-accent-interactive);
+            background: rgba(52, 223, 236, 0.1);
+            border: 1px solid rgba(52, 223, 236, 0.3);
+        }
+
+        .roster-empty {
+            text-align: center;
+            padding: 20px 10px;
+            color: var(--clr-text-muted);
+            font-size: 0.8rem;
+        }
+
+        footer.site-footer {
+            text-align: center;
+            padding: 26px 5vw;
+            border-top: 1px solid rgba(161, 196, 199, 0.12);
+            font-size: 0.78rem;
+            color: var(--clr-text-muted);
+        }
+
+        footer.site-footer a {
+            color: var(--clr-accent-interactive);
+        }
+
+        @media (max-width: 1024px) {
+            .auction-layout {
+                grid-template-columns: 1fr;
+            }
+            .slide-wrap {
+                position: static;
+            }
+        }
+
+        @media (max-width: 768px) {
+            nav.main-nav {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: rgba(22, 34, 53, 0.97);
+                backdrop-filter: blur(12px);
+                border-bottom: 1px solid rgba(161, 196, 199, 0.12);
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.3s ease;
+            }
+
+            nav.main-nav.open {
+                max-height: 400px;
+            }
+
+            nav.main-nav ul {
+                flex-direction: column;
+                padding: 16px 6vw;
+                gap: 14px;
+            }
+
+            .nav-toggle {
+                display: block;
+            }
+        }
+
+        @media (max-width: 600px) {
+            header.site-header {
+                padding: 14px 4vw;
+            }
+            .logo-img {
+                max-width: 118px;
+                height: 30px;
+            }
+            .brand {
+                gap: 8px;
+            }
+            .brand .season-tag {
+                font-size: 0.62rem;
+                padding: 2px 6px;
+            }
+            .page-intro {
+                margin-top: 32px;
+            }
+            .modal-stats-row {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .page-intro {
+                margin-top: 30px;
+            }
+            .role-choice {
+                grid-template-columns: 1fr;
+            }
+            .position-grid {
+                grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+            }
+            .meta-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 340px) {
+            header.site-header {
+                padding: 12px 3.5vw;
+            }
+            .logo-img {
+                max-width: 96px;
+                height: 26px;
+            }
+            .brand .season-tag {
+                display: none;
+            }
+            .nav-toggle {
+                padding: 5px 8px;
+                font-size: 1.05rem;
+            }
+            .position-grid {
+                grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
+            }
+        }
+    </style>
 </head>
 <body>
 
-<header class="site-header">
-  <a href="index.html" class="brand" style="cursor:pointer;">
-    <img src="logo.png" alt="PHY LIGA Logo" class="logo-img" width="140" height="36.46" />
-    <span class="season-tag">Season 01</span>
-  </a>
-  <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">☰</button>
-  <nav class="main-nav" id="mainNav">
-    <ul>
-      <li><a href="auction.html" class="active">Auction</a></li>
-      <li><a href="register.html">Registration</a></li>
-      <li><a href="players.html">Players</a></li>
-      <li><a href="teams.html">Teams</a></li>
-      <li><a href="stats.html">Statistics</a></li>
-      <li><a href="fixture.html">Fixture</a></li>
-      <li><a href="scoreboard.html">Scoreboard</a></li>
-      <li><a href="memory.html">Memory</a></li>
-    </ul>
-  </nav>
-</header>
+    <header class="site-header">
+        <a href="index.html" class="brand" style="cursor:pointer;">
+            <img src="logo.png" alt="PHY LIGA Logo" class="logo-img" width="140" height="36.46" />
+            <span class="season-tag">Season 01</span>
+        </a>
+        <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+        <nav class="main-nav" id="mainNav">
+            <ul>
+                <li><a href="auction.html" class="active">Auction</a></li>
+                <li><a href="register.html">Registration</a></li>
+                <li><a href="players.html">Players</a></li>
+                <li><a href="teams.html">Teams</a></li>
+                <li><a href="stats.html">Statistics</a></li>
+                <li><a href="fixture.html">Fixture</a></li>
+                <li><a href="scoreboard.html">Scoreboard</a></li>
+                <li><a href="memory.html">Memory</a></li>
+            </ul>
+        </nav>
+    </header>
 
-<main class="auction-main">
-  <div style="width:100%; max-width:560px;">
-    <div class="lot-card">
+    <section class="page-intro">
+        <p class="eyebrow">Season 01</p>
+        <h1>Auction</h1>
+        <p class="page-desc">Follow the player auction as it happens, or browse the full results once bidding wraps up.</p>
+    </section>
 
-      <div class="lot-visual">
-        <svg viewBox="0 0 340 150" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
-          <!-- outer pitch boundary -->
-          <rect class="pitch-outline" x="6" y="6" width="328" height="138" />
-          <!-- halfway line -->
-          <line class="pitch-halfway" x1="170" y1="6" x2="170" y2="144" />
-          <!-- centre circle + spot -->
-          <circle class="pitch-circle" cx="170" cy="75" r="24" />
-          <circle class="pitch-spot" cx="170" cy="75" r="1.6" />
+    <main class="section-wrap">
 
-          <!-- LEFT side: built (registration + teams) -->
-          <rect class="pitch-built" x="6" y="35" width="46" height="80" />
-          <rect class="pitch-built" x="6" y="55" width="18" height="40" />
-          <path class="pitch-built" d="M52,55 A24,24 0 0 1 52,95" />
-          <text class="pitch-label" x="14" y="128">Built</text>
-
-          <!-- RIGHT side: still being drawn (auction) -->
-          <rect class="pitch-draft" x="288" y="35" width="46" height="80" />
-          <rect class="pitch-draft" x="316" y="55" width="18" height="40" />
-          <path class="pitch-draft" d="M288,55 A24,24 0 0 0 288,95" />
-          <text class="pitch-label" x="270" y="128">Drafting</text>
-        </svg>
-      </div>
-
-      <div class="lot-body">
-        <div class="lot-row-top">
-          <span class="lot-tag">Lot 00 · Season 01</span>
-          <span class="lot-status">Not yet on the block</span>
+        <div class="state-box hidden" id="notStartedState">
+            <div class="state-icon">⏳</div>
+            <h3>Auction hasn't started yet</h3>
+            <p>Check back once the organizers kick off Season 01's player auction — this page will update live the moment bidding begins.</p>
         </div>
 
-        <div class="lot-rule"></div>
+        <div id="auctionContent" class="hidden">
 
-        <h1 class="lot-title">Player<br>Auction</h1>
-        <p class="lot-desc">
-          Every registered player goes to a live bid once the roster closes.
-          Owners spend from a fixed purse, one player at a time. Registration
-          and teams are built — this corner of the pitch is still being marked out.
-        </p>
+            <div class="ended-banner hidden" id="endedBanner">🏁 Season 01 Auction — Complete</div>
+            <div class="round-chip" id="roundChip">Round 1</div>
 
-        <div class="lot-rule bottom"></div>
+            <div class="auction-layout">
 
-        <dl class="lot-meta">
-          <div class="lot-meta-row">
-            <dt>Opens</dt>
-            <dd>After registration closes</dd>
-          </div>
-          <div class="lot-meta-row">
-            <dt>Format</dt>
-            <dd>Live bidding, fixed purse</dd>
-          </div>
-          <div class="lot-meta-row">
-            <dt>Eligible</dt>
-            <dd>Registered team owners</dd>
-          </div>
-        </dl>
+                <!-- Slide mirror -->
+                <div class="slide-wrap" id="slideWrapEl">
+                    <div id="slideWaiting" class="slide-waiting hidden"><span class="live-dot"></span>Waiting for the next player…</div>
+                    <div id="slideCard" class="hidden"></div>
+                </div>
 
-        <a href="register.html" class="lot-cta">Register as an owner <span class="arrow">→</span></a>
-      </div>
+                <!-- Dashboard mirror -->
+                <div class="dash-wrap">
+                    <div class="dash-block">
+                        <h3>Teams</h3>
+                        <div id="teamStripsWrap"></div>
+                    </div>
+                    <div class="dash-block">
+                        <h3>Recent Sales</h3>
+                        <div id="recentSalesWrap"></div>
+                    </div>
+                    <div class="dash-block">
+                        <h3>Highest Sale So Far</h3>
+                        <div id="highestSaleWrap"></div>
+                    </div>
+                </div>
+
+            </div>
+
+            <section>
+                <div class="results-heading-row">
+                    <h2>Full Results</h2>
+                    <div class="results-controls">
+                        <select id="teamFilterSelect">
+                            <option value="">All teams</option>
+                        </select>
+                        <select id="sortSelect">
+                            <option value="price-desc">Price: High to Low</option>
+                            <option value="price-asc">Price: Low to High</option>
+                            <option value="team">Team name</option>
+                            <option value="recent">Most recent</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="table-wrap">
+                    <table class="results-table">
+                        <thead>
+                            <tr><th>Player</th><th>Team</th><th>Price</th><th>Round</th><th>Sold</th></tr>
+                        </thead>
+                        <tbody id="resultsBody">
+                            <tr><td colspan="5" class="loading-cell">Loading results…</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </div>
+
+    </main>
+
+    <footer class="site-footer">
+        © 2026 PHY-LIGA · Developed by <a href="https://www.facebook.com/fardin.0112" target="_blank" rel="noopener">Fardin Hossain</a> · Feathered by <a href="https://www.facebook.com/tawkir.hossain.16" target="_blank" rel="noopener">Tawkir Hossain Rahat</a>
+    </footer>
+
+    <div class="modal-overlay hidden" id="teamDetailOverlay">
+        <div class="modal-card">
+            <div class="modal-head">
+                <div class="modal-head-id">
+                    <div class="ts-logo" id="tdLogo" style="width:44px;height:44px;"><span class="ts-logo-fallback" id="tdLogoFallback" style="font-size:1rem;"></span></div>
+                    <h2 id="tdName">Team</h2>
+                </div>
+                <button class="modal-close" id="tdCloseBtn" type="button" aria-label="Close">✕</button>
+            </div>
+
+            <div class="modal-stats-row">
+                <div class="ms-box"><span class="ms-num" id="tdSlots">0 / 0</span><span class="ms-label">Squad</span></div>
+                <div class="ms-box"><span class="ms-num" id="tdRemaining">0</span><span class="ms-label">Purse Left</span></div>
+                <div class="ms-box"><span class="ms-num" id="tdSpent">0</span><span class="ms-label">Spent</span></div>
+            </div>
+
+            <div id="tdOwnerRow"></div>
+            <div id="tdCaptainRow"></div>
+
+            <div style="margin-top:16px;">
+                <p class="hint" style="font-size:0.74rem;color:var(--clr-text-muted);margin-bottom:10px;">Roster</p>
+                <div id="tdRoster"></div>
+            </div>
+        </div>
     </div>
 
-    <p class="lot-footnote">
-      <a href="index.html">← Back to home</a>
-      <span class="sep">·</span>
-      Questions about the format? Contact <a href="https://wa.me/8801310908781" target="_blank" rel="noopener">Fardin Hossain</a>.
-    </p>
-  </div>
-</main>
+    <script type="module">
+        const navToggle = document.getElementById("navToggle");
+        const mainNav = document.getElementById("mainNav");
+        navToggle.addEventListener("click", () => {
+            const isOpen = mainNav.classList.toggle("open");
+            navToggle.setAttribute("aria-expanded", String(isOpen));
+            navToggle.textContent = isOpen ? "✕" : "☰";
+        });
 
-<footer class="site-footer">
-  © 2026 PHY-LIGA · Developed by <a href="https://www.facebook.com/fardin.0112" target="_blank" rel="noopener">Fardin Hossain</a> · Feathered by <a href="https://www.facebook.com/tawkir.hossain.16" target="_blank" rel="noopener">Tawkir Hossain Rahat</a>
-</footer>
+        // Close nav on link click
+        mainNav.querySelectorAll("a").forEach(link => link.addEventListener("click", () => {
+            mainNav.classList.remove("open");
+            navToggle.setAttribute("aria-expanded", "false");
+            navToggle.textContent = "☰";
+        }));
 
-<script>
-  const navToggle = document.getElementById("navToggle");
-  const mainNav = document.getElementById("mainNav");
+        // Close nav on Escape
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") {
+                mainNav.classList.remove("open");
+                navToggle.setAttribute("aria-expanded", "false");
+                navToggle.textContent = "☰";
+            }
+        });
 
-  function closeNav() {
-    mainNav.classList.remove("open");
-    navToggle.setAttribute("aria-expanded", "false");
-    navToggle.textContent = "☰";
-  }
+        const notStartedState = document.getElementById("notStartedState");
+        const auctionContent = document.getElementById("auctionContent");
+        const endedBanner = document.getElementById("endedBanner");
+        const roundChip = document.getElementById("roundChip");
 
-  function toggleNav() {
-    const isOpen = mainNav.classList.toggle("open");
-    navToggle.setAttribute("aria-expanded", String(isOpen));
-    navToggle.textContent = isOpen ? "✕" : "☰";
-  }
+        const slideWaiting = document.getElementById("slideWaiting");
+        const slideCard = document.getElementById("slideCard");
 
-  navToggle.addEventListener("click", (e) => {
-    e.stopPropagation();
-    toggleNav();
-  });
+        const teamStripsWrap = document.getElementById("teamStripsWrap");
+        const recentSalesWrap = document.getElementById("recentSalesWrap");
+        const highestSaleWrap = document.getElementById("highestSaleWrap");
 
-  mainNav.querySelectorAll("a").forEach(link => link.addEventListener("click", closeNav));
+        const teamFilterSelect = document.getElementById("teamFilterSelect");
+        const sortSelect = document.getElementById("sortSelect");
+        const resultsBody = document.getElementById("resultsBody");
 
-  document.addEventListener("click", (e) => {
-    if (mainNav.classList.contains("open") && !mainNav.contains(e.target) && !navToggle.contains(e.target)) {
-      closeNav();
-    }
-  });
+        const teamDetailOverlay = document.getElementById("teamDetailOverlay");
+        const tdCloseBtn = document.getElementById("tdCloseBtn");
+        const tdLogo = document.getElementById("tdLogo");
+        const tdName = document.getElementById("tdName");
+        const tdSlots = document.getElementById("tdSlots");
+        const tdRemaining = document.getElementById("tdRemaining");
+        const tdSpent = document.getElementById("tdSpent");
+        const tdOwnerRow = document.getElementById("tdOwnerRow");
+        const tdCaptainRow = document.getElementById("tdCaptainRow");
+        const tdRoster = document.getElementById("tdRoster");
 
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") closeNav();
-  });
-</script>
+        /* ---------- State ---------- */
+        let db;
+        let auctionSettings = null;
+        let liveAuctionDoc = null;
+        let allTeams = [];
+        let allPublicPlayers = [];
+        let auctionResultsList = [];
+        let openTeamId = null;
+
+        /* ---------- Helpers (reused verbatim) ---------- */
+        function escapeHtml(str) {
+            return String(str ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;",
+                "'": "&#39;" }[c]));
+        }
+
+        function toMillis(ts) {
+            if (!ts) return 0;
+            if (typeof ts.toMillis === "function") return ts.toMillis();
+            if (typeof ts.seconds === "number") return ts.seconds * 1000;
+            return 0;
+        }
+
+        function driveThumb(link) {
+            if (!link) return null;
+            const m = link.match(/\/d\/([a-zA-Z0-9_-]+)/) || link.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+            if (m && m[1]) return `https://drive.google.com/thumbnail?id=${m[1]}&sz=w200`;
+            return link;
+        }
+
+        function initialOf(name) { return (name || "?").trim().charAt(0).toUpperCase() || "?"; }
+
+        function formatRelativeTime(ts) {
+            const ms = toMillis(ts);
+            if (!ms) return "just now";
+            const diff = Math.max(0, Date.now() - ms);
+            const mins = Math.floor(diff / 60000);
+            if (mins < 1) return "just now";
+            if (mins < 60) return `${mins}m ago`;
+            const hrs = Math.floor(mins / 60);
+            if (hrs < 24) return `${hrs}h ago`;
+            return new Date(ms).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+        }
+
+        function formatWhen(ts) {
+            const ms = toMillis(ts);
+            if (!ms) return "—";
+            return new Date(ms).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric",
+                minute: "2-digit" });
+        }
+
+        /* ---------- Firebase init (read-only, no auth) ---------- */
+        (async function init() {
+            let collection, onSnapshot, doc, query, orderBy;
+            try {
+                const [configMod, firestoreMod] = await Promise.all([
+                    import("./assets/js/firebase-config.js"),
+                    import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js")
+                ]);
+                db = configMod.db;
+                ({ collection, onSnapshot, doc, query, orderBy } = firestoreMod);
+            } catch (err) {
+                console.error("Firebase failed to load:", err);
+                notStartedState.classList.remove("hidden");
+                notStartedState.querySelector("h3").textContent = "Couldn't load the auction";
+                notStartedState.querySelector("p").textContent =
+                    "Couldn't connect to Firebase. If you're opening this file directly on your computer, serve it through a local web server (e.g. VS Code's \"Live Server\" extension, or `npx serve`) or view it on the live deployed site.";
+                return;
+            }
+
+            onSnapshot(doc(db, "config", "auctionSettings"), (snap) => {
+                auctionSettings = snap.exists() ? { id: snap.id, ...snap.data() } : null;
+                renderStateSwitch();
+            }, (err) => console.error("auctionSettings listener error:", err));
+
+            onSnapshot(doc(db, "liveAuction", "current"), (snap) => {
+                liveAuctionDoc = snap.exists() ? snap.data() : null;
+                renderSlide();
+            }, (err) => console.error("liveAuction listener error:", err));
+
+            onSnapshot(collection(db, "teams"), (snap) => {
+                allTeams = [];
+                snap.forEach(d => allTeams.push({ id: d.id, ...d.data() }));
+                allTeams.sort((a, b) => (a.teamName || "").localeCompare(b.teamName || ""));
+                renderTeamStrips();
+                populateTeamFilter();
+                renderResultsTable();
+                if (openTeamId) renderTeamDetail();
+            }, (err) => console.error("teams listener error:", err));
+
+            onSnapshot(collection(db, "publicPlayers"), (snap) => {
+                allPublicPlayers = [];
+                snap.forEach(d => allPublicPlayers.push({ id: d.id, ...d.data() }));
+                renderRecentSales();
+                renderHighestSale();
+                if (openTeamId) renderTeamDetail();
+            }, (err) => console.error("publicPlayers listener error:", err));
+
+            onSnapshot(query(collection(db, "auctionResults"), orderBy("timestamp", "desc")), (snap) => {
+                auctionResultsList = [];
+                snap.forEach(d => auctionResultsList.push({ id: d.id, ...d.data() }));
+                renderRecentSales();
+                renderHighestSale();
+                renderResultsTable();
+            }, (err) => console.error("auctionResults listener error:", err));
+        })();
+
+        /* ---------- State switch ---------- */
+        function renderStateSwitch() {
+            if (!auctionSettings || !auctionSettings.auctionStarted) {
+                notStartedState.classList.remove("hidden");
+                auctionContent.classList.add("hidden");
+                return;
+            }
+            notStartedState.classList.add("hidden");
+            auctionContent.classList.remove("hidden");
+            endedBanner.classList.toggle("hidden", !auctionSettings.auctionEnded);
+            document.getElementById("slideWrapEl").classList.toggle("hidden", !!auctionSettings.auctionEnded);
+            roundChip.textContent = `Round ${auctionSettings.currentRound || 1}${auctionSettings.auctionEnded ? " · Final" : ""}`;
+            renderSlide();
+        }
+
+        /* ---------- Slide mirror ---------- */
+        function renderSlide() {
+            if (!auctionSettings || !auctionSettings.auctionStarted || auctionSettings.auctionEnded) return;
+            const hasCurrent = liveAuctionDoc && liveAuctionDoc.currentPlayerId && liveAuctionDoc.currentPlayer;
+
+            if (!hasCurrent) {
+                slideWaiting.classList.remove("hidden");
+                slideCard.classList.add("hidden");
+                return;
+            }
+            slideWaiting.classList.add("hidden");
+            slideCard.classList.remove("hidden");
+
+            const p = liveAuctionDoc.currentPlayer;
+            const thumb = driveThumb(p.photoLink);
+            const positions = Array.isArray(p.preferredPositions) ? p.preferredPositions : [];
+
+            slideCard.innerHTML = `
+            <div class="slide-card">
+              <div class="slide-photo">
+                ${thumb ? `<img src="${thumb}" alt="" loading="lazy" onerror="this.remove();" />` : ""}
+                <span class="slide-photo-fallback">${escapeHtml(initialOf(p.fullName))}</span>
+              </div>
+              <h2 class="slide-name">${escapeHtml(p.fullName || "Unnamed")}</h2>
+              <div class="slide-meta-row">
+                <span class="slide-batch-pill">Batch ${escapeHtml(p.batch ?? "—")}</span>
+                <span class="slide-hall-pill">${escapeHtml(p.hall ?? "—")}</span>
+              </div>
+              ${positions.length ? `<div class="slide-positions">${positions.map(pos => `<span class="slide-pos-tag">${escapeHtml(pos)}</span>`).join("")}</div>` : ""}
+            </div>
+          `;
+        }
+
+        /* ---------- Team strips (read-only) ---------- */
+        function renderTeamStrips() {
+            if (!allTeams.length) {
+                teamStripsWrap.innerHTML = `<div class="feed-empty">No teams yet.</div>`;
+                return;
+            }
+            teamStripsWrap.innerHTML = allTeams.map(t => {
+                const thumb = driveThumb(t.logoLink);
+                const color = t.teamColor || "#34DFEC";
+                const slots = (t.playerIds || []).length;
+                const maxSquad = auctionSettings?.maxSquadSize ?? "—";
+                return `
+              <div class="team-strip" style="--team-clr:${color};" data-team-id="${t.id}">
+                <div class="ts-logo">
+                  ${thumb ? `<img src="${thumb}" alt="" loading="lazy" onerror="this.remove();" />` : ""}
+                  <span class="ts-logo-fallback">${escapeHtml(initialOf(t.teamName))}</span>
+                </div>
+                <div class="ts-body">
+                  <div class="ts-name">${escapeHtml(t.teamName || "Unnamed Team")}</div>
+                  <div class="ts-meta">${slots} / ${escapeHtml(maxSquad)} squad</div>
+                </div>
+                <div class="ts-purse">
+                  <div class="tsp-num">${escapeHtml(t.remainingPurse ?? 0)}</div>
+                  <div class="tsp-label">Purse</div>
+                </div>
+              </div>
+            `;
+            }).join("");
+
+            teamStripsWrap.querySelectorAll(".team-strip").forEach(el => {
+                el.addEventListener("click", () => openTeamDetailModal(el.dataset.teamId));
+            });
+        }
+
+        /* ---------- Results cross-referenced with public player photos/batch ---------- */
+        function resultsWithPlayerLookup() {
+            return auctionResultsList.map(r => {
+                const pl = allPublicPlayers.find(p => p.id === r.playerId);
+                return { ...r, _photoLink: pl?.photoLink, _batch: pl?.batch };
+            });
+        }
+
+        function renderRecentSales() {
+            const recent = resultsWithPlayerLookup().slice(0, 3);
+            if (!recent.length) {
+                recentSalesWrap.innerHTML = `<div class="feed-empty">No sales recorded yet.</div>`;
+                return;
+            }
+            recentSalesWrap.innerHTML = recent.map(r => {
+                const thumb = driveThumb(r._photoLink);
+                return `
+              <div class="feed-row">
+                <div class="feed-avatar">
+                  ${thumb ? `<img src="${thumb}" alt="" loading="lazy" onerror="this.remove();" />` : ""}
+                  <span class="feed-avatar-fallback">${escapeHtml(initialOf(r.playerName))}</span>
+                </div>
+                <div class="feed-body">
+                  <div class="feed-name">${escapeHtml(r.playerName)}</div>
+                  <div class="feed-meta">${escapeHtml(r.teamName)} · ${formatRelativeTime(r.timestamp)}</div>
+                </div>
+                <div class="feed-price">${escapeHtml(r.soldPrice)}</div>
+              </div>
+            `;
+            }).join("");
+        }
+
+        function renderHighestSale() {
+            const list = resultsWithPlayerLookup();
+            if (!list.length) {
+                highestSaleWrap.innerHTML = `<div class="feed-empty">No sales recorded yet.</div>`;
+                return;
+            }
+            const top = list.reduce((max, r) => (r.soldPrice > (max?.soldPrice ?? -1) ? r : max), null);
+            const thumb = driveThumb(top._photoLink);
+            highestSaleWrap.innerHTML = `
+            <div class="highest-sale-card">
+              <div class="feed-avatar">
+                ${thumb ? `<img src="${thumb}" alt="" loading="lazy" onerror="this.remove();" />` : ""}
+                <span class="feed-avatar-fallback">${escapeHtml(initialOf(top.playerName))}</span>
+              </div>
+              <div class="feed-body">
+                <div class="feed-name">${escapeHtml(top.playerName)}</div>
+                <div class="feed-meta">Batch ${escapeHtml(top._batch ?? "—")} · ${escapeHtml(top.teamName)}</div>
+              </div>
+              <div class="feed-price">${escapeHtml(top.soldPrice)}</div>
+            </div>
+          `;
+        }
+
+        /* ---------- Full results table ---------- */
+        function populateTeamFilter() {
+            const current = teamFilterSelect.value;
+            teamFilterSelect.innerHTML = `<option value="">All teams</option>` +
+                allTeams.map(t => `<option value="${t.id}">${escapeHtml(t.teamName)}</option>`).join("");
+            if (allTeams.some(t => t.id === current)) teamFilterSelect.value = current;
+        }
+
+        function renderResultsTable() {
+            let list = resultsWithPlayerLookup();
+
+            const teamId = teamFilterSelect.value;
+            if (teamId) list = list.filter(r => r.teamId === teamId);
+
+            const sortMode = sortSelect.value;
+            list = list.slice();
+            if (sortMode === "price-desc") list.sort((a, b) => (b.soldPrice ?? 0) - (a.soldPrice ?? 0));
+            else if (sortMode === "price-asc") list.sort((a, b) => (a.soldPrice ?? 0) - (b.soldPrice ?? 0));
+            else if (sortMode === "team") list.sort((a, b) => (a.teamName || "").localeCompare(b.teamName || ""));
+            else list.sort((a, b) => toMillis(b.timestamp) - toMillis(a.timestamp));
+
+            if (!list.length) {
+                resultsBody.innerHTML = `<tr><td colspan="5" class="empty-cell">No results to show yet.</td></tr>`;
+                return;
+            }
+
+            resultsBody.innerHTML = list.map(r => {
+                const thumb = driveThumb(r._photoLink);
+                return `
+              <tr>
+                <td>
+                  <span class="rt-avatar">${thumb ? `<img src="${thumb}" alt="" loading="lazy" onerror="this.remove();" />` : ""}<span class="rt-avatar-fallback">${escapeHtml(initialOf(r.playerName))}</span></span>
+                  ${escapeHtml(r.playerName)}
+                </td>
+                <td>${escapeHtml(r.teamName)}</td>
+                <td class="mono">${escapeHtml(r.soldPrice)}</td>
+                <td class="mono">${escapeHtml(r.round ?? "—")}</td>
+                <td class="mono">${formatWhen(r.timestamp)}</td>
+              </tr>
+            `;
+            }).join("");
+        }
+        teamFilterSelect.addEventListener("change", renderResultsTable);
+        sortSelect.addEventListener("change", renderResultsTable);
+
+        /* ---------- Team detail modal — public-safe: no contact info, ever ---------- */
+        function openTeamDetailModal(teamId) {
+            openTeamId = teamId;
+            renderTeamDetail();
+            teamDetailOverlay.classList.remove("hidden");
+        }
+
+        function closeTeamDetailModal() {
+            teamDetailOverlay.classList.add("hidden");
+            openTeamId = null;
+        }
+        tdCloseBtn.addEventListener("click", closeTeamDetailModal);
+        teamDetailOverlay.addEventListener("click", (e) => { if (e.target === teamDetailOverlay) closeTeamDetailModal(); });
+        document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !teamDetailOverlay.classList.contains("hidden"))
+                closeTeamDetailModal(); });
+
+        function renderTeamDetail() {
+            const team = allTeams.find(t => t.id === openTeamId);
+            if (!team) { closeTeamDetailModal(); return; }
+
+            const thumb = driveThumb(team.logoLink);
+            tdLogo.innerHTML =
+                `${thumb ? `<img src="${thumb}" alt="" onerror="this.remove();" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;" />` : ""}<span class="ts-logo-fallback" style="font-size:1rem;">${escapeHtml(initialOf(team.teamName))}</span>`;
+            tdName.textContent = team.teamName || "Unnamed Team";
+
+            const roster = allPublicPlayers.filter(p => p.teamId === team.id);
+            const resultsByPlayerId = {};
+            auctionResultsList.forEach(r => { resultsByPlayerId[r.playerId] = r.soldPrice; });
+            const spent = roster.reduce((sum, p) => sum + (resultsByPlayerId[p.id] || 0), 0);
+
+            tdSlots.textContent = `${roster.length} / ${auctionSettings?.maxSquadSize ?? "—"}`;
+            tdRemaining.textContent = team.remainingPurse ?? 0;
+            tdSpent.textContent = spent;
+
+            tdOwnerRow.innerHTML = `
+            <div class="person-row">
+              <div><span class="pr-label">Owner</span><span class="pr-name">${escapeHtml(team.ownerName || "Not assigned")}</span></div>
+            </div>
+          `;
+            tdCaptainRow.innerHTML = `
+            <div class="person-row">
+              <div><span class="pr-label">Captain</span><span class="pr-name">${escapeHtml(team.captainName || "Not assigned")}</span></div>
+            </div>
+          `;
+
+            if (!roster.length) {
+                tdRoster.innerHTML = `<div class="roster-empty">No players sold to this team yet.</div>`;
+            } else {
+                tdRoster.innerHTML = roster
+                    .slice()
+                    .sort((a, b) => (a.fullName || "").localeCompare(b.fullName || ""))
+                    .map(p => {
+                        const pthumb = driveThumb(p.photoLink);
+                        const positions = Array.isArray(p.preferredPositions) ? p.preferredPositions : [];
+                        const price = resultsByPlayerId[p.id];
+                        return `
+                  <div class="roster-player-card">
+                    <div class="rpc-avatar">
+                      ${pthumb ? `<img src="${pthumb}" alt="" loading="lazy" onerror="this.remove();" />` : ""}
+                      <span class="rpc-avatar-fallback">${escapeHtml(initialOf(p.fullName))}</span>
+                    </div>
+                    <div class="rpc-body">
+                      <div class="rpc-name-row">
+                        <span class="rpc-name">${escapeHtml(p.fullName || "Unnamed")}</span>
+                        ${price != null ? `<span class="tag price-tag">${escapeHtml(price)}</span>` : ""}
+                      </div>
+                      <div class="rpc-meta">Batch ${escapeHtml(p.batch ?? "—")} · ${escapeHtml(p.hall ?? "—")}</div>
+                      ${positions.length ? `<div class="rpc-positions">${positions.map(pos => `<span class="tag pos-tag">${escapeHtml(pos)}</span>`).join("")}</div>` : ""}
+                    </div>
+                  </div>
+                `;
+                    }).join("");
+            }
+        }
+    </script>
 
 </body>
 </html>
