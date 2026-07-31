@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Admin Dashboard — PHY-LIGA</title>
+    <meta name="description" content="PHY-LIGA Season 01 organizer dashboard." />
+    <link rel="icon" type="image/png" href="admin.png" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --clr-canvas: #162235;
+            --clr-surface: #1E2D42;
+            --clr-surface-alt: #253850;
+            --clr-accent-primary: #A1C4C7;
+            --clr-accent-interactive: #34DFEC;
+            --clr-highlight: #2A8042;
+            --clr-danger: #E24C4C;
+            --clr-text-muted: #7E8B9B;
+            --clr-text-primary: #EAF2F2;
+            --radius-md: 12px;
+            --radius-lg: 20px;
+            --shadow-glow: 0 0 24px rgba(52, 223, 236, 0.15);
+            --font-display: 'Orbitron', sans-serif;
+            --font-body: 'Inter', sans-serif;
+            --font-mono: 'IBM Plex Mono', monospace;
+            --header-height: 64px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        html {
+            scroll-behavior: smooth;
+            -webkit-text-size-adjust: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            background-color: var(--clr-canvas);
+            background-image:
+                radial-gradient(circle at 15% 10%, rgba(52, 223, 236, 0.06), transparent 40%),
+                radial-gradient(circle at 85% 30%, rgba(42, 128, 66, 0.08), transparent 45%);
+            color: var(--clr-text-primary);
+            font-family: var(--font-body);
+            line-height: 1.55;
+            min-height: 100vh;
+            overflow-x: hidden;
+            width: 100%;
+            padding-top: var(--header-height);
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+        ::selection {
+            background: var(--clr-accent-interactive);
+            color: var(--clr-canvas);
+        }
+        :focus-visible {
+            outline: 2px solid var(--clr-accent-interactive);
+            outline-offset: 3px;
+        }
+        .hidden {
+            display: none !important;
+        }
+
+        /* ---------- HEADER ---------- */
+        header.site-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 5vw;
+            height: var(--header-height);
+            background: rgba(22, 34, 53, 0.94);
+            backdrop-filter: blur(14px);
+            border-bottom: 1px solid rgba(161, 196, 199, 0.12);
+            gap: 8px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .brand {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            min-width: 0;
+        }
+        .logo-img {
+            display: block;
+            height: 32px;
+            width: auto;
+            max-width: 120px;
+            flex-shrink: 1;
+        }
+        .brand .season-tag {
+            font-family: var(--font-mono);
+            font-size: 0.62rem;
+            color: var(--clr-text-muted);
+            border: 1px solid rgba(161, 196, 199, 0.25);
+            padding: 2px 8px;
+            border-radius: 20px;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        /* ---- Navigation ---- */
+        .header-nav {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex: 1;
+            justify-content: center;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            padding: 0 4px;
+        }
+        .header-nav::-webkit-scrollbar {
+            display: none;
+        }
+
+        .nav-link {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--clr-text-muted);
+            padding: 6px 12px;
+            border-radius: 999px;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+            letter-spacing: 0.03em;
+            border: 1px solid transparent;
+        }
+        .nav-link:hover {
+            color: var(--clr-text-primary);
+            border-color: rgba(161, 196, 199, 0.2);
+        }
+        .nav-link.active {
+            color: var(--clr-accent-interactive);
+            border-color: rgba(52, 223, 236, 0.3);
+            background: rgba(52, 223, 236, 0.06);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .account-chip {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--clr-accent-primary);
+            border: 1px solid rgba(161, 196, 199, 0.2);
+            padding: 5px 10px;
+            border-radius: 20px;
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            display: none;
+        }
+
+        .btn-ghost-sm {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--clr-accent-primary);
+            background: transparent;
+            border: 1px solid rgba(161, 196, 199, 0.2);
+            border-radius: 999px;
+            padding: 6px 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            min-height: 32px;
+        }
+        .btn-ghost-sm:hover {
+            border-color: var(--clr-accent-interactive);
+            color: var(--clr-accent-interactive);
+        }
+
+        .hamburger-btn {
+            display: none;
+            background: transparent;
+            border: 1px solid rgba(161, 196, 199, 0.2);
+            border-radius: 8px;
+            color: var(--clr-text-primary);
+            font-size: 1.3rem;
+            padding: 4px 8px;
+            cursor: pointer;
+            line-height: 1;
+            min-height: 34px;
+            min-width: 38px;
+        }
+        .hamburger-btn:hover {
+            border-color: var(--clr-accent-interactive);
+            color: var(--clr-accent-interactive);
+        }
+
+        /* Mobile nav overlay */
+        .nav-overlay {
+            display: none;
+            position: fixed;
+            top: var(--header-height);
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 999;
+            background: rgba(10, 16, 26, 0.7);
+            backdrop-filter: blur(4px);
+        }
+        .nav-overlay.open {
+            display: block;
+        }
+
+        .nav-drawer {
+            position: fixed;
+            top: var(--header-height);
+            right: 0;
+            bottom: 0;
+            width: 280px;
+            max-width: 80vw;
+            background: var(--clr-surface);
+            border-left: 1px solid rgba(161, 196, 199, 0.15);
+            padding: 20px 18px;
+            transform: translateX(100%);
+            transition: transform 0.25s ease;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+        .nav-drawer.open {
+            transform: translateX(0);
+        }
+        .nav-drawer .nav-link {
+            display: block;
+            padding: 12px 14px;
+            font-size: 0.85rem;
+            border-radius: var(--radius-md);
+            border: 1px solid transparent;
+            margin-bottom: 4px;
+        }
+        .nav-drawer .nav-link:hover {
+            border-color: rgba(161, 196, 199, 0.2);
+            background: rgba(255, 255, 255, 0.03);
+        }
+        .nav-drawer .nav-link.active {
+            border-color: rgba(52, 223, 236, 0.3);
+            background: rgba(52, 223, 236, 0.06);
+        }
+        .nav-drawer .drawer-divider {
+            height: 1px;
+            background: rgba(161, 196, 199, 0.12);
+            margin: 14px 0;
+        }
+        .nav-drawer .drawer-account {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--clr-text-muted);
+            padding: 8px 14px;
+            word-break: break-all;
+        }
+        .nav-drawer .drawer-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .nav-drawer .drawer-actions .btn-ghost-sm {
+            text-align: center;
+            padding: 10px;
+            font-size: 0.78rem;
+            width: 100%;
+        }
+
+        /* ---------- PAGE CHECKING STATE ---------- */
+        .page-checking {
+            text-align: center;
+            padding: 120px 20px;
+            color: var(--clr-text-muted);
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+        }
+
+        /* ---------- PAGE INTRO ---------- */
+        .page-intro {
+            max-width: 880px;
+            margin: 20px auto 0;
+            padding: 0 5vw;
+            text-align: center;
+        }
+        .page-intro .eyebrow {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--clr-accent-interactive);
+            margin-bottom: 8px;
+        }
+        .page-intro h1 {
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: clamp(1.4rem, 3vw, 2.2rem);
+            letter-spacing: 0.02em;
+            margin-bottom: 8px;
+        }
+        .page-intro .page-desc {
+            color: var(--clr-text-muted);
+            font-size: 0.85rem;
+            max-width: 620px;
+            margin: 0 auto;
+        }
+
+        /* ---------- SECTIONS ---------- */
+        .section-wrap {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 5vw 40px;
+        }
+        .section-wrap.first {
+            padding-top: 24px;
+        }
+
+        .section-heading-row {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .section-heading-row .eyebrow {
+            font-family: var(--font-mono);
+            font-size: 0.68rem;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--clr-accent-interactive);
+            margin-bottom: 4px;
+            display: block;
+        }
+        .section-heading-row h2 {
+            font-family: var(--font-display);
+            font-size: 1rem;
+            letter-spacing: 0.02em;
+        }
+
+        /* ---------- STAT CARDS ---------- */
+        .stats-strip {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 12px;
+        }
+        .stat-box {
+            padding: 16px 12px;
+            background: rgba(30, 45, 66, 0.55);
+            border: 1px solid rgba(161, 196, 199, 0.15);
+            border-radius: var(--radius-md);
+            backdrop-filter: blur(10px);
+            text-align: center;
+            transition: border-color 0.2s ease, transform 0.2s ease;
+        }
+        .stat-box:hover {
+            border-color: rgba(52, 223, 236, 0.35);
+            transform: translateY(-2px);
+        }
+        .stat-box .stat-icon {
+            font-size: 1.1rem;
+            margin-bottom: 4px;
+        }
+        .stat-box .stat-num {
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--clr-accent-interactive);
+            display: block;
+        }
+        .stat-box .stat-label {
+            font-size: 0.65rem;
+            color: var(--clr-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .stat-box.stat-warn {
+            border-color: rgba(226, 176, 76, 0.4);
+        }
+        .stat-box.stat-warn .stat-num {
+            color: #F3D28A;
+        }
+
+        /* ---------- MANAGE GRID ---------- */
+        .manage-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+        }
+        .manage-card {
+            padding: 20px 18px;
+            background: rgba(30, 45, 66, 0.5);
+            border: 1px solid rgba(161, 196, 199, 0.15);
+            border-radius: var(--radius-lg);
+            backdrop-filter: blur(10px);
+            opacity: 0.88;
+            min-width: 0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .manage-card:hover {
+            opacity: 1;
+            border-color: rgba(52, 223, 236, 0.35);
+            transform: translateY(-2px);
+        }
+        .mc-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            gap: 8px;
+        }
+        .mc-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: var(--radius-md);
+            background: rgba(52, 223, 236, 0.08);
+            border: 1px solid rgba(52, 223, 236, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.05rem;
+            flex-shrink: 0;
+        }
+        .manage-card h3 {
+            font-family: var(--font-display);
+            font-size: 0.85rem;
+            letter-spacing: 0.01em;
+            margin-bottom: 4px;
+        }
+        .manage-card p {
+            font-size: 0.75rem;
+            color: var(--clr-text-muted);
+        }
+
+        /* ---------- RECENT TABLE ---------- */
+        .table-wrap {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border-radius: var(--radius-md);
+            border: 1px solid rgba(161, 196, 199, 0.15);
+        }
+        table.recent-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.78rem;
+            min-width: 520px;
+        }
+        table.recent-table th {
+            text-align: left;
+            font-family: var(--font-mono);
+            font-size: 0.62rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--clr-text-muted);
+            background: rgba(255, 255, 255, 0.03);
+            padding: 10px 12px;
+        }
+        table.recent-table td {
+            padding: 10px 12px;
+            border-top: 1px solid rgba(161, 196, 199, 0.08);
+        }
+        .loading-cell,
+        .error-cell {
+            text-align: center;
+            color: var(--clr-text-muted);
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            padding: 30px !important;
+        }
+
+        .tag {
+            display: inline-block;
+            font-family: var(--font-mono);
+            font-size: 0.6rem;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            white-space: nowrap;
+        }
+        .tag.role-player {
+            color: var(--clr-accent-interactive);
+            background: rgba(52, 223, 236, 0.1);
+            border: 1px solid rgba(52, 223, 236, 0.25);
+        }
+        .tag.role-owner {
+            color: #9CF0B0;
+            background: rgba(42, 128, 66, 0.15);
+            border: 1px solid rgba(42, 128, 66, 0.4);
+        }
+        .tag.role-both {
+            color: #F3D28A;
+            background: rgba(226, 176, 76, 0.1);
+            border: 1px solid rgba(226, 176, 76, 0.35);
+        }
+        .tag.status-pending {
+            color: #F3D28A;
+            background: rgba(226, 176, 76, 0.1);
+            border: 1px solid rgba(226, 176, 76, 0.35);
+        }
+        .tag.status-approved {
+            color: #9CF0B0;
+            background: rgba(42, 128, 66, 0.15);
+            border: 1px solid rgba(42, 128, 66, 0.4);
+        }
+        .tag.status-rejected {
+            color: #FFB4B4;
+            background: rgba(226, 76, 76, 0.1);
+            border: 1px solid rgba(226, 76, 76, 0.4);
+        }
+
+        .state-box {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--clr-text-muted);
+        }
+        .state-box .state-icon {
+            font-size: 1.6rem;
+            margin-bottom: 8px;
+        }
+        .state-box h3 {
+            font-family: var(--font-display);
+            font-size: 0.95rem;
+            color: var(--clr-text-primary);
+            margin-bottom: 4px;
+        }
+        .state-box p {
+            font-size: 0.8rem;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        /* ---------- FOOTER ---------- */
+        footer.site-footer {
+            text-align: center;
+            padding: 20px 5vw;
+            border-top: 1px solid rgba(161, 196, 199, 0.12);
+            font-size: 0.72rem;
+            color: var(--clr-text-muted);
+        }
+        footer.site-footer a {
+            color: var(--clr-accent-interactive);
+        }
+
+        /* ---------- RESPONSIVE ---------- */
+        @media (min-width: 769px) {
+            .account-chip {
+                display: inline-block;
+            }
+            .nav-drawer,
+            .nav-overlay {
+                display: none !important;
+            }
+            .hamburger-btn {
+                display: none !important;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .header-nav .nav-link {
+                font-size: 0.62rem;
+                padding: 5px 8px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            :root {
+                --header-height: 58px;
+            }
+
+            .header-nav {
+                display: none;
+            }
+            .hamburger-btn {
+                display: block;
+            }
+            .account-chip {
+                display: none;
+            }
+            .btn-ghost-sm {
+                font-size: 0.65rem;
+                padding: 5px 10px;
+                min-height: 28px;
+            }
+            .logo-img {
+                height: 26px;
+                max-width: 100px;
+            }
+            .brand .season-tag {
+                font-size: 0.55rem;
+                padding: 1px 6px;
+            }
+            .header-actions {
+                gap: 4px;
+            }
+
+            .stats-strip {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 8px;
+            }
+            .stat-box {
+                padding: 12px 8px;
+            }
+            .stat-box .stat-num {
+                font-size: 1.2rem;
+            }
+            .stat-box .stat-label {
+                font-size: 0.58rem;
+            }
+
+            .manage-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+            .manage-card {
+                padding: 14px 12px;
+            }
+            .manage-card h3 {
+                font-size: 0.75rem;
+            }
+            .manage-card p {
+                font-size: 0.68rem;
+            }
+            .mc-icon {
+                width: 32px;
+                height: 32px;
+                font-size: 0.85rem;
+            }
+
+            table.recent-table {
+                font-size: 0.7rem;
+                min-width: 440px;
+            }
+            table.recent-table th,
+            table.recent-table td {
+                padding: 8px 10px;
+            }
+
+            .page-intro {
+                margin-top: 12px;
+            }
+            .page-intro h1 {
+                font-size: 1.2rem;
+            }
+            .page-intro .page-desc {
+                font-size: 0.78rem;
+            }
+            .section-wrap {
+                padding: 0 4vw 32px;
+            }
+            .section-wrap.first {
+                padding-top: 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            :root {
+                --header-height: 54px;
+            }
+            .logo-img {
+                height: 22px;
+                max-width: 80px;
+            }
+            .brand .season-tag {
+                font-size: 0.5rem;
+                padding: 1px 4px;
+            }
+            .btn-ghost-sm {
+                font-size: 0.58rem;
+                padding: 4px 8px;
+                min-height: 24px;
+            }
+            .hamburger-btn {
+                font-size: 1.1rem;
+                min-height: 28px;
+                min-width: 32px;
+                padding: 2px 6px;
+            }
+
+            .stats-strip {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 6px;
+            }
+            .stat-box {
+                padding: 10px 6px;
+            }
+            .stat-box .stat-icon {
+                font-size: 0.9rem;
+            }
+            .stat-box .stat-num {
+                font-size: 1rem;
+            }
+            .stat-box .stat-label {
+                font-size: 0.5rem;
+            }
+
+            .manage-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+            .manage-card {
+                padding: 12px 10px;
+            }
+            .manage-card h3 {
+                font-size: 0.7rem;
+            }
+            .manage-card p {
+                font-size: 0.62rem;
+            }
+            .mc-icon {
+                width: 28px;
+                height: 28px;
+                font-size: 0.75rem;
+            }
+
+            table.recent-table {
+                font-size: 0.62rem;
+                min-width: 360px;
+            }
+            table.recent-table th,
+            table.recent-table td {
+                padding: 6px 8px;
+            }
+
+            .page-intro h1 {
+                font-size: 1rem;
+            }
+            .section-heading-row h2 {
+                font-size: 0.85rem;
+            }
+            .section-wrap {
+                padding: 0 3vw 24px;
+            }
+            .section-wrap.first {
+                padding-top: 12px;
+            }
+
+            .nav-drawer {
+                width: 260px;
+                padding: 16px 14px;
+            }
+            .nav-drawer .nav-link {
+                font-size: 0.78rem;
+                padding: 10px 12px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .stats-strip {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .manage-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            table.recent-table {
+                min-width: 300px;
+                font-size: 0.56rem;
+            }
+            table.recent-table th,
+            table.recent-table td {
+                padding: 4px 6px;
+            }
+            .logo-img {
+                height: 18px;
+                max-width: 64px;
+            }
+            .brand .season-tag {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="site-header">
+        <div class="header-left">
+            <a href="../index.html" class="brand">
+                <img src="../logo.png" alt="PHY LIGA Logo" class="logo-img" />
+                <span class="season-tag">Admin</span>
+            </a>
+        </div>
+
+        <nav class="header-nav" id="mainNav">
+            <a href="./dashboard.html" class="nav-link active">Dashboard</a>
+            <a href="./manage-players.html" class="nav-link">Players</a>
+            <a href="./manage-teams.html" class="nav-link">Teams</a>
+            <a href="./manage-auction.html" class="nav-link">Auction</a>
+            <a href="./manage-fixtures.html" class="nav-link">Fixtures</a>
+        </nav>
+
+        <div class="header-actions">
+            <span class="account-chip" id="accountChip">…</span>
+            <a href="../index.html" class="btn-ghost-sm">View site</a>
+            <button class="btn-ghost-sm" id="signOutBtn" type="button">Sign out</button>
+            <button class="hamburger-btn" id="hamburgerBtn" type="button" aria-label="Menu">☰</button>
+        </div>
+    </header>
+
+    <!-- Mobile nav overlay + drawer -->
+    <div class="nav-overlay" id="navOverlay"></div>
+    <div class="nav-drawer" id="navDrawer">
+        <a href="./dashboard.html" class="nav-link active">Dashboard</a>
+        <a href="./manage-players.html" class="nav-link">Manage Players</a>
+        <a href="./manage-teams.html" class="nav-link">Manage Teams</a>
+        <a href="./manage-auction.html" class="nav-link">Manage Auction</a>
+        <a href="./manage-fixtures.html" class="nav-link">Fixtures &amp; Live Score</a>
+        <div class="drawer-divider"></div>
+        <div class="drawer-account" id="drawerAccount">…</div>
+        <div class="drawer-actions">
+            <a href="../index.html" class="btn-ghost-sm">View site</a>
+            <button class="btn-ghost-sm" id="drawerSignOutBtn" type="button">Sign out</button>
+        </div>
+    </div>
+
+    <div class="page-checking" id="checkingState">Checking session…</div>
+
+    <main id="dashboardContent" class="hidden">
+
+        <section class="page-intro">
+            <p class="eyebrow">Organizer Console</p>
+            <h1>Dashboard</h1>
+            <p class="page-desc">A live snapshot of PHY-LIGA Season 01 — registrations, teams, and what's coming up.</p>
+        </section>
+
+        <section class="section-wrap first">
+            <div class="stats-strip" id="statsStrip">
+                <div class="stat-box"><div class="stat-icon">📋</div><span class="stat-num">–</span><span class="stat-label">Total Registrations</span></div>
+                <div class="stat-box"><div class="stat-icon">⛹🏼</div><span class="stat-num">–</span><span class="stat-label">Players</span></div>
+                <div class="stat-box"><div class="stat-icon">👔</div><span class="stat-num">–</span><span class="stat-label">Owners</span></div>
+                <div class="stat-box"><div class="stat-icon">⏳</div><span class="stat-num">–</span><span class="stat-label">Pending Approval</span></div>
+                <div class="stat-box"><div class="stat-icon">🏆</div><span class="stat-num">–</span><span class="stat-label">Teams</span></div>
+                <div class="stat-box"><div class="stat-icon">📅</div><span class="stat-num">–</span><span class="stat-label">Upcoming Matches</span></div>
+            </div>
+        </section>
+
+        <section class="section-wrap">
+            <div class="section-heading-row">
+                <div><span class="eyebrow">Admin Tools</span><h2>Manage</h2></div>
+            </div>
+            <div class="manage-grid">
+                <a href="manage-players.html">
+                    <div class="manage-card">
+                        <div class="mc-top"><div class="mc-icon">⛹🏼‍♂️</div></div>
+                        <h3>Manage Players</h3>
+                        <p id="mcPlayersDesc">Approve registrations, edit details, assign teams.</p>
+                    </div>
+                </a>
+                <a href="manage-teams.html">
+                    <div class="manage-card">
+                        <div class="mc-top"><div class="mc-icon">🛡️</div></div>
+                        <h3>Manage Teams</h3>
+                        <p id="mcTeamsDesc">Create teams, assign owners, upload logos.</p>
+                    </div>
+                </a>
+                <a href="manage-auction.html">
+                    <div class="manage-card">
+                        <div class="mc-top"><div class="mc-icon">🔨</div></div>
+                        <h3>Manage Auction</h3>
+                        <p id="mcAuctionDesc">Record sales and assign players to teams.</p>
+                    </div>
+                </a>
+                <a href="manage-fixtures.html">
+                    <div class="manage-card">
+                        <div class="mc-top"><div class="mc-icon">📡</div></div>
+                        <h3>Fixtures &amp; Live Score</h3>
+                        <p id="mcFixturesDesc">Schedule matches and update live scores.</p>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <section class="section-wrap">
+            <div class="section-heading-row">
+                <div><span class="eyebrow">Latest Activity</span><h2>Recent Registrations</h2></div>
+            </div>
+            <div class="table-wrap">
+                <table class="recent-table" id="recentTable">
+                    <thead>
+                        <tr><th>Name</th><th>Role</th><th>Batch</th><th>Hall</th><th>Status</th><th>Registered</th></tr>
+                    </thead>
+                    <tbody id="recentBody">
+                        <tr><td colspan="6" class="loading-cell">Loading recent registrations…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="state-box hidden" id="recentEmpty">
+                <div class="state-icon">📭</div>
+                <h3>No registrations yet</h3>
+                <p>New sign-ups from the registration page will show up here.</p>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="site-footer">
+        © 2026 PHY-LIGA · Developed by <a href="https://www.facebook.com/fardin.0112" target="_blank" rel="noopener">Fardin Hossain</a> · Feathered by <a href="https://www.facebook.com/tawkir.hossain.16" target="_blank" rel="noopener">Tawkir Hossain Rahat</a>
+    </footer>
+
+    <script type="module">
+        // ---- Hamburger menu ----
+        const hamburgerBtn = document.getElementById("hamburgerBtn");
+        const navOverlay = document.getElementById("navOverlay");
+        const navDrawer = document.getElementById("navDrawer");
+
+        function toggleMenu(open) {
+            const isOpen = typeof open === "boolean" ? open : navDrawer.classList.contains("open");
+            if (isOpen) {
+                navDrawer.classList.remove("open");
+                navOverlay.classList.remove("open");
+                document.body.style.overflow = "";
+            } else {
+                navDrawer.classList.add("open");
+                navOverlay.classList.add("open");
+                document.body.style.overflow = "hidden";
+            }
+        }
+
+        hamburgerBtn.addEventListener("click", () => toggleMenu());
+        navOverlay.addEventListener("click", () => toggleMenu(false));
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape" && navDrawer.classList.contains("open")) toggleMenu(false);
+        });
+
+        // ---- Auth + data loading (unchanged from original, with small adjustments) ----
+        const checkingState = document.getElementById("checkingState");
+        const dashboardContent = document.getElementById("dashboardContent");
+        const accountChip = document.getElementById("accountChip");
+        const drawerAccount = document.getElementById("drawerAccount");
+        const signOutBtn = document.getElementById("signOutBtn");
+        const drawerSignOutBtn = document.getElementById("drawerSignOutBtn");
+        const statsStrip = document.getElementById("statsStrip");
+        const recentBody = document.getElementById("recentBody");
+        const recentEmpty = document.getElementById("recentEmpty");
+        const recentTable = document.getElementById("recentTable");
+
+        const ROLE_LABELS = { player: "Player", owner: "Owner", both: "Both" };
+        const STATUS_LABELS = { registered: "Pending", approved: "Approved", rejected: "Rejected" };
+
+        function escapeHtml(str) {
+            return String(str ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+        }
+
+        function toMillis(ts) {
+            if (!ts) return 0;
+            if (typeof ts.toMillis === "function") return ts.toMillis();
+            if (typeof ts.seconds === "number") return ts.seconds * 1000;
+            return 0;
+        }
+
+        function formatWhen(ts) {
+            const ms = toMillis(ts);
+            if (!ms) return "—";
+            return new Date(ms).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+        }
+
+        function setText(id, text) {
+            const el = document.getElementById(id);
+            if (el) el.textContent = text;
+        }
+
+        (async function init() {
+            let requireAdmin, adminSignOut, db, collection, getDocs;
+
+            try {
+                const [guardMod, configMod, firestoreMod] = await Promise.all([
+                    import("../assets/js/admin-guard.js"),
+                    import("../assets/js/firebase-config.js"),
+                    import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js")
+                ]);
+                requireAdmin = guardMod.requireAdmin;
+                adminSignOut = guardMod.adminSignOut;
+                db = configMod.db;
+                ({ collection, getDocs } = firestoreMod);
+            } catch (err) {
+                console.error("Firebase failed to load:", err);
+                checkingState.textContent =
+                    "Couldn't connect to Firebase. If you're opening this file directly on your computer, serve it through a local web server (e.g. VS Code's \"Live Server\" extension, or `npx serve`) or view it on the live deployed site.";
+                return;
+            }
+
+            const user = await requireAdmin();
+            const email = user.email || "Signed in";
+            accountChip.textContent = email;
+            drawerAccount.textContent = email;
+
+            signOutBtn.addEventListener("click", () => adminSignOut());
+            drawerSignOutBtn.addEventListener("click", () => adminSignOut());
+
+            checkingState.classList.add("hidden");
+            dashboardContent.classList.remove("hidden");
+
+            loadDashboardData(db, collection, getDocs);
+        })();
+
+        async function loadDashboardData(db, collection, getDocs) {
+            try {
+                const [playersSnap, teamsSnap, fixturesSnap] = await Promise.all([
+                    getDocs(collection(db, "players")),
+                    getDocs(collection(db, "teams")),
+                    getDocs(collection(db, "fixtures"))
+                ]);
+
+                const players = [];
+                playersSnap.forEach(d => players.push({ id: d.id, ...d.data() }));
+                const teams = [];
+                teamsSnap.forEach(d => teams.push({ id: d.id, ...d.data() }));
+                const fixtures = [];
+                fixturesSnap.forEach(d => fixtures.push({ id: d.id, ...d.data() }));
+
+                renderStats(players, teams, fixtures);
+                renderManageCounts(players, teams, fixtures);
+                renderRecent(players);
+            } catch (err) {
+                console.error("Failed to load dashboard data:", err);
+                statsStrip.innerHTML =
+                    `<div class="state-box"><div class="state-icon">⚠️</div><h3>Couldn't load dashboard data</h3><p>Check your connection, confirm your account still has admin access, then refresh.</p></div>`;
+                recentBody.innerHTML = `<tr><td colspan="6" class="error-cell">Couldn't load recent registrations.</td></tr>`;
+            }
+        }
+
+        function renderStats(players, teams, fixtures) {
+            const totalRegistrations = players.length;
+            const totalPlayers = players.filter(p => p.role === "player" || p.role === "both").length;
+            const totalOwners = players.filter(p => p.role === "owner" || p.role === "both").length;
+            const pending = players.filter(p => !p.status || p.status === "registered").length;
+            const totalTeams = teams.length;
+            const upcoming = fixtures.filter(f => f.status === "upcoming").length;
+
+            const stats = [
+                { icon: "📋", num: totalRegistrations, label: "Total Registrations" },
+                { icon: "⚽", num: totalPlayers, label: "Players" },
+                { icon: "👔", num: totalOwners, label: "Owners" },
+                { icon: "⏳", num: pending, label: "Pending Approval", warn: pending > 0 },
+                { icon: "🏆", num: totalTeams, label: "Teams" },
+                { icon: "📅", num: upcoming, label: "Upcoming Matches" }
+            ];
+
+            statsStrip.innerHTML = stats.map(s =>
+                `<div class="stat-box${s.warn ? " stat-warn" : ""}">
+              <div class="stat-icon">${s.icon}</div>
+              <span class="stat-num">${s.num}</span>
+              <span class="stat-label">${s.label}</span>
+            </div>`
+            ).join("");
+        }
+
+        function renderManageCounts(players, teams, fixtures) {
+            const pending = players.filter(p => !p.status || p.status === "registered").length;
+            setText("mcPlayersDesc", `${players.length} registration${players.length === 1 ? "" : "s"} · ${pending} pending`);
+            setText("mcTeamsDesc", `${teams.length} team${teams.length === 1 ? "" : "s"} created so far`);
+
+            const sold = players.filter(p => p.auctionStatus === "sold").length;
+            const unsold = players.filter(p => p.auctionStatus === "unsold").length;
+            setText("mcAuctionDesc", `${sold} sold · ${unsold} unsold so far`);
+
+            setText("mcFixturesDesc", `${fixtures.length} fixture${fixtures.length === 1 ? "" : "s"} scheduled`);
+        }
+
+        function renderRecent(players) {
+            const sorted = [...players]
+                .sort((a, b) => toMillis(b.registeredAt) - toMillis(a.registeredAt))
+                .slice(0, 8);
+
+            if (!sorted.length) {
+                recentTable.classList.add("hidden");
+                recentEmpty.classList.remove("hidden");
+                return;
+            }
+            recentTable.classList.remove("hidden");
+            recentEmpty.classList.add("hidden");
+
+            recentBody.innerHTML = sorted.map(p => {
+                const roleClass = p.role === "owner" ? "role-owner" : p.role === "both" ? "role-both" :
+                "role-player";
+                const statusKey = p.status || "registered";
+                const statusClass = statusKey === "approved" ? "status-approved" : statusKey === "rejected" ?
+                    "status-rejected" : "status-pending";
+                return `
+              <tr>
+                <td>${escapeHtml(p.fullName || "—")}</td>
+                <td><span class="tag ${roleClass}">${ROLE_LABELS[p.role] || p.role || "—"}</span></td>
+                <td>${escapeHtml(p.batch ?? "—")}</td>
+                <td>${escapeHtml(p.hall ?? "—")}</td>
+                <td><span class="tag ${statusClass}">${STATUS_LABELS[statusKey] || statusKey}</span></td>
+                <td>${formatWhen(p.registeredAt)}</td>
+              </tr>
+            `;
+            }).join("");
+        }
+    </script>
+
+</body>
+</html>
