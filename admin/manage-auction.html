@@ -1,0 +1,1648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Manage Auction — PHY-LIGA Admin</title>
+<meta name="description" content="PHY-LIGA Season 01 — run and record the player auction." />
+<link rel="icon" type="image/png" href="admin.png" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --clr-canvas: #162235;
+    --clr-surface: #1E2D42;
+    --clr-surface-alt: #253850;
+    --clr-accent-primary: #A1C4C7;
+    --clr-accent-interactive: #34DFEC;
+    --clr-highlight: #2A8042;
+    --clr-danger: #E24C4C;
+    --clr-text-muted: #7E8B9B;
+    --clr-text-primary: #EAF2F2;
+    --radius-md: 12px;
+    --radius-lg: 20px;
+    --shadow-glow: 0 0 24px rgba(52, 223, 236, 0.15);
+    --font-display: 'Orbitron', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+    --header-height: 64px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; overflow-x: hidden; }
+
+  body {
+    background-color: var(--clr-canvas);
+    background-image:
+      radial-gradient(circle at 15% 10%, rgba(52,223,236,0.06), transparent 40%),
+      radial-gradient(circle at 85% 30%, rgba(42,128,66,0.08), transparent 45%);
+    color: var(--clr-text-primary);
+    font-family: var(--font-body);
+    line-height: 1.55;
+    min-height: 100vh;
+    overflow-x: hidden;
+    width: 100%;
+    padding-top: var(--header-height);
+  }
+
+  a { color: inherit; text-decoration: none; }
+  img { max-width: 100%; height: auto; }
+  ::selection { background: var(--clr-accent-interactive); color: var(--clr-canvas); }
+  :focus-visible { outline: 2px solid var(--clr-accent-interactive); outline-offset: 3px; }
+  .hidden { display: none !important; }
+
+  /* ---------- HEADER ---------- */
+  header.site-header {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 5vw; height: var(--header-height);
+    background: rgba(22, 34, 53, 0.94);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(161, 196, 199, 0.12);
+    gap: 8px;
+  }
+
+  .header-left {
+    display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+  }
+  .brand {
+    display: flex; align-items: baseline; gap: 8px; min-width: 0;
+  }
+  .logo-img {
+    display: block; height: 32px; width: auto; max-width: 120px; flex-shrink: 1;
+  }
+  .brand .season-tag {
+    font-family: var(--font-mono); font-size: 0.62rem; color: var(--clr-text-muted);
+    border: 1px solid rgba(161, 196, 199, 0.25); padding: 2px 8px; border-radius: 20px;
+    letter-spacing: 0.05em; white-space: nowrap; flex-shrink: 0;
+  }
+
+  .header-nav {
+    display: flex; align-items: center; gap: 4px; flex: 1; justify-content: center;
+    overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding: 0 4px;
+  }
+  .header-nav::-webkit-scrollbar { display: none; }
+
+  .nav-link {
+    font-family: var(--font-mono); font-size: 0.7rem; font-weight: 600;
+    color: var(--clr-text-muted); padding: 6px 12px; border-radius: 999px;
+    white-space: nowrap; transition: all 0.2s ease; letter-spacing: 0.03em;
+    border: 1px solid transparent;
+  }
+  .nav-link:hover { color: var(--clr-text-primary); border-color: rgba(161,196,199,0.2); }
+  .nav-link.active { color: var(--clr-accent-interactive); border-color: rgba(52,223,236,0.3); background: rgba(52,223,236,0.06); }
+
+  .header-actions {
+    display: flex; align-items: center; gap: 6px; flex-shrink: 0;
+  }
+  .account-chip {
+    font-family: var(--font-mono); font-size: 0.7rem; color: var(--clr-accent-primary);
+    border: 1px solid rgba(161,196,199,0.2); padding: 5px 10px; border-radius: 20px;
+    max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    display: none;
+  }
+  .btn-ghost-sm {
+    font-family: var(--font-mono); font-size: 0.7rem; color: var(--clr-accent-primary);
+    background: transparent; border: 1px solid rgba(161,196,199,0.2); border-radius: 999px;
+    padding: 6px 12px; cursor: pointer; transition: all 0.2s ease; white-space: nowrap;
+    min-height: 32px;
+  }
+  .btn-ghost-sm:hover { border-color: var(--clr-accent-interactive); color: var(--clr-accent-interactive); }
+
+  .hamburger-btn {
+    display: none; background: transparent; border: 1px solid rgba(161,196,199,0.2);
+    border-radius: 8px; color: var(--clr-text-primary); font-size: 1.3rem;
+    padding: 4px 8px; cursor: pointer; line-height: 1; min-height: 34px; min-width: 38px;
+  }
+  .hamburger-btn:hover { border-color: var(--clr-accent-interactive); color: var(--clr-accent-interactive); }
+
+  .nav-overlay {
+    display: none; position: fixed; top: var(--header-height); left: 0; right: 0; bottom: 0;
+    z-index: 999; background: rgba(10,16,26,0.7); backdrop-filter: blur(4px);
+  }
+  .nav-overlay.open { display: block; }
+
+  .nav-drawer {
+    position: fixed; top: var(--header-height); right: 0; bottom: 0; width: 280px; max-width: 80vw;
+    background: var(--clr-surface); border-left: 1px solid rgba(161,196,199,0.15);
+    padding: 20px 18px; transform: translateX(100%); transition: transform 0.25s ease;
+    overflow-y: auto; z-index: 1000;
+  }
+  .nav-drawer.open { transform: translateX(0); }
+  .nav-drawer .nav-link {
+    display: block; padding: 12px 14px; font-size: 0.85rem; border-radius: var(--radius-md);
+    border: 1px solid transparent; margin-bottom: 4px;
+  }
+  .nav-drawer .nav-link:hover { border-color: rgba(161,196,199,0.2); background: rgba(255,255,255,0.03); }
+  .nav-drawer .nav-link.active { border-color: rgba(52,223,236,0.3); background: rgba(52,223,236,0.06); }
+  .nav-drawer .drawer-divider { height: 1px; background: rgba(161,196,199,0.12); margin: 14px 0; }
+  .nav-drawer .drawer-account {
+    font-family: var(--font-mono); font-size: 0.75rem; color: var(--clr-text-muted);
+    padding: 8px 14px; word-break: break-all;
+  }
+  .nav-drawer .drawer-actions {
+    display: flex; flex-direction: column; gap: 8px; margin-top: 12px;
+  }
+  .nav-drawer .drawer-actions .btn-ghost-sm {
+    text-align: center; padding: 10px; font-size: 0.78rem; width: 100%;
+  }
+
+  /* ---------- PAGE CHECKING ---------- */
+  .page-checking {
+    text-align: center; padding: 120px 20px;
+    color: var(--clr-text-muted); font-family: var(--font-mono); font-size: 0.9rem;
+  }
+
+  /* ---------- PAGE INTRO ---------- */
+  .page-intro {
+    max-width: 1280px; margin: 20px auto 0; padding: 0 5vw;
+  }
+  .page-intro .eyebrow {
+    font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--clr-accent-interactive); margin-bottom: 8px;
+  }
+  .page-intro h1 {
+    font-family: var(--font-display); font-weight: 800; font-size: clamp(1.3rem, 3vw, 2rem);
+    letter-spacing: 0.02em; margin-bottom: 6px;
+  }
+
+  .section-wrap {
+    max-width: 1280px; margin: 0 auto; padding: 20px 5vw 40px;
+  }
+
+  /* ---------- SHARED FORM CARD ---------- */
+  .form-card {
+    padding: clamp(16px, 3vw, 28px);
+    background: rgba(30, 45, 66, 0.55);
+    border: 1px solid rgba(161, 196, 199, 0.15);
+    border-radius: var(--radius-lg);
+    backdrop-filter: blur(10px);
+    margin-bottom: 24px;
+  }
+  fieldset { border: none; margin-bottom: 18px; }
+  legend {
+    font-family: var(--font-display); font-size: 0.8rem; letter-spacing: 0.02em;
+    color: var(--clr-accent-interactive); margin-bottom: 10px; padding-bottom: 4px;
+    border-bottom: 1px solid rgba(161, 196, 199, 0.15); width: 100%;
+  }
+  .field { margin-bottom: 14px; }
+  .field label.field-label {
+    display: block; font-size: 0.76rem; font-weight: 600; color: var(--clr-accent-primary); margin-bottom: 5px;
+  }
+  .field .hint { font-size: 0.7rem; color: var(--clr-text-muted); margin-top: 4px; }
+
+  input[type="text"], input[type="number"], input[type="url"], select {
+    width: 100%; padding: 10px 12px;
+    background: var(--clr-surface); border: 1px solid rgba(161, 196, 199, 0.2);
+    border-radius: var(--radius-md); color: var(--clr-text-primary);
+    font-family: var(--font-body); font-size: 0.84rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  input:focus, select:focus {
+    border-color: var(--clr-accent-interactive);
+    box-shadow: 0 0 0 3px rgba(52,223,236,0.15); outline: none;
+  }
+  input:disabled, select:disabled { opacity: 0.5; cursor: not-allowed; }
+  select {
+    appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2334DFEC' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>");
+    background-repeat: no-repeat; background-position: right 12px center; cursor: pointer;
+  }
+
+  .field-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .field-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+
+  .readonly-stat {
+    display: flex; flex-direction: column; gap: 2px; padding: 10px 12px;
+    background: rgba(255,255,255,0.03); border: 1px dashed rgba(161,196,199,0.2);
+    border-radius: var(--radius-md);
+  }
+  .readonly-stat .rs-label {
+    font-family: var(--font-mono); font-size: 0.62rem; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--clr-text-muted);
+  }
+  .readonly-stat .rs-value {
+    font-family: var(--font-mono); font-weight: 700; font-size: 1rem;
+    color: var(--clr-accent-interactive);
+  }
+
+  .alert {
+    display: none; padding: 10px 14px; border-radius: var(--radius-md);
+    font-size: 0.78rem; margin-bottom: 14px; border: 1px solid transparent;
+  }
+  .alert.show { display: block; }
+  .alert-error   { background: rgba(226,76,76,0.1); border-color: rgba(226,76,76,0.4); color: #FFB4B4; }
+  .alert-warning { background: rgba(226,176,76,0.1); border-color: rgba(226,176,76,0.4); color: #F3D28A; }
+  .alert-success { background: rgba(42,128,66,0.15); border-color: rgba(42,128,66,0.5); color: #9CF0B0; }
+
+  .form-actions {
+    display: flex; justify-content: flex-end; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 4px;
+  }
+  .btn-submit {
+    font-family: var(--font-display); font-weight: 700; font-size: 0.8rem; letter-spacing: 0.02em;
+    color: var(--clr-canvas); background: linear-gradient(135deg, var(--clr-accent-interactive), #6BEFF7);
+    border: none; padding: 11px 24px; border-radius: 999px; cursor: pointer;
+    box-shadow: 0 0 20px rgba(52,223,236,0.3);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+  }
+  .btn-submit:hover:not(:disabled) { transform: scale(1.02); }
+  .btn-submit:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
+  .btn-danger {
+    font-family: var(--font-display); font-weight: 700; font-size: 0.74rem; letter-spacing: 0.02em;
+    color: #FFB4B4; background: transparent; border: 1px solid rgba(226,76,76,0.4);
+    padding: 9px 18px; border-radius: 999px; cursor: pointer; transition: all 0.2s ease;
+  }
+  .btn-danger:hover { background: rgba(226,76,76,0.12); border-color: var(--clr-danger); }
+  .submit-status { font-size: 0.72rem; color: var(--clr-text-muted); font-family: var(--font-mono); }
+
+  /* ---------- LIVE LAYOUT ---------- */
+  .round-banner {
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+    padding: 12px 16px; margin-bottom: 16px;
+    background: rgba(226,176,76,0.08); border: 1px solid rgba(226,176,76,0.3);
+    border-radius: var(--radius-md); color: #F3D28A; font-size: 0.8rem;
+  }
+  .round-chip {
+    display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 0.68rem;
+    color: var(--clr-accent-interactive); background: rgba(52,223,236,0.08);
+    border: 1px solid rgba(52,223,236,0.25); padding: 4px 10px; border-radius: 999px;
+    margin-bottom: 14px; width: fit-content;
+  }
+
+  .auction-layout {
+    display: grid; grid-template-columns: 3fr 2fr; gap: 20px; align-items: start;
+  }
+
+  /* ---------- SLIDE ---------- */
+  .slide-wrap { position: sticky; top: calc(var(--header-height) + 16px); }
+  .slide-empty {
+    text-align: center; padding: clamp(40px, 6vw, 70px) 20px;
+    background: rgba(30,45,66,0.5); border: 1px solid rgba(161,196,199,0.15);
+    border-radius: var(--radius-lg); backdrop-filter: blur(10px);
+  }
+  .slide-empty p { color: var(--clr-text-muted); font-family: var(--font-mono); font-size: 0.8rem; margin-top: 12px; }
+  .btn-pick {
+    font-family: var(--font-display); font-weight: 800; font-size: 0.95rem; letter-spacing: 0.02em;
+    color: var(--clr-canvas); background: linear-gradient(135deg, var(--clr-accent-interactive), #6BEFF7);
+    border: none; padding: 16px 36px; border-radius: 999px; cursor: pointer;
+    box-shadow: 0 0 30px rgba(52,223,236,0.4);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .btn-pick:hover:not(:disabled) { transform: scale(1.04); box-shadow: 0 0 40px rgba(52,223,236,0.55); }
+  .btn-pick:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
+
+  @keyframes slideReveal {
+    from { opacity: 0; transform: translateY(12px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .slide-card {
+    position: relative; overflow: hidden;
+    background: rgba(30,45,66,0.6); border: 1px solid rgba(161,196,199,0.18);
+    border-radius: var(--radius-lg); backdrop-filter: blur(10px);
+    box-shadow: var(--shadow-glow);
+    padding: clamp(22px, 3.5vw, 36px);
+    text-align: center;
+    animation: slideReveal 0.45s ease;
+  }
+  .slide-card::before {
+    content: ""; position: absolute; top: -40%; left: 50%; transform: translateX(-50%);
+    width: 400px; height: 400px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(52,223,236,0.16), transparent 65%);
+    pointer-events: none;
+  }
+  .slide-photo {
+    position: relative; width: clamp(120px, 18vw, 180px); height: clamp(120px, 18vw, 180px);
+    margin: 0 auto 16px; border-radius: var(--radius-lg); overflow: hidden;
+    background: linear-gradient(135deg, rgba(52,223,236,0.2), rgba(42,128,66,0.2));
+    border: 3px solid rgba(52,223,236,0.45); box-shadow: 0 0 30px rgba(52,223,236,0.3);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .slide-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
+  .slide-photo-fallback {
+    font-family: var(--font-display); font-weight: 800; font-size: 2.6rem; color: var(--clr-accent-interactive);
+  }
+  .slide-name {
+    font-family: var(--font-display); font-weight: 800; letter-spacing: 0.01em;
+    font-size: clamp(1.5rem, 3.5vw, 2.2rem); margin-bottom: 10px; position: relative;
+  }
+  .slide-meta-row {
+    display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap;
+    margin-bottom: 14px; position: relative;
+  }
+  .slide-batch-pill {
+    font-family: var(--font-mono); font-weight: 700; font-size: 0.8rem; color: var(--clr-canvas);
+    background: var(--clr-accent-interactive); padding: 5px 14px; border-radius: 999px;
+  }
+  .slide-hall-pill {
+    font-family: var(--font-mono); font-size: 0.74rem; color: var(--clr-text-muted);
+    border: 1px solid rgba(161,196,199,0.3); padding: 4px 12px; border-radius: 999px;
+  }
+  .slide-positions {
+    display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap;
+    position: relative;
+  }
+  .slide-pos-tag {
+    font-family: var(--font-mono); font-size: 0.74rem; font-weight: 700; color: #9CF0B0;
+    background: rgba(42,128,66,0.2); border: 1px solid rgba(42,128,66,0.45);
+    padding: 4px 12px; border-radius: 999px;
+  }
+
+  .action-row {
+    display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; justify-content: center;
+  }
+  .action-btn {
+    flex: 1 1 auto; min-width: 110px;
+    font-family: var(--font-display); font-weight: 700; font-size: 0.74rem; letter-spacing: 0.02em;
+    padding: 10px 14px; border-radius: 999px; cursor: pointer; transition: all 0.2s ease;
+    border: 1px solid transparent;
+  }
+  .action-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-mark-sold {
+    color: var(--clr-canvas); background: linear-gradient(135deg, #9CF0B0, var(--clr-highlight));
+    box-shadow: 0 0 18px rgba(42,128,66,0.35);
+  }
+  .btn-mark-sold:hover:not(:disabled) { transform: scale(1.02); }
+  .btn-mark-pending {
+    color: #F3D28A; background: rgba(226,176,76,0.1); border-color: rgba(226,176,76,0.4);
+  }
+  .btn-mark-pending:hover:not(:disabled) { background: rgba(226,176,76,0.2); }
+  .btn-mark-absent {
+    color: #FFB4B4; background: transparent; border-color: rgba(226,76,76,0.4);
+  }
+  .btn-mark-absent:hover:not(:disabled) { background: rgba(226,76,76,0.12); }
+  .btn-undo {
+    width: 100%; margin-top: 8px; font-family: var(--font-mono); font-size: 0.72rem;
+    color: var(--clr-text-muted); background: transparent; border: 1px dashed rgba(161,196,199,0.3);
+    border-radius: var(--radius-md); padding: 8px; cursor: pointer; transition: all 0.2s ease;
+  }
+  .btn-undo:hover { color: var(--clr-accent-interactive); border-color: var(--clr-accent-interactive); }
+
+  .sold-form {
+    margin-top: 14px; padding: 14px; text-align: left;
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(161,196,199,0.15);
+    border-radius: var(--radius-md);
+  }
+  .sold-form .field-label {
+    display: block; font-size: 0.74rem; font-weight: 600; color: var(--clr-accent-primary); margin-bottom: 5px;
+  }
+  .team-opt-caution { color: #F3D28A; }
+
+  /* ---------- DASHBOARD ---------- */
+  .dash-block {
+    padding: 14px 16px; margin-bottom: 14px;
+    background: rgba(30,45,66,0.55); border: 1px solid rgba(161,196,199,0.15);
+    border-radius: var(--radius-lg); backdrop-filter: blur(10px);
+  }
+  .dash-block h3 {
+    font-family: var(--font-display); font-size: 0.8rem; letter-spacing: 0.03em; text-transform: uppercase;
+    color: var(--clr-accent-interactive); margin-bottom: 10px;
+  }
+
+  .team-strip {
+    display: flex; align-items: center; gap: 10px; padding: 9px 10px; margin-bottom: 6px;
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(161,196,199,0.12);
+    border-left: 3px solid var(--team-clr, var(--clr-accent-interactive));
+    border-radius: var(--radius-md); cursor: pointer; transition: background 0.2s ease;
+  }
+  .team-strip:hover { background: rgba(255,255,255,0.06); }
+  .team-strip.disabled-strip { opacity: 0.55; }
+  .ts-logo {
+    position: relative; width: 30px; height: 30px; border-radius: 8px; overflow: hidden; flex-shrink: 0;
+    background: linear-gradient(135deg, rgba(52,223,236,0.18), rgba(42,128,66,0.18));
+    border: 1px solid rgba(161,196,199,0.2); display: flex; align-items: center; justify-content: center;
+  }
+  .ts-logo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
+  .ts-logo-fallback {
+    font-family: var(--font-display); font-weight: 700; font-size: 0.7rem; color: var(--clr-accent-interactive);
+  }
+  .ts-body { flex: 1; min-width: 0; }
+  .ts-name { font-weight: 700; font-size: 0.78rem; }
+  .ts-meta {
+    font-family: var(--font-mono); font-size: 0.62rem; color: var(--clr-text-muted);
+    margin-top: 2px; display: flex; gap: 8px; flex-wrap: wrap;
+  }
+  .ts-meta .caution { color: #FFB4B4; }
+  .ts-purse { text-align: right; flex-shrink: 0; }
+  .ts-purse .tsp-num {
+    font-family: var(--font-mono); font-weight: 700; font-size: 0.8rem; color: var(--clr-accent-interactive);
+  }
+  .ts-purse .tsp-label {
+    font-family: var(--font-mono); font-size: 0.56rem; color: var(--clr-text-muted); text-transform: uppercase;
+  }
+
+  .feed-row {
+    display: flex; align-items: center; gap: 8px; padding: 6px 0; border-top: 1px solid rgba(161,196,199,0.08);
+  }
+  .feed-row:first-child { border-top: none; }
+  .feed-avatar {
+    position: relative; width: 28px; height: 28px; border-radius: 8px; overflow: hidden; flex-shrink: 0;
+    background: linear-gradient(135deg, rgba(52,223,236,0.18), rgba(42,128,66,0.18));
+    border: 1px solid rgba(161,196,199,0.2); display: flex; align-items: center; justify-content: center;
+  }
+  .feed-avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
+  .feed-avatar-fallback {
+    font-family: var(--font-display); font-weight: 700; font-size: 0.65rem; color: var(--clr-accent-interactive);
+  }
+  .feed-body { flex: 1; min-width: 0; }
+  .feed-name { font-size: 0.74rem; font-weight: 600; }
+  .feed-meta { font-family: var(--font-mono); font-size: 0.6rem; color: var(--clr-text-muted); }
+  .feed-price {
+    font-family: var(--font-mono); font-weight: 700; font-size: 0.78rem; color: #9CF0B0; flex-shrink: 0;
+  }
+  .feed-empty {
+    text-align: center; color: var(--clr-text-muted); font-size: 0.72rem; font-family: var(--font-mono); padding: 10px 0;
+  }
+
+  .highest-sale-card {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .highest-sale-card .feed-avatar { width: 40px; height: 40px; border-radius: 10px; border-color: rgba(52,223,236,0.4); }
+  .highest-sale-card .feed-name { font-size: 0.82rem; }
+  .highest-sale-card .feed-price { font-size: 1rem; }
+
+  .end-auction-row { display: flex; justify-content: flex-end; margin-top: 2px; }
+
+  .state-box { text-align: center; padding: 40px 20px; color: var(--clr-text-muted); }
+  .state-box .state-icon { font-size: 1.6rem; margin-bottom: 8px; }
+  .state-box h3 { font-family: var(--font-display); font-size: 0.95rem; color: var(--clr-text-primary); margin-bottom: 4px; }
+  .state-box p { font-size: 0.8rem; max-width: 400px; margin: 0 auto; }
+
+  .ended-banner {
+    text-align: center; padding: 12px 16px; margin-bottom: 18px;
+    background: rgba(42,128,66,0.12); border: 1px solid rgba(42,128,66,0.4);
+    border-radius: var(--radius-md); color: #9CF0B0;
+    font-family: var(--font-display); font-size: 0.9rem; letter-spacing: 0.02em;
+  }
+
+  /* ---------- TEAM DETAIL MODAL ---------- */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 200;
+    background: rgba(10,16,26,0.75); backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center; padding: 16px;
+  }
+  .modal-card {
+    width: 100%; max-width: 560px; max-height: 88vh; overflow-y: auto;
+    background: #1b2a3f; border: 1px solid rgba(161,196,199,0.2);
+    border-radius: var(--radius-lg); box-shadow: var(--shadow-glow);
+    padding: clamp(18px, 3.5vw, 28px);
+  }
+  .modal-head {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; gap: 10px;
+  }
+  .modal-head-id { display: flex; align-items: center; gap: 10px; }
+  .modal-head h2 { font-family: var(--font-display); font-size: 0.95rem; letter-spacing: 0.02em; }
+  .modal-close {
+    background: none; border: 1px solid rgba(161,196,199,0.25); border-radius: 8px;
+    color: var(--clr-text-muted); width: 30px; height: 30px; cursor: pointer; font-size: 0.85rem;
+  }
+  .modal-close:hover { border-color: var(--clr-accent-interactive); color: var(--clr-accent-interactive); }
+
+  .modal-stats-row {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 14px;
+  }
+  .ms-box { text-align: center; padding: 8px 4px; background: rgba(255,255,255,0.03); border-radius: 8px; }
+  .ms-box .ms-num {
+    font-family: var(--font-mono); font-weight: 700; font-size: 0.9rem; color: var(--clr-accent-interactive); display: block;
+  }
+  .ms-box .ms-label {
+    font-family: var(--font-mono); font-size: 0.56rem; text-transform: uppercase; color: var(--clr-text-muted);
+  }
+
+  .person-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;
+    padding: 8px 10px; margin-bottom: 6px; background: rgba(255,255,255,0.03);
+    border-radius: var(--radius-md); border: 1px solid rgba(161,196,199,0.1);
+  }
+  .pr-label {
+    font-family: var(--font-mono); font-size: 0.58rem; text-transform: uppercase; color: var(--clr-text-muted); display: block;
+  }
+  .pr-name { font-size: 0.78rem; font-weight: 600; margin-top: 2px; }
+  .contact-btn {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-family: var(--font-mono); font-size: 0.62rem; font-weight: 600;
+    padding: 4px 10px; border-radius: 999px; border: 1px solid rgba(161,196,199,0.25);
+    color: var(--clr-text-primary); background: transparent; cursor: pointer;
+    transition: all 0.2s ease; white-space: nowrap;
+  }
+  .contact-btn.call-btn:hover { border-color: var(--clr-accent-interactive); color: var(--clr-accent-interactive); background: rgba(52,223,236,0.08); }
+  .contact-btn.wa-btn:hover { border-color: var(--clr-highlight); color: #9CF0B0; background: rgba(42,128,66,0.15); }
+
+  .roster-player-card {
+    padding: 10px 12px; margin-bottom: 6px; background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(161,196,199,0.1); border-radius: var(--radius-md);
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .rpc-avatar {
+    position: relative; width: 34px; height: 34px; border-radius: 8px; overflow: hidden; flex-shrink: 0;
+    background: linear-gradient(135deg, rgba(52,223,236,0.18), rgba(42,128,66,0.18));
+    border: 1px solid rgba(161,196,199,0.2); display: flex; align-items: center; justify-content: center;
+  }
+  .rpc-avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
+  .rpc-avatar-fallback {
+    font-family: var(--font-display); font-weight: 700; font-size: 0.7rem; color: var(--clr-accent-interactive);
+  }
+  .rpc-body { flex: 1; min-width: 0; }
+  .rpc-name-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .rpc-name { font-weight: 600; font-size: 0.78rem; }
+  .rpc-meta { font-family: var(--font-mono); font-size: 0.64rem; color: var(--clr-text-muted); margin-top: 2px; }
+  .rpc-positions { margin-top: 4px; display: flex; gap: 3px; flex-wrap: wrap; }
+
+  .tag {
+    display: inline-block; font-family: var(--font-mono); font-size: 0.58rem; font-weight: 600;
+    padding: 2px 7px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.03em; white-space: nowrap;
+  }
+  .tag.pos-tag {
+    color: #9CF0B0; background: rgba(42,128,66,0.15); border: 1px solid rgba(42,128,66,0.35); text-transform: none;
+  }
+  .tag.price-tag {
+    color: var(--clr-accent-interactive); background: rgba(52,223,236,0.1); border: 1px solid rgba(52,223,236,0.3);
+  }
+  .tag.role-player { color: var(--clr-accent-interactive); background: rgba(52,223,236,0.1); border: 1px solid rgba(52,223,236,0.25); }
+  .tag.role-owner  { color: #9CF0B0; background: rgba(42,128,66,0.15); border: 1px solid rgba(42,128,66,0.4); }
+  .tag.role-both   { color: #F3D28A; background: rgba(226,176,76,0.1); border: 1px solid rgba(226,176,76,0.35); }
+
+  .roster-empty {
+    text-align: center; padding: 16px 10px; color: var(--clr-text-muted); font-size: 0.74rem;
+  }
+
+  footer.site-footer {
+    text-align: center; padding: 20px 5vw; border-top: 1px solid rgba(161,196,199,0.12);
+    font-size: 0.72rem; color: var(--clr-text-muted); margin-top: 16px;
+  }
+  footer.site-footer a { color: var(--clr-accent-interactive); }
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (min-width: 769px) {
+    .account-chip { display: inline-block; }
+    .nav-drawer, .nav-overlay { display: none !important; }
+    .hamburger-btn { display: none !important; }
+  }
+
+  @media (max-width: 1024px) {
+    .header-nav .nav-link { font-size: 0.62rem; padding: 5px 8px; }
+    .auction-layout { grid-template-columns: 1fr; }
+    .slide-wrap { position: static; }
+  }
+
+  @media (max-width: 768px) {
+    :root { --header-height: 58px; }
+    .header-nav { display: none; }
+    .hamburger-btn { display: block; }
+    .account-chip { display: none; }
+    .btn-ghost-sm { font-size: 0.65rem; padding: 5px 10px; min-height: 28px; }
+    .logo-img { height: 26px; max-width: 100px; }
+    .brand .season-tag { font-size: 0.55rem; padding: 1px 6px; }
+    .header-actions { gap: 4px; }
+
+    .field-grid-2, .field-grid-4 { grid-template-columns: 1fr; }
+    .page-intro { margin-top: 10px; }
+    .page-intro h1 { font-size: 1.1rem; }
+    .section-wrap { padding: 12px 4vw 32px; }
+    .form-card { padding: 14px; margin-bottom: 18px; }
+
+    .slide-photo { width: 100px; height: 100px; }
+    .slide-photo-fallback { font-size: 2rem; }
+    .slide-name { font-size: 1.2rem; }
+    .action-btn { min-width: 90px; font-size: 0.68rem; padding: 8px 10px; }
+
+    .modal-stats-row { grid-template-columns: repeat(2, 1fr); }
+    .team-strip { padding: 7px 8px; gap: 8px; }
+    .ts-logo { width: 26px; height: 26px; }
+    .ts-name { font-size: 0.72rem; }
+    .ts-purse .tsp-num { font-size: 0.72rem; }
+    .dash-block { padding: 10px 12px; }
+  }
+
+  @media (max-width: 480px) {
+    :root { --header-height: 54px; }
+    .logo-img { height: 22px; max-width: 80px; }
+    .brand .season-tag { font-size: 0.5rem; padding: 1px 4px; }
+    .btn-ghost-sm { font-size: 0.58rem; padding: 4px 8px; min-height: 24px; }
+    .hamburger-btn { font-size: 1.1rem; min-height: 28px; min-width: 32px; padding: 2px 6px; }
+
+    .slide-photo { width: 80px; height: 80px; }
+    .slide-photo-fallback { font-size: 1.6rem; }
+    .slide-name { font-size: 1rem; }
+    .slide-batch-pill { font-size: 0.7rem; padding: 3px 10px; }
+    .slide-hall-pill { font-size: 0.65rem; padding: 3px 8px; }
+    .slide-pos-tag { font-size: 0.65rem; padding: 3px 8px; }
+
+    .action-row { gap: 5px; }
+    .action-btn { min-width: 70px; font-size: 0.62rem; padding: 6px 8px; }
+    .btn-pick { padding: 12px 24px; font-size: 0.8rem; }
+
+    .nav-drawer { width: 240px; padding: 14px 12px; }
+    .nav-drawer .nav-link { font-size: 0.76rem; padding: 10px 12px; }
+  }
+
+  @media (max-width: 360px) {
+    .slide-photo { width: 64px; height: 64px; }
+    .slide-photo-fallback { font-size: 1.2rem; }
+    .slide-name { font-size: 0.85rem; }
+    .slide-meta-row { gap: 4px; }
+    .slide-batch-pill { font-size: 0.6rem; padding: 2px 8px; }
+    .slide-hall-pill { font-size: 0.58rem; padding: 2px 6px; }
+    .action-btn { min-width: 60px; font-size: 0.56rem; padding: 5px 6px; }
+    .btn-pick { padding: 10px 16px; font-size: 0.7rem; }
+    .sold-form { padding: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-left">
+    <a href="../index.html" class="brand">
+      <img src="../logo.png" alt="PHY LIGA Logo" class="logo-img" />
+      <span class="season-tag">Admin</span>
+    </a>
+  </div>
+
+  <nav class="header-nav" id="mainNav">
+    <a href="./dashboard.html" class="nav-link">Dashboard</a>
+    <a href="./manage-players.html" class="nav-link">Players</a>
+    <a href="./manage-teams.html" class="nav-link">Teams</a>
+    <a href="./manage-auction.html" class="nav-link active">Auction</a>
+    <a href="./manage-fixtures.html" class="nav-link">Fixtures</a>
+  </nav>
+
+  <div class="header-actions">
+    <span class="account-chip" id="accountChip">…</span>
+    <a href="../index.html" class="btn-ghost-sm">View site</a>
+    <button class="btn-ghost-sm" id="signOutBtn" type="button">Sign out</button>
+    <button class="hamburger-btn" id="hamburgerBtn" type="button" aria-label="Menu">☰</button>
+  </div>
+</header>
+
+<div class="nav-overlay" id="navOverlay"></div>
+<div class="nav-drawer" id="navDrawer">
+  <a href="./dashboard.html" class="nav-link">Dashboard</a>
+  <a href="./manage-players.html" class="nav-link">Manage Players</a>
+  <a href="./manage-teams.html" class="nav-link">Manage Teams</a>
+  <a href="./manage-auction.html" class="nav-link active">Manage Auction</a>
+  <a href="./manage-fixtures.html" class="nav-link">Fixtures &amp; Live Score</a>
+  <div class="drawer-divider"></div>
+  <div class="drawer-account" id="drawerAccount">…</div>
+  <div class="drawer-actions">
+    <a href="../index.html" class="btn-ghost-sm">View site</a>
+    <button class="btn-ghost-sm" id="drawerSignOutBtn" type="button">Sign out</button>
+  </div>
+</div>
+
+<div class="page-checking" id="checkingState">Checking session…</div>
+
+<main id="pageContent" class="hidden">
+
+  <section class="page-intro">
+    <p class="eyebrow">Organizer Console</p>
+    <h1>Manage Auction</h1>
+  </section>
+
+  <!-- ============ SETUP SCREEN ============ -->
+  <section class="section-wrap hidden" id="setupScreen">
+    <div class="form-card">
+      <div class="alert alert-error" id="setupError" role="alert"></div>
+      <div class="alert alert-warning" id="setupWarning" role="alert"></div>
+
+      <form id="setupForm" novalidate>
+        <fieldset>
+          <legend>Squad Rules</legend>
+          <div class="field-grid-2">
+            <div class="field">
+              <label class="field-label" for="minSquadSize">Min Squad Size</label>
+              <input type="number" id="minSquadSize" min="1" value="7" required />
+            </div>
+            <div class="field">
+              <label class="field-label" for="maxSquadSize">Max Squad Size</label>
+              <input type="number" id="maxSquadSize" min="1" value="11" required />
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Money</legend>
+          <div class="field-grid-2">
+            <div class="field">
+              <label class="field-label" for="purseBudget">Purse Budget per Team</label>
+              <input type="number" id="purseBudget" min="1" value="1000" required />
+            </div>
+            <div class="field">
+              <label class="field-label" for="basePrice">Base Price (uniform, per player)</label>
+              <input type="number" id="basePrice" min="1" value="20" required />
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Pool Snapshot</legend>
+          <div class="field-grid-2">
+            <div class="readonly-stat">
+              <span class="rs-label">Teams Registered</span>
+              <span class="rs-value" id="teamsRegisteredCount">0</span>
+            </div>
+            <div class="readonly-stat">
+              <span class="rs-label">Players in Pool</span>
+              <span class="rs-value" id="playersInPoolCount">0</span>
+            </div>
+          </div>
+          <p class="hint">Teams are added from the Manage Teams page. Pool counts every approved player/owner-and-player registration.</p>
+        </fieldset>
+
+        <div class="form-actions">
+          <span class="submit-status" id="setupSubmitStatus"></span>
+          <button type="submit" class="btn-submit" id="startAuctionBtn">Start Auction</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- ============ LIVE SCREEN ============ -->
+  <section class="section-wrap hidden" id="liveScreen">
+
+    <div class="ended-banner hidden" id="endedBanner">🏁 Season 01 Auction — Complete</div>
+
+    <div class="round-chip" id="roundChip">Round 1</div>
+
+    <div class="round-banner hidden" id="roundTransitionBanner">
+      <span id="roundTransitionText"></span>
+      <button class="btn-ghost-sm" id="startReserveBtn" type="button" style="border-color:#F3D28A;color:#F3D28A;">Start Reserve Round →</button>
+    </div>
+
+    <div class="auction-layout">
+
+      <!-- Section 1: Slide -->
+      <div class="slide-wrap">
+        <div id="slideEmpty" class="slide-empty hidden">
+          <button class="btn-pick" id="pickNextBtn" type="button">🎲 Pick Next Player</button>
+          <p id="poolSizeNote">— players remaining</p>
+        </div>
+
+        <div id="slideCard" class="hidden"></div>
+      </div>
+
+      <!-- Section 2: Dashboard -->
+      <div class="dash-wrap">
+        <div class="dash-block">
+          <h3>Teams</h3>
+          <div id="teamStripsWrap"></div>
+        </div>
+
+        <div class="dash-block">
+          <h3>Recent Sales</h3>
+          <div id="recentSalesWrap"></div>
+        </div>
+
+        <div class="dash-block">
+          <h3>Highest Sale So Far</h3>
+          <div id="highestSaleWrap"></div>
+        </div>
+
+        <div class="dash-block" id="endAuctionBlock">
+          <div class="end-auction-row">
+            <button class="btn-danger" id="endAuctionBtn" type="button">End Auction</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  © 2026 PHY-LIGA · Developed by <a href="https://www.facebook.com/fardin.0112" target="_blank" rel="noopener">Fardin Hossain</a> · Feathered by <a href="https://www.facebook.com/tawkir.hossain.16" target="_blank" rel="noopener">Tawkir Hossain Rahat</a>
+</footer>
+
+<!-- ============ TEAM DETAIL MODAL ============ -->
+<div class="modal-overlay hidden" id="teamDetailOverlay">
+  <div class="modal-card">
+    <div class="modal-head">
+      <div class="modal-head-id">
+        <div class="ts-logo" id="tdLogo" style="width:38px;height:38px;"><span class="ts-logo-fallback" id="tdLogoFallback" style="font-size:0.9rem;"></span></div>
+        <h2 id="tdName">Team</h2>
+      </div>
+      <button class="modal-close" id="tdCloseBtn" type="button" aria-label="Close">✕</button>
+    </div>
+
+    <div class="modal-stats-row">
+      <div class="ms-box"><span class="ms-num" id="tdSlots">0 / 0</span><span class="ms-label">Squad</span></div>
+      <div class="ms-box"><span class="ms-num" id="tdRemaining">0</span><span class="ms-label">Remaining</span></div>
+      <div class="ms-box"><span class="ms-num" id="tdSpent">0</span><span class="ms-label">Spent</span></div>
+      <div class="ms-box"><span class="ms-num" id="tdMaxBid">0</span><span class="ms-label">Max Bid</span></div>
+    </div>
+
+    <div id="tdOwnerRow"></div>
+    <div id="tdCaptainRow"></div>
+
+    <div style="margin-top:12px;">
+      <p class="hint" style="margin-bottom:6px;">Roster</p>
+      <div id="tdRoster"></div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  // ---- Hamburger menu ----
+  const hamburgerBtn = document.getElementById("hamburgerBtn");
+  const navOverlay = document.getElementById("navOverlay");
+  const navDrawer = document.getElementById("navDrawer");
+
+  function toggleMenu(open) {
+    const isOpen = typeof open === "boolean" ? open : navDrawer.classList.contains("open");
+    if (isOpen) {
+      navDrawer.classList.remove("open");
+      navOverlay.classList.remove("open");
+      document.body.style.overflow = "";
+    } else {
+      navDrawer.classList.add("open");
+      navOverlay.classList.add("open");
+      document.body.style.overflow = "hidden";
+    }
+  }
+
+  hamburgerBtn.addEventListener("click", () => toggleMenu());
+  navOverlay.addEventListener("click", () => toggleMenu(false));
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && navDrawer.classList.contains("open")) toggleMenu(false);
+  });
+
+  // ---- Elements ----
+  const checkingState = document.getElementById("checkingState");
+  const pageContent = document.getElementById("pageContent");
+  const accountChip = document.getElementById("accountChip");
+  const drawerAccount = document.getElementById("drawerAccount");
+  const signOutBtn = document.getElementById("signOutBtn");
+  const drawerSignOutBtn = document.getElementById("drawerSignOutBtn");
+
+  const setupScreen = document.getElementById("setupScreen");
+  const liveScreen = document.getElementById("liveScreen");
+
+  const setupError = document.getElementById("setupError");
+  const setupWarning = document.getElementById("setupWarning");
+  const setupForm = document.getElementById("setupForm");
+  const minSquadSizeInput = document.getElementById("minSquadSize");
+  const maxSquadSizeInput = document.getElementById("maxSquadSize");
+  const purseBudgetInput = document.getElementById("purseBudget");
+  const basePriceInput = document.getElementById("basePrice");
+  const teamsRegisteredCount = document.getElementById("teamsRegisteredCount");
+  const playersInPoolCount = document.getElementById("playersInPoolCount");
+  const startAuctionBtn = document.getElementById("startAuctionBtn");
+  const setupSubmitStatus = document.getElementById("setupSubmitStatus");
+
+  const endedBanner = document.getElementById("endedBanner");
+  const roundChip = document.getElementById("roundChip");
+  const roundTransitionBanner = document.getElementById("roundTransitionBanner");
+  const roundTransitionText = document.getElementById("roundTransitionText");
+  const startReserveBtn = document.getElementById("startReserveBtn");
+
+  const slideEmpty = document.getElementById("slideEmpty");
+  const pickNextBtn = document.getElementById("pickNextBtn");
+  const poolSizeNote = document.getElementById("poolSizeNote");
+  const slideCard = document.getElementById("slideCard");
+
+  const teamStripsWrap = document.getElementById("teamStripsWrap");
+  const recentSalesWrap = document.getElementById("recentSalesWrap");
+  const highestSaleWrap = document.getElementById("highestSaleWrap");
+  const endAuctionBlock = document.getElementById("endAuctionBlock");
+  const endAuctionBtn = document.getElementById("endAuctionBtn");
+
+  const teamDetailOverlay = document.getElementById("teamDetailOverlay");
+  const tdCloseBtn = document.getElementById("tdCloseBtn");
+  const tdLogo = document.getElementById("tdLogo");
+  const tdLogoFallback = document.getElementById("tdLogoFallback");
+  const tdName = document.getElementById("tdName");
+  const tdSlots = document.getElementById("tdSlots");
+  const tdRemaining = document.getElementById("tdRemaining");
+  const tdSpent = document.getElementById("tdSpent");
+  const tdMaxBid = document.getElementById("tdMaxBid");
+  const tdOwnerRow = document.getElementById("tdOwnerRow");
+  const tdCaptainRow = document.getElementById("tdCaptainRow");
+  const tdRoster = document.getElementById("tdRoster");
+
+  // ---- State ----
+  let db, doc, collection, onSnapshot, writeBatch, serverTimestamp, increment, arrayUnion, arrayRemove;
+  let allPlayers = [];
+  let allTeams = [];
+  let auctionSettings = null;
+  let liveAuctionDoc = null;
+  let auctionResultsList = [];
+  let lastAction = null;
+  let soldConfirmArmed = false;
+  let soldFormOpen = false;
+
+  // ---- Helpers ----
+  function escapeHtml(str) {
+    return String(str ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+  function toMillis(ts) {
+    if (!ts) return 0;
+    if (typeof ts.toMillis === "function") return ts.toMillis();
+    if (typeof ts.seconds === "number") return ts.seconds * 1000;
+    return 0;
+  }
+  function driveThumb(link) {
+    if (!link) return null;
+    const m = link.match(/\/d\/([a-zA-Z0-9_-]+)/) || link.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    if (m && m[1]) return `https://drive.google.com/thumbnail?id=${m[1]}&sz=w200`;
+    return link;
+  }
+  function initialOf(name) { return (name || "?").trim().charAt(0).toUpperCase() || "?"; }
+  function telHref(phone) { return `tel:${(phone || "").trim()}`; }
+  function waHref(phone) {
+    const digits = (phone || "").replace(/\D/g, "");
+    let local = digits;
+    if (!local.startsWith("880")) local = local.startsWith("0") ? "880" + local.slice(1) : "880" + local;
+    return `https://wa.me/${local}`;
+  }
+  function contactButtons(phone) {
+    if (!phone) return "";
+    return `
+      <a class="contact-btn call-btn" href="${telHref(phone)}" title="Call ${escapeHtml(phone)}">📞 Call</a>
+      <a class="contact-btn wa-btn" href="${waHref(phone)}" target="_blank" rel="noopener" title="WhatsApp ${escapeHtml(phone)}">💬 WhatsApp</a>
+    `;
+  }
+  function formatRelativeTime(ts) {
+    const ms = toMillis(ts);
+    if (!ms) return "just now";
+    const diff = Math.max(0, Date.now() - ms);
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return "just now";
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    return new Date(ms).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  }
+
+  // ---- Auth guard + Firebase init ----
+  (async function init() {
+    let requireAdmin, adminSignOut;
+    try {
+      const [guardMod, configMod, firestoreMod] = await Promise.all([
+        import("../assets/js/admin-guard.js"),
+        import("../assets/js/firebase-config.js"),
+        import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js")
+      ]);
+      requireAdmin = guardMod.requireAdmin;
+      adminSignOut = guardMod.adminSignOut;
+      db = configMod.db;
+      ({ collection, onSnapshot, doc, writeBatch, serverTimestamp, increment, arrayUnion, arrayRemove } = firestoreMod);
+    } catch (err) {
+      console.error("Firebase failed to load:", err);
+      checkingState.textContent =
+        "Couldn't connect to Firebase. If you're opening this file directly on your computer, serve it through a local web server (e.g. VS Code's \"Live Server\" extension, or `npx serve`) or view it on the live deployed site.";
+      return;
+    }
+
+    const user = await requireAdmin();
+    const email = user.email || "Signed in";
+    accountChip.textContent = email;
+    drawerAccount.textContent = email;
+    signOutBtn.addEventListener("click", () => adminSignOut());
+    drawerSignOutBtn.addEventListener("click", () => adminSignOut());
+
+    checkingState.classList.add("hidden");
+    pageContent.classList.remove("hidden");
+
+    onSnapshot(collection(db, "players"), (snap) => {
+      allPlayers = [];
+      snap.forEach(d => allPlayers.push({ id: d.id, ...d.data() }));
+      renderAll();
+    }, (err) => console.error("players listener error:", err));
+
+    onSnapshot(collection(db, "teams"), (snap) => {
+      allTeams = [];
+      snap.forEach(d => allTeams.push({ id: d.id, ...d.data() }));
+      allTeams.sort((a, b) => (a.teamName || "").localeCompare(b.teamName || ""));
+      renderAll();
+    }, (err) => console.error("teams listener error:", err));
+
+    onSnapshot(doc(db, "config", "auctionSettings"), (snap) => {
+      auctionSettings = snap.exists() ? { id: snap.id, ...snap.data() } : null;
+      renderScreenSwitch();
+      renderAll();
+    }, (err) => console.error("auctionSettings listener error:", err));
+
+    onSnapshot(doc(db, "liveAuction", "current"), (snap) => {
+      liveAuctionDoc = snap.exists() ? snap.data() : null;
+      renderSlide();
+    }, (err) => console.error("liveAuction listener error:", err));
+
+    // Results listener (using query/orderBy from firestore)
+    const firestoreMod = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+    const { query, orderBy } = firestoreMod;
+    onSnapshot(query(collection(db, "auctionResults"), orderBy("timestamp", "desc")), (snap) => {
+      auctionResultsList = [];
+      snap.forEach(d => auctionResultsList.push({ id: d.id, ...d.data() }));
+      renderRecentSales();
+      renderHighestSale();
+      renderTeamDetailIfOpen();
+    }, (err) => console.error("auctionResults listener error:", err));
+  })();
+
+  // ---- Screen switching ----
+  function renderScreenSwitch() {
+    if (!auctionSettings || !auctionSettings.auctionStarted) {
+      setupScreen.classList.remove("hidden");
+      liveScreen.classList.add("hidden");
+    } else {
+      setupScreen.classList.add("hidden");
+      liveScreen.classList.remove("hidden");
+      endedBanner.classList.toggle("hidden", !auctionSettings.auctionEnded);
+      endAuctionBlock.classList.toggle("hidden", !!auctionSettings.auctionEnded);
+      slideEmpty.classList.toggle("hidden", !!auctionSettings.auctionEnded);
+      roundChip.textContent = `Round ${auctionSettings.currentRound || 1}`;
+    }
+  }
+
+  function renderAll() {
+    renderSetupReadouts();
+    renderSlide();
+    renderDashboard();
+    renderRoundBanner();
+  }
+
+  // ---- Setup ----
+  function eligiblePlayersPool() {
+    return allPlayers.filter(p => (p.role === "player" || p.role === "both") && p.status === "approved");
+  }
+
+  function renderSetupReadouts() {
+    teamsRegisteredCount.textContent = allTeams.length;
+    playersInPoolCount.textContent = eligiblePlayersPool().length;
+  }
+
+  setupForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    setupError.classList.remove("show"); setupError.textContent = "";
+    setupWarning.classList.remove("show"); setupWarning.textContent = "";
+
+    const minSquadSize = Number(minSquadSizeInput.value);
+    const maxSquadSize = Number(maxSquadSizeInput.value);
+    const purseBudget = Number(purseBudgetInput.value);
+    const basePrice = Number(basePriceInput.value);
+
+    if (![minSquadSize, maxSquadSize, purseBudget, basePrice].every(v => v > 0)) {
+      setupError.textContent = "All numeric fields must be greater than 0.";
+      setupError.classList.add("show");
+      return;
+    }
+    if (maxSquadSize < minSquadSize) {
+      setupError.textContent = "Max squad size can't be smaller than min squad size.";
+      setupError.classList.add("show");
+      return;
+    }
+    if (allTeams.length < 2) {
+      setupError.textContent = "At least 2 teams are needed before starting the auction. Add teams from Manage Teams first.";
+      setupError.classList.add("show");
+      return;
+    }
+
+    const pool = eligiblePlayersPool();
+    if (allTeams.length * maxSquadSize < pool.length) {
+      setupWarning.textContent = `At max squad size, only ${allTeams.length * maxSquadSize} of ${pool.length} players can be placed — the rest will stay unsold.`;
+      setupWarning.classList.add("show");
+    }
+
+    startAuctionBtn.disabled = true;
+    setupSubmitStatus.textContent = "Starting…";
+
+    try {
+      const batch = writeBatch(db);
+      batch.set(doc(db, "config", "auctionSettings"), {
+        auctionStarted: true,
+        auctionEnded: false,
+        startedAt: serverTimestamp(),
+        endedAt: null,
+        minSquadSize, maxSquadSize, purseBudget, basePrice,
+        currentRound: 1
+      });
+      allTeams.forEach(t => {
+        batch.update(doc(db, "teams", t.id), { remainingPurse: purseBudget });
+      });
+      pool.forEach(p => {
+        batch.update(doc(db, "players", p.id), { auctionStatus: "unsold", teamId: null, soldPrice: null, auctionRound: null });
+        batch.update(doc(db, "publicPlayers", p.id), { auctionStatus: "unsold" });
+      });
+      batch.set(doc(db, "liveAuction", "current"), {
+        status: "live", round: 1, currentPlayerId: null, currentPlayer: null, updatedAt: serverTimestamp()
+      });
+      await batch.commit();
+    } catch (err) {
+      console.error(err);
+      setupError.textContent = "Something went wrong starting the auction. Please try again.";
+      setupError.classList.add("show");
+      startAuctionBtn.disabled = false;
+      setupSubmitStatus.textContent = "";
+    }
+  });
+
+  // ---- Round banner ----
+  function poolForCurrentRound() {
+    if (!auctionSettings) return [];
+    const round = auctionSettings.currentRound || 1;
+    const statusKey = round === 1 ? "unsold" : "pending";
+    return eligiblePlayersPool().filter(p => p.auctionStatus === statusKey);
+  }
+
+  function renderRoundBanner() {
+    if (!auctionSettings || !auctionSettings.auctionStarted || auctionSettings.auctionEnded) {
+      roundTransitionBanner.classList.add("hidden");
+      return;
+    }
+    const currentPool = poolForCurrentRound();
+    const pendingCount = eligiblePlayersPool().filter(p => p.auctionStatus === "pending").length;
+    const noCurrentSlide = !liveAuctionDoc || !liveAuctionDoc.currentPlayerId;
+
+    if (currentPool.length === 0 && noCurrentSlide && pendingCount > 0) {
+      roundTransitionText.textContent = `Main pool complete — ${pendingCount} player${pendingCount === 1 ? "" : "s"} pending. Start Reserve Round ${(auctionSettings.currentRound || 1) + 1}?`;
+      roundTransitionBanner.classList.remove("hidden");
+    } else {
+      roundTransitionBanner.classList.add("hidden");
+    }
+  }
+
+  startReserveBtn.addEventListener("click", async () => {
+    if (!auctionSettings) return;
+    const nextRound = (auctionSettings.currentRound || 1) + 1;
+    try {
+      const batch = writeBatch(db);
+      batch.update(doc(db, "config", "auctionSettings"), { currentRound: nextRound });
+      batch.update(doc(db, "liveAuction", "current"), { round: nextRound, updatedAt: serverTimestamp() });
+      await batch.commit();
+    } catch (err) {
+      console.error(err);
+      alert("Couldn't start the reserve round. Please try again.");
+    }
+  });
+
+  // ---- Slide ----
+  function computeMaxBid(team) {
+    const settings = auctionSettings;
+    if (!settings) return { maxPossibleBid: 0, teamCanBid: false, slots: 0, reason: "" };
+    const slots = (team.playerIds || []).length;
+    const remainingSlotsToMin = Math.max(0, (settings.minSquadSize || 0) - slots);
+    let maxPossibleBid;
+    if (remainingSlotsToMin <= 1) maxPossibleBid = team.remainingPurse ?? 0;
+    else maxPossibleBid = (team.remainingPurse ?? 0) - (remainingSlotsToMin - 1) * settings.basePrice;
+    const squadFull = slots >= settings.maxSquadSize;
+    const belowBase = (team.remainingPurse ?? 0) < settings.basePrice;
+    const teamCanBid = !squadFull && !belowBase;
+    let reason = "";
+    if (squadFull) reason = "Squad full";
+    else if (belowBase) reason = "Below base price";
+    return { maxPossibleBid: Math.max(0, maxPossibleBid), teamCanBid, slots, reason };
+  }
+
+  function renderSlide() {
+    if (!auctionSettings || !auctionSettings.auctionStarted) return;
+    const ended = !!auctionSettings.auctionEnded;
+    const hasCurrent = liveAuctionDoc && liveAuctionDoc.currentPlayerId && liveAuctionDoc.currentPlayer;
+
+    if (ended) {
+      slideEmpty.classList.add("hidden");
+      slideCard.classList.add("hidden");
+      return;
+    }
+
+    if (!hasCurrent) {
+      slideEmpty.classList.remove("hidden");
+      slideCard.classList.add("hidden");
+      const pool = poolForCurrentRound();
+      poolSizeNote.textContent = `${pool.length} player${pool.length === 1 ? "" : "s"} remaining in Round ${auctionSettings.currentRound || 1}`;
+      pickNextBtn.disabled = pool.length === 0;
+      return;
+    }
+
+    slideEmpty.classList.add("hidden");
+    slideCard.classList.remove("hidden");
+
+    const p = liveAuctionDoc.currentPlayer;
+    const thumb = driveThumb(p.photoLink);
+    const positions = Array.isArray(p.preferredPositions) ? p.preferredPositions : [];
+
+    slideCard.innerHTML = `
+      <div class="slide-card">
+        <div class="slide-photo">
+          ${thumb ? `<img src="${thumb}" alt="" loading="lazy" onerror="this.remove();" />` : ""}
+          <span class="slide-photo-fallback">${escapeHtml(initialOf(p.fullName))}</span>
+        </div>
+        <h2 class="slide-name">${escapeHtml(p.fullName || "Unnamed")}</h2>
+        <div class="slide-meta-row">
+          <span class="slide-batch-pill">Batch ${escapeHtml(p.batch ?? "—")}</span>
+          <span class="slide-hall-pill">${escapeHtml(p.hall ?? "—")}</span>
+        </div>
+        ${positions.length ? `<div class="slide-positions">${positions.map(pos => `<span class="slide-pos-tag">${escapeHtml(pos)}</span>`).join("")}</div>` : ""}
+
+        <div class="action-row" id="actionRow">
+          <button class="action-btn btn-mark-sold" id="btnOpenSold" type="button">✓ Mark Sold</button>
+          <button class="action-btn btn-mark-pending" id="btnMarkPending" type="button">⏸ Mark Pending</button>
+          <button class="action-btn btn-mark-absent" id="btnMarkAbsent" type="button">✕ Mark Absent</button>
+        </div>
+
+        <div id="soldFormWrap"></div>
+
+        ${lastAction ? `<button class="btn-undo" id="btnUndo" type="button">↺ Undo last action (${escapeHtml(lastAction.type)})</button>` : ""}
+      </div>
+    `;
+
+    document.getElementById("btnOpenSold").addEventListener("click", () => { soldFormOpen = true; renderSoldForm(); });
+    document.getElementById("btnMarkPending").addEventListener("click", markPending);
+    document.getElementById("btnMarkAbsent").addEventListener("click", markAbsent);
+    const undoBtn = document.getElementById("btnUndo");
+    if (undoBtn) undoBtn.addEventListener("click", undoLastAction);
+
+    if (soldFormOpen) renderSoldForm();
+  }
+
+  function renderSoldForm() {
+    const wrap = document.getElementById("soldFormWrap");
+    if (!wrap) return;
+    if (!soldFormOpen) { wrap.innerHTML = ""; return; }
+
+    const settings = auctionSettings;
+    const teamOptions = allTeams.map(t => {
+      const { maxPossibleBid, teamCanBid, reason } = computeMaxBid(t);
+      return `<option value="${t.id}" ${teamCanBid ? "" : "disabled"}>${escapeHtml(t.teamName)} — Purse ${escapeHtml(t.remainingPurse ?? 0)} · Max ${escapeHtml(maxPossibleBid)}${teamCanBid ? "" : " (" + reason + ")"}</option>`;
+    }).join("");
+
+    wrap.innerHTML = `
+      <div class="sold-form">
+        <label class="field-label" for="soldPriceInput">Final Sale Price</label>
+        <input type="number" id="soldPriceInput" min="1" value="${settings?.basePrice || ""}" />
+        <p class="hint" style="margin-bottom:10px;">Bidding happens offline in the room — type the final agreed price directly. Base price: ${escapeHtml(settings?.basePrice ?? "—")}.</p>
+        <label class="field-label" for="soldTeamSelect">Sold To</label>
+        <select id="soldTeamSelect">
+          <option value="">— Select a team —</option>
+          ${teamOptions}
+        </select>
+        <div class="alert alert-warning" id="soldOverBudgetWarning" role="alert" style="margin-top:10px;"></div>
+        <div class="form-actions" style="margin-top:10px;">
+          <button type="button" class="btn-ghost-sm" id="cancelSoldBtn">Cancel</button>
+          <button type="button" class="btn-submit" id="confirmSoldBtn">Confirm Sale</button>
+        </div>
+      </div>
+    `;
+
+    document.getElementById("soldPriceInput").addEventListener("input", () => { soldConfirmArmed = false; });
+    document.getElementById("soldTeamSelect").addEventListener("change", () => { soldConfirmArmed = false; });
+
+    document.getElementById("cancelSoldBtn").addEventListener("click", () => {
+      soldFormOpen = false; soldConfirmArmed = false; renderSoldForm();
+    });
+    document.getElementById("confirmSoldBtn").addEventListener("click", confirmSold);
+  }
+
+  async function confirmSold() {
+    const priceInput = document.getElementById("soldPriceInput");
+    const teamSelect = document.getElementById("soldTeamSelect");
+    const warnEl = document.getElementById("soldOverBudgetWarning");
+    const confirmBtn = document.getElementById("confirmSoldBtn");
+
+    const price = Number(priceInput.value);
+    const teamId = teamSelect.value;
+
+    warnEl.classList.remove("show"); warnEl.textContent = "";
+
+    if (!price || price <= 0) { warnEl.textContent = "Enter a valid sale price."; warnEl.classList.add("show"); return; }
+    if (!teamId) { warnEl.textContent = "Select which team bought this player."; warnEl.classList.add("show"); return; }
+
+    const team = allTeams.find(t => t.id === teamId);
+    const { maxPossibleBid } = computeMaxBid(team);
+
+    if (price > maxPossibleBid && !soldConfirmArmed) {
+      warnEl.textContent = `This price (${price}) is above ${team.teamName}'s reserved max bid (${maxPossibleBid}), which may leave them unable to reach minimum squad size. Click "Confirm anyway" to proceed.`;
+      warnEl.classList.add("show");
+      soldConfirmArmed = true;
+      confirmBtn.textContent = "Confirm anyway";
+      return;
+    }
+
+    const p = liveAuctionDoc.currentPlayer;
+    const playerId = liveAuctionDoc.currentPlayerId;
+    const playerRecord = allPlayers.find(pl => pl.id === playerId);
+    const prevStatus = playerRecord?.auctionStatus || "unsold";
+    const prevRound = playerRecord?.auctionRound ?? null;
+    const currentRound = auctionSettings.currentRound || 1;
+
+    confirmBtn.disabled = true;
+
+    try {
+      const resultRef = doc(collection(db, "auctionResults"));
+      const batch = writeBatch(db);
+      batch.update(doc(db, "players", playerId), { teamId, soldPrice: price, auctionStatus: "sold", auctionRound: currentRound });
+      batch.update(doc(db, "publicPlayers", playerId), { teamId, teamName: team.teamName, auctionStatus: "sold" });
+      batch.update(doc(db, "teams", teamId), { playerIds: arrayUnion(playerId), remainingPurse: increment(-price) });
+      batch.set(resultRef, {
+        playerId, playerName: p.fullName, teamId, teamName: team.teamName,
+        soldPrice: price, round: currentRound, timestamp: serverTimestamp()
+      });
+      batch.update(doc(db, "liveAuction", "current"), { currentPlayerId: null, currentPlayer: null, updatedAt: serverTimestamp() });
+      await batch.commit();
+
+      lastAction = { type: "sold", playerId, teamId, price, resultId: resultRef.id, prevStatus, prevRound, snapshot: p };
+      soldFormOpen = false; soldConfirmArmed = false;
+    } catch (err) {
+      console.error(err);
+      warnEl.textContent = "Something went wrong recording the sale. Please try again.";
+      warnEl.classList.add("show");
+      confirmBtn.disabled = false;
+    }
+  }
+
+  async function markPending() {
+    if (!liveAuctionDoc?.currentPlayerId) return;
+    const playerId = liveAuctionDoc.currentPlayerId;
+    const p = liveAuctionDoc.currentPlayer;
+    const playerRecord = allPlayers.find(pl => pl.id === playerId);
+    const prevStatus = playerRecord?.auctionStatus || "unsold";
+    const prevRound = playerRecord?.auctionRound ?? null;
+    const currentRound = auctionSettings.currentRound || 1;
+
+    try {
+      const batch = writeBatch(db);
+      batch.update(doc(db, "players", playerId), { auctionStatus: "pending", auctionRound: currentRound });
+      batch.update(doc(db, "publicPlayers", playerId), { auctionStatus: "pending" });
+      batch.update(doc(db, "liveAuction", "current"), { currentPlayerId: null, currentPlayer: null, updatedAt: serverTimestamp() });
+      await batch.commit();
+      lastAction = { type: "pending", playerId, prevStatus, prevRound, snapshot: p };
+    } catch (err) {
+      console.error(err);
+      alert("Couldn't mark this player pending. Please try again.");
+    }
+  }
+
+  async function markAbsent() {
+    if (!liveAuctionDoc?.currentPlayerId) return;
+    const playerId = liveAuctionDoc.currentPlayerId;
+    const p = liveAuctionDoc.currentPlayer;
+    const playerRecord = allPlayers.find(pl => pl.id === playerId);
+    const prevStatus = playerRecord?.auctionStatus || "unsold";
+    const prevRound = playerRecord?.auctionRound ?? null;
+    const currentRound = auctionSettings.currentRound || 1;
+
+    const ok = confirm(`Mark ${p.fullName || "this player"} absent/withdrawn? They will be permanently removed from the auction pool and never re-offered.`);
+    if (!ok) return;
+
+    try {
+      const batch = writeBatch(db);
+      batch.update(doc(db, "players", playerId), { auctionStatus: "withdrawn", auctionRound: currentRound });
+      batch.update(doc(db, "publicPlayers", playerId), { auctionStatus: "withdrawn" });
+      batch.update(doc(db, "liveAuction", "current"), { currentPlayerId: null, currentPlayer: null, updatedAt: serverTimestamp() });
+      await batch.commit();
+      lastAction = { type: "withdrawn", playerId, prevStatus, prevRound, snapshot: p };
+    } catch (err) {
+      console.error(err);
+      alert("Couldn't mark this player absent. Please try again.");
+    }
+  }
+
+  async function undoLastAction() {
+    if (!lastAction) return;
+    const { type, playerId, prevStatus, prevRound, snapshot, teamId, price, resultId } = lastAction;
+
+    try {
+      const batch = writeBatch(db);
+      batch.update(doc(db, "players", playerId), {
+        teamId: null, soldPrice: null, auctionStatus: prevStatus, auctionRound: prevRound
+      });
+      batch.update(doc(db, "publicPlayers", playerId), {
+        teamId: null, teamName: null, auctionStatus: prevStatus
+      });
+      if (type === "sold") {
+        batch.update(doc(db, "teams", teamId), { playerIds: arrayRemove(playerId), remainingPurse: increment(price) });
+        batch.delete(doc(db, "auctionResults", resultId));
+      }
+      batch.update(doc(db, "liveAuction", "current"), {
+        currentPlayerId: playerId, currentPlayer: snapshot, updatedAt: serverTimestamp()
+      });
+      await batch.commit();
+      lastAction = null;
+    } catch (err) {
+      console.error(err);
+      alert("Couldn't undo that action. Please try again.");
+    }
+  }
+
+  pickNextBtn.addEventListener("click", async () => {
+    const pool = poolForCurrentRound();
+    if (!pool.length) return;
+    const chosen = pool[Math.floor(Math.random() * pool.length)];
+    const snapshot = {
+      fullName: chosen.fullName || "",
+      photoLink: chosen.photoLink || "",
+      batch: chosen.batch || "",
+      hall: chosen.hall || "",
+      preferredPositions: Array.isArray(chosen.preferredPositions) ? chosen.preferredPositions : []
+    };
+    pickNextBtn.disabled = true;
+    try {
+      await writeBatch(db).set(doc(db, "liveAuction", "current"), {
+        status: "live", round: auctionSettings.currentRound || 1,
+        currentPlayerId: chosen.id, currentPlayer: snapshot, updatedAt: serverTimestamp()
+      }).commit();
+    } catch (err) {
+      console.error(err);
+      alert("Couldn't pick the next player. Please try again.");
+      pickNextBtn.disabled = false;
+    }
+  });
+
+  // ---- Dashboard ----
+  function renderDashboard() {
+    if (!auctionSettings) return;
+    renderTeamStrips();
+  }
+
+  function renderTeamStrips() {
+    if (!allTeams.length) {
+      teamStripsWrap.innerHTML = `<div class="feed-empty">No teams yet.</div>`;
+      return;
+    }
+    teamStripsWrap.innerHTML = allTeams.map(t => {
+      const thumb = driveThumb(t.logoLink);
+      const color = t.teamColor || "#34DFEC";
+      const { maxPossibleBid, teamCanBid, slots, reason } = computeMaxBid(t);
+      return `
+        <div class="team-strip ${teamCanBid ? "" : "disabled-strip"}" style="--team-clr:${color};" data-team-id="${t.id}">
+          <div class="ts-logo">
+            ${thumb ? `<img src="${thumb}" alt="" loading="lazy" onerror="this.remove();" />` : ""}
+            <span class="ts-logo-fallback">${escapeHtml(initialOf(t.teamName))}</span>
+          </div>
+          <div class="ts-body">
+            <div class="ts-name">${escapeHtml(t.teamName || "Unnamed Team")}</div>
+            <div class="ts-meta">
+              <span>${slots} / ${auctionSettings.minSquadSize}–${auctionSettings.maxSquadSize} squad</span>
+              <span>Max bid ${escapeHtml(maxPossibleBid)}</span>
+              ${teamCanBid ? "" : `<span class="caution">${escapeHtml(reason)}</span>`}
+            </div>
+          </div>
+          <div class="ts-purse">
+            <div class="tsp-num">${escapeHtml(t.remainingPurse ?? 0)}</div>
+            <div class="tsp-label">Purse</div>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    teamStripsWrap.querySelectorAll(".team-strip").forEach(el => {
+      el.addEventListener("click", () => openTeamDetailModal(el.dataset.teamId));
+    });
+  }
+
+  function resultsWithPlayerLookup() {
+    return auctionResultsList.map(r => {
+      const pl = allPlayers.find(p => p.id === r.playerId);
+      return { ...r, _photoLink: pl?.photoLink, _batch: pl?.batch };
+    });
+  }
+
+  function renderRecentSales() {
+    const recent = resultsWithPlayerLookup().slice(0, 3);
+    if (!recent.length) {
+      recentSalesWrap.innerHTML = `<div class="feed-empty">No sales recorded yet.</div>`;
+      return;
+    }
+    recentSalesWrap.innerHTML = recent.map(r => {
+      const thumb = driveThumb(r._photoLink);
+      return `
+        <div class="feed-row">
+          <div class="feed-avatar">
+            ${thumb ? `<img src="${thumb}" alt="" loading="lazy" onerror="this.remove();" />` : ""}
+            <span class="feed-avatar-fallback">${escapeHtml(initialOf(r.playerName))}</span>
+          </div>
+          <div class="feed-body">
+            <div class="feed-name">${escapeHtml(r.playerName)}</div>
+            <div class="feed-meta">${escapeHtml(r.teamName)} · ${formatRelativeTime(r.timestamp)}</div>
+          </div>
+          <div class="feed-price">${escapeHtml(r.soldPrice)}</div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  function renderHighestSale() {
+    const list = resultsWithPlayerLookup();
+    if (!list.length) {
+      highestSaleWrap.innerHTML = `<div class="feed-empty">No sales recorded yet.</div>`;
+      return;
+    }
+    const top = list.reduce((max, r) => (r.soldPrice > (max?.soldPrice ?? -1) ? r : max), null);
+    const thumb = driveThumb(top._photoLink);
+    highestSaleWrap.innerHTML = `
+      <div class="highest-sale-card">
+        <div class="feed-avatar">
+          ${thumb ? `<img src="${thumb}" alt="" loading="lazy" onerror="this.remove();" />` : ""}
+          <span class="feed-avatar-fallback">${escapeHtml(initialOf(top.playerName))}</span>
+        </div>
+        <div class="feed-body">
+          <div class="feed-name">${escapeHtml(top.playerName)}</div>
+          <div class="feed-meta">Batch ${escapeHtml(top._batch ?? "—")} · ${escapeHtml(top.teamName)}</div>
+        </div>
+        <div class="feed-price">${escapeHtml(top.soldPrice)}</div>
+      </div>
+    `;
+  }
+
+  endAuctionBtn.addEventListener("click", async () => {
+    const ok = confirm("End the auction? This closes the round permanently — you can still view results afterward, but no further sales can be recorded.");
+    if (!ok) return;
+    try {
+      const batch = writeBatch(db);
+      batch.update(doc(db, "config", "auctionSettings"), { auctionEnded: true, endedAt: serverTimestamp() });
+      batch.update(doc(db, "liveAuction", "current"), { status: "ended", updatedAt: serverTimestamp() });
+      await batch.commit();
+    } catch (err) {
+      console.error(err);
+      alert("Couldn't end the auction. Please try again.");
+    }
+  });
+
+  // ---- Team detail modal ----
+  let openTeamId = null;
+
+  function openTeamDetailModal(teamId) {
+    openTeamId = teamId;
+    renderTeamDetail();
+    teamDetailOverlay.classList.remove("hidden");
+  }
+  function closeTeamDetailModal() {
+    teamDetailOverlay.classList.add("hidden");
+    openTeamId = null;
+  }
+  tdCloseBtn.addEventListener("click", closeTeamDetailModal);
+  teamDetailOverlay.addEventListener("click", (e) => { if (e.target === teamDetailOverlay) closeTeamDetailModal(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !teamDetailOverlay.classList.contains("hidden")) closeTeamDetailModal(); });
+
+  function renderTeamDetailIfOpen() { if (openTeamId) renderTeamDetail(); }
+
+  function renderTeamDetail() {
+    const team = allTeams.find(t => t.id === openTeamId);
+    if (!team) { closeTeamDetailModal(); return; }
+
+    const thumb = driveThumb(team.logoLink);
+    tdLogo.innerHTML = `${thumb ? `<img src="${thumb}" alt="" onerror="this.remove();" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;" />` : ""}<span class="ts-logo-fallback" style="font-size:0.9rem;">${escapeHtml(initialOf(team.teamName))}</span>`;
+    tdName.textContent = team.teamName || "Unnamed Team";
+
+    const roster = allPlayers.filter(p => p.teamId === team.id);
+    const { maxPossibleBid, slots } = computeMaxBid(team);
+    const spent = (team.playerIds || []).reduce((sum, pid) => {
+      const pl = allPlayers.find(p => p.id === pid);
+      return sum + (pl?.soldPrice || 0);
+    }, 0);
+
+    tdSlots.textContent = `${slots} / ${auctionSettings?.maxSquadSize ?? "—"}`;
+    tdRemaining.textContent = team.remainingPurse ?? 0;
+    tdSpent.textContent = spent;
+    tdMaxBid.textContent = maxPossibleBid;
+
+    const owner = team.ownerId ? allPlayers.find(p => p.id === team.ownerId) : null;
+    const captain = team.captainId ? allPlayers.find(p => p.id === team.captainId) : null;
+
+    tdOwnerRow.innerHTML = `
+      <div class="person-row">
+        <div><span class="pr-label">Owner</span><span class="pr-name">${escapeHtml((owner ? owner.fullName : team.ownerName) || "Not assigned")}</span></div>
+        <div>${owner ? contactButtons(owner.contactNumber) : ""}</div>
+      </div>
+    `;
+    tdCaptainRow.innerHTML = `
+      <div class="person-row">
+        <div><span class="pr-label">Captain</span><span class="pr-name">${escapeHtml((captain ? captain.fullName : team.captainName) || "Not assigned")}</span></div>
+        <div>${captain ? contactButtons(captain.contactNumber) : ""}</div>
+      </div>
+    `;
+
+    if (!roster.length) {
+      tdRoster.innerHTML = `<div class="roster-empty">No players sold to this team yet.</div>`;
+    } else {
+      tdRoster.innerHTML = roster
+        .slice()
+        .sort((a, b) => (a.fullName || "").localeCompare(b.fullName || ""))
+        .map(p => {
+          const pthumb = driveThumb(p.photoLink);
+          const positions = Array.isArray(p.preferredPositions) ? p.preferredPositions : [];
+          return `
+            <div class="roster-player-card">
+              <div class="rpc-avatar">
+                ${pthumb ? `<img src="${pthumb}" alt="" loading="lazy" onerror="this.remove();" />` : ""}
+                <span class="rpc-avatar-fallback">${escapeHtml(initialOf(p.fullName))}</span>
+              </div>
+              <div class="rpc-body">
+                <div class="rpc-name-row">
+                  <span class="rpc-name">${escapeHtml(p.fullName || "Unnamed")}</span>
+                  ${p.soldPrice != null ? `<span class="tag price-tag">${escapeHtml(p.soldPrice)}</span>` : ""}
+                </div>
+                <div class="rpc-meta">Batch ${escapeHtml(p.batch ?? "—")} · ${escapeHtml(p.hall ?? "—")} · <span>${contactButtons(p.contactNumber)}</span></div>
+                ${positions.length ? `<div class="rpc-positions">${positions.map(pos => `<span class="tag pos-tag">${escapeHtml(pos)}</span>`).join("")}</div>` : ""}
+              </div>
+            </div>
+          `;
+        }).join("");
+    }
+  }
+</script>
+</body>
+</html>
