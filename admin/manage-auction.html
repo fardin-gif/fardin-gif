@@ -13,12 +13,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
-  /* =========================================================
-     DESIGN TOKENS — "Floodlight & Foil"
-     Night-stadium auction room: deep pitch navy, brass/gold
-     "sold" accents, floodlight-cyan energy, turf-green data.
-     v2: larger type scale + slide card as a presentation stage.
-     ========================================================= */
   :root {
     --clr-canvas: #0A121C;
     --clr-canvas-alt: #0D1720;
@@ -322,12 +316,6 @@
     border-radius: var(--radius-md); color: #F3D28A; font-size: 0.9rem;
   }
 
-  /* =========================================================
-     PRESENTATION STAGE — the slide fills the screen below
-     the header, like a broadcast graphic. Control panels live
-     in an on-demand drawer so the whole page stays one web
-     experience — nothing leaves the browser.
-     ========================================================= */
   .auction-stage {
     display: flex; align-items: center; justify-content: center;
     min-height: calc(100vh - var(--header-height) - 150px);
@@ -953,8 +941,6 @@
       <button class="btn-ghost-sm" id="startReserveBtn" type="button" style="border-color:#F3D28A;color:#F3D28A;">Start Reserve Round →</button>
     </div>
 
-    <!-- Presentation stage: the slide fills the screen, exactly as it will look
-         projected to the room. Everything else lives in the Control Deck drawer. -->
     <div class="auction-stage">
       <div id="slideEmpty" class="slide-empty hidden">
         <button class="btn-pick" id="pickNextBtn" type="button">🎲 Pick Next Player</button>
