@@ -13,12 +13,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
-  /* =========================================================
-     DESIGN TOKENS — "Floodlight & Foil"
-     Night-stadium auction room: deep pitch navy, brass/gold
-     "sold" accents, floodlight-cyan energy, turf-green data.
-     v2: larger type scale + slide card as a presentation stage.
-     ========================================================= */
   :root {
     --clr-canvas: #0A121C;
     --clr-canvas-alt: #0D1720;
@@ -185,6 +179,27 @@
 
   .section-wrap { max-width: 1400px; margin: 0 auto; padding: 20px 5vw 44px; }
 
+  /* =========================================================
+     STAGE MODE — while the auction is live, the presentation
+     is the only thing on screen: header stays (for nav/sign
+     out), the page intro and footer step aside, and the live
+     section is sized to the viewport instead of the document
+     flow, so nothing needs to scroll to see the whole slide.
+     ========================================================= */
+  body.stage-mode .page-intro,
+  body.stage-mode footer.site-footer {
+    display: none;
+  }
+
+  .stage-section {
+    max-width: 1400px; margin: 0 auto; width: 100%; box-sizing: border-box;
+    padding: 16px 5vw 16px;
+    height: calc(100vh - var(--header-height));
+    height: calc(100dvh - var(--header-height));
+    display: flex; flex-direction: column;
+    overflow-y: auto;
+  }
+
   /* ---------- SHARED FORM CARD (setup screen) ---------- */
   .form-card {
     padding: clamp(18px, 3vw, 34px);
@@ -279,7 +294,7 @@
 
   /* ---------- LIVE SCREEN TOP BAR ---------- */
   .ended-banner {
-    text-align: center; padding: 16px 18px; margin-bottom: 20px;
+    text-align: center; padding: 14px 18px; margin-bottom: 14px; flex-shrink: 0;
     background: linear-gradient(120deg, rgba(232,184,75,0.1), rgba(42,128,66,0.12));
     border: 1px solid rgba(232,184,75,0.35);
     border-radius: var(--radius-md); color: var(--clr-gold-bright);
@@ -288,7 +303,7 @@
 
   .stage-topbar {
     display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
-    margin-bottom: 18px;
+    margin-bottom: 14px; flex-shrink: 0;
   }
   .round-chip {
     display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 0.78rem;
@@ -317,7 +332,7 @@
 
   .round-banner {
     display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
-    padding: 14px 18px; margin-bottom: 18px;
+    padding: 12px 18px; margin-bottom: 14px; flex-shrink: 0;
     background: rgba(232,184,75,0.08); border: 1px solid rgba(232,184,75,0.3);
     border-radius: var(--radius-md); color: #F3D28A; font-size: 0.9rem;
   }
@@ -330,13 +345,14 @@
      ========================================================= */
   .auction-stage {
     display: flex; align-items: center; justify-content: center;
-    min-height: calc(100vh - var(--header-height) - 150px);
-    padding: 10px 0 30px;
+    flex: 1; min-height: 0; width: 100%;
+    padding: 10px 0;
   }
 
   .slide-empty {
     position: relative; overflow: hidden; text-align: center; width: 100%;
-    padding: clamp(70px, 11vw, 130px) 24px;
+    padding: clamp(40px, min(11vw, 12vh), 130px) 24px;
+    max-height: 100%; overflow-y: auto;
     background:
       radial-gradient(circle at 50% 0%, rgba(52,223,236,0.11), transparent 55%),
       linear-gradient(165deg, #101C2C 0%, #0A121C 70%);
@@ -377,14 +393,14 @@
   }
 
   .slide-card {
-    position: relative; overflow: hidden; width: 100%; max-width: 980px;
+    position: relative; overflow-y: auto; width: 100%; max-width: 1080px; max-height: 100%;
     background:
       radial-gradient(circle at 50% -8%, rgba(52,223,236,0.17), transparent 46%),
       linear-gradient(165deg, #142236 0%, #0B131E 62%, #0A121C 100%);
     border: 1px solid rgba(232, 184, 75, 0.24);
     border-radius: var(--radius-xl);
     box-shadow: var(--shadow-glow-cyan), 0 26px 70px rgba(0,0,0,0.5);
-    padding: clamp(36px, 6vw, 64px) clamp(26px, 5vw, 60px) clamp(30px, 4vw, 46px);
+    padding: clamp(24px, min(5vw, 4vh), 56px) clamp(24px, 5vw, 56px) clamp(22px, 3vh, 40px);
     text-align: center;
     animation: slideReveal 0.5s ease;
   }
@@ -414,17 +430,41 @@
     font-family: var(--font-mono); font-size: 0.82rem; font-weight: 600; letter-spacing: 0.16em;
     text-transform: uppercase; color: var(--clr-gold);
     background: rgba(232,184,75,0.08); border: 1px solid rgba(232,184,75,0.3);
-    padding: 7px 18px 7px 13px; border-radius: 999px; margin-bottom: 26px;
+    padding: 7px 18px 7px 13px; border-radius: 999px; margin-bottom: 18px;
   }
   .live-pulse-dot {
     width: 8px; height: 8px; border-radius: 50%; background: var(--clr-turf-bright);
     box-shadow: 0 0 9px var(--clr-turf-bright); animation: livePulse 1.4s infinite;
   }
 
-  .slide-photo-frame {
+  /* Name sits alone at the top of the card */
+  .slide-name {
     position: relative; z-index: 2;
-    width: clamp(190px, 24vw, 300px); height: clamp(190px, 24vw, 300px);
-    margin: 0 auto 26px; padding: 5px;
+    font-family: var(--font-display); font-weight: 800; letter-spacing: 0.015em;
+    font-size: clamp(1.9rem, min(4.6vw, 5.4vh), 3.2rem); margin-bottom: clamp(16px, 3vh, 28px);
+    color: var(--clr-text-primary);
+    text-shadow: 0 0 30px rgba(52,223,236,0.4);
+  }
+
+  /* Below the name: a wide left column (photo + batch/hall) and a
+     narrower right column (positions, stacked like a ladder) */
+  .slide-split {
+    position: relative; z-index: 2;
+    display: grid; grid-template-columns: 1.5fr 1fr;
+    gap: clamp(20px, 4vw, 44px);
+    align-items: center;
+    text-align: left;
+  }
+  .slide-split.no-positions { grid-template-columns: 1fr; }
+  .slide-split.no-positions .slide-split-left { align-items: center; }
+
+  .slide-split-left {
+    display: flex; flex-direction: column; align-items: center; gap: clamp(14px, 2.4vh, 22px);
+  }
+
+  .slide-photo-frame {
+    width: clamp(140px, min(19vw, 24vh), 260px); height: clamp(140px, min(19vw, 24vh), 260px);
+    padding: 5px; flex-shrink: 0;
     clip-path: polygon(16% 0, 100% 0, 100% 84%, 84% 100%, 0 100%, 0 16%);
     background: linear-gradient(150deg, var(--clr-gold-bright), var(--clr-accent-cyan) 120%);
     box-shadow: 0 0 46px rgba(232,184,75,0.32), 0 0 80px rgba(52,223,236,0.22);
@@ -437,42 +477,45 @@
   }
   .slide-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
   .slide-photo-fallback {
-    font-family: var(--font-display); font-weight: 800; font-size: 4.2rem; color: var(--clr-gold-bright);
+    font-family: var(--font-display); font-weight: 800; font-size: 3.6rem; color: var(--clr-gold-bright);
   }
 
-  .slide-name {
-    position: relative; z-index: 2;
-    font-family: var(--font-display); font-weight: 800; letter-spacing: 0.015em;
-    font-size: clamp(2rem, 5.2vw, 3.4rem); margin-bottom: 18px;
-    color: var(--clr-text-primary);
-    text-shadow: 0 0 30px rgba(52,223,236,0.4);
-  }
   .slide-meta-row {
-    position: relative; z-index: 2;
-    display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap;
-    margin-bottom: 20px;
+    display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap;
   }
   .slide-batch-pill {
-    font-family: var(--font-mono); font-weight: 700; font-size: 1rem; color: var(--clr-canvas);
+    font-family: var(--font-mono); font-weight: 700; font-size: 0.94rem; color: var(--clr-canvas);
     background: linear-gradient(135deg, var(--clr-gold-bright), var(--clr-gold));
-    padding: 8px 20px; border-radius: 999px; letter-spacing: 0.02em;
+    padding: 7px 18px; border-radius: 999px; letter-spacing: 0.02em; white-space: nowrap;
   }
   .slide-hall-pill {
-    font-family: var(--font-mono); font-size: 0.92rem; color: var(--clr-text-muted);
-    border: 1px solid rgba(161,196,199,0.28); padding: 8px 18px; border-radius: 999px;
+    font-family: var(--font-mono); font-size: 0.86rem; color: var(--clr-text-muted);
+    border: 1px solid rgba(161,196,199,0.28); padding: 7px 16px; border-radius: 999px; white-space: nowrap;
   }
-  .slide-positions {
-    position: relative; z-index: 2;
-    display: flex; align-items: center; justify-content: center; gap: 9px; flex-wrap: wrap;
+
+  /* Positions, stacked like rungs of a ladder off a vertical rail */
+  .slide-positions-ladder {
+    position: relative;
+    display: flex; flex-direction: column; gap: clamp(10px, 1.8vh, 16px);
+    padding-left: 24px;
+  }
+  .slide-positions-ladder::before {
+    content: ""; position: absolute; left: 6px; top: 4px; bottom: 4px; width: 2px;
+    background: linear-gradient(180deg, rgba(42,128,66,0.7), rgba(42,128,66,0.05));
   }
   .slide-pos-tag {
-    font-family: var(--font-mono); font-size: 0.92rem; font-weight: 700; color: #9CF0B0;
+    position: relative; align-self: flex-start;
+    font-family: var(--font-mono); font-size: 0.88rem; font-weight: 700; color: #9CF0B0;
     background: rgba(42,128,66,0.2); border: 1px solid rgba(42,128,66,0.5);
-    padding: 8px 17px; border-radius: 999px; letter-spacing: 0.02em;
+    padding: 7px 16px; border-radius: 999px; letter-spacing: 0.02em; white-space: nowrap;
+  }
+  .slide-pos-tag::before {
+    content: ""; position: absolute; left: -18px; top: 50%; width: 12px; height: 2px;
+    background: rgba(42,128,66,0.7); transform: translateY(-50%);
   }
 
   .slide-divider {
-    position: relative; z-index: 2; height: 1px; margin: 28px auto 22px; max-width: 92%;
+    position: relative; z-index: 2; height: 1px; margin: clamp(16px, 3vh, 28px) auto clamp(14px, 2.4vh, 22px); max-width: 92%;
     background: linear-gradient(90deg, transparent, rgba(232,184,75,0.4), transparent);
   }
 
@@ -733,8 +776,18 @@
     .page-intro { margin-top: 10px; }
     .page-intro h1 { font-size: 1.25rem; }
     .section-wrap { padding: 12px 4vw 34px; }
+    .stage-section { padding: 12px 4vw 12px; }
     .form-card { padding: 16px; margin-bottom: 18px; }
 
+    .slide-split { grid-template-columns: 1fr; text-align: center; }
+    .slide-split-left { align-items: center; }
+    .slide-split-right { display: flex; justify-content: center; margin-top: 4px; }
+    .slide-positions-ladder {
+      flex-direction: row; flex-wrap: wrap; justify-content: center;
+      padding-left: 0; gap: 8px;
+    }
+    .slide-positions-ladder::before { display: none; }
+    .slide-pos-tag::before { display: none; }
     .slide-photo-frame { width: 140px; height: 140px; }
     .slide-photo-fallback { font-size: 2.6rem; }
     .slide-name { font-size: 1.6rem; }
@@ -898,7 +951,7 @@
   </section>
 
   <!-- ============ LIVE SCREEN ============ -->
-  <section class="section-wrap hidden" id="liveScreen">
+  <section class="stage-section hidden" id="liveScreen">
 
     <div class="ended-banner hidden" id="endedBanner">🏁 Season 01 Auction — Complete</div>
 
@@ -999,16 +1052,19 @@
   const navOverlay = document.getElementById("navOverlay");
   const navDrawer = document.getElementById("navDrawer");
 
-  function toggleMenu(open) {
-    const isOpen = typeof open === "boolean" ? open : navDrawer.classList.contains("open");
-    if (isOpen) {
-      navDrawer.classList.remove("open");
-      navOverlay.classList.remove("open");
-      document.body.style.overflow = "";
-    } else {
+  function toggleMenu(forceState) {
+    // forceState === true  -> force open
+    // forceState === false -> force closed
+    // forceState omitted   -> flip whatever the current state is
+    const shouldOpen = typeof forceState === "boolean" ? forceState : !navDrawer.classList.contains("open");
+    if (shouldOpen) {
       navDrawer.classList.add("open");
       navOverlay.classList.add("open");
       document.body.style.overflow = "hidden";
+    } else {
+      navDrawer.classList.remove("open");
+      navOverlay.classList.remove("open");
+      document.body.style.overflow = "";
     }
   }
 
@@ -1021,16 +1077,19 @@
   const controlDeckOverlay = document.getElementById("controlDeckOverlay");
   const controlDeckDrawer = document.getElementById("controlDeckDrawer");
 
-  function toggleControlDeck(open) {
-    const isOpen = typeof open === "boolean" ? open : controlDeckDrawer.classList.contains("open");
-    if (isOpen) {
-      controlDeckDrawer.classList.remove("open");
-      controlDeckOverlay.classList.remove("open");
-      document.body.style.overflow = "";
-    } else {
+  function toggleControlDeck(forceState) {
+    // forceState === true  -> force open
+    // forceState === false -> force closed
+    // forceState omitted   -> flip whatever the current state is
+    const shouldOpen = typeof forceState === "boolean" ? forceState : !controlDeckDrawer.classList.contains("open");
+    if (shouldOpen) {
       controlDeckDrawer.classList.add("open");
       controlDeckOverlay.classList.add("open");
       document.body.style.overflow = "hidden";
+    } else {
+      controlDeckDrawer.classList.remove("open");
+      controlDeckOverlay.classList.remove("open");
+      document.body.style.overflow = "";
     }
   }
   controlDeckToggleBtn.addEventListener("click", () => toggleControlDeck());
@@ -1239,9 +1298,11 @@
     if (!auctionSettings || !auctionSettings.auctionStarted) {
       setupScreen.classList.remove("hidden");
       liveScreen.classList.add("hidden");
+      document.body.classList.remove("stage-mode");
     } else {
       setupScreen.classList.add("hidden");
       liveScreen.classList.remove("hidden");
+      document.body.classList.add("stage-mode");
       endedBanner.classList.toggle("hidden", !auctionSettings.auctionEnded);
       endAuctionBlock.classList.toggle("hidden", !!auctionSettings.auctionEnded);
       slideEmpty.classList.toggle("hidden", !!auctionSettings.auctionEnded);
@@ -1422,19 +1483,28 @@
 
         <div class="slide-live-tag"><span class="live-pulse-dot"></span>On The Block</div>
 
-        <div class="slide-photo-frame">
-          <div class="slide-photo">
-            ${thumb ? `<img src="${thumb}" alt="" loading="lazy" onerror="this.remove();" />` : ""}
-            <span class="slide-photo-fallback">${escapeHtml(initialOf(p.fullName))}</span>
-          </div>
-        </div>
-
         <h2 class="slide-name">${escapeHtml(p.fullName || "Unnamed")}</h2>
-        <div class="slide-meta-row">
-          <span class="slide-batch-pill">Batch ${escapeHtml(p.batch ?? "—")}</span>
-          <span class="slide-hall-pill">${escapeHtml(p.hall ?? "—")}</span>
+
+        <div class="slide-split ${positions.length ? "" : "no-positions"}">
+          <div class="slide-split-left">
+            <div class="slide-photo-frame">
+              <div class="slide-photo">
+                ${thumb ? `<img src="${thumb}" alt="" loading="lazy" onerror="this.remove();" />` : ""}
+                <span class="slide-photo-fallback">${escapeHtml(initialOf(p.fullName))}</span>
+              </div>
+            </div>
+            <div class="slide-meta-row">
+              <span class="slide-batch-pill">Batch ${escapeHtml(p.batch ?? "—")}</span>
+              <span class="slide-hall-pill">${escapeHtml(p.hall ?? "—")}</span>
+            </div>
+          </div>
+          ${positions.length ? `
+          <div class="slide-split-right">
+            <div class="slide-positions-ladder">
+              ${positions.map(pos => `<span class="slide-pos-tag">${escapeHtml(pos)}</span>`).join("")}
+            </div>
+          </div>` : ""}
         </div>
-        ${positions.length ? `<div class="slide-positions">${positions.map(pos => `<span class="slide-pos-tag">${escapeHtml(pos)}</span>`).join("")}</div>` : ""}
 
         <div class="slide-divider"></div>
 
