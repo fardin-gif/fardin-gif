@@ -144,8 +144,9 @@
     <b>Before you run this:</b> it writes directly to your live Firestore (<code>players</code>, <code>publicPlayers</code>, <code>registeredEmails</code>), exactly the way <code>register.html</code> does.
     <ul>
       <li>Review every row in the preview table below — rows with a warning or error are highlighted.</li>
+      <li>Rows with a red <b>error</b> are auto-unchecked and can't be imported until fixed — these are things Firestore's security rules would reject outright (bad phone format, bad batch number, non-Drive photo link, empty/invalid position list, missing required field).</li>
       <li>Rows already found in <code>registeredEmails</code> are skipped automatically (won't be double-imported).</li>
-      <li>Uncheck any row you don't want imported (e.g. a duplicate submission, or one with a typo you'd rather fix by hand afterward in <code>admin/manage-players.html</code>).</li>
+      <li>Uncheck any row you don't want imported (e.g. a duplicate submission).</li>
       <li>Once you've imported, move or delete this file (or password-protect the <code>/admin/</code> folder) — it has no login gate of its own, same as your registration rules currently allow.</li>
     </ul>
   </div>
@@ -194,10 +195,16 @@
 <script>
 /* 
    CONFIG
+   NOTE: VALID_BATCHES and the position/phone/photo checks below are kept
+   in lockstep with firestore.rules on purpose. If you ever change a rule
+   (e.g. widen the batch range, add a hall, add a position code), update
+   the matching constant here too — otherwise rows that look "ready to
+   import" in this preview will get silently rejected by Firestore at
+   commit time, which fails the ENTIRE batch (not just that row).
  */
-const VALID_BATCHES = ["99", "100", "101", "102", "103", "104", "105"];
+const VALID_BATCHES = ["95","96","97","98","99","100","101","102","103","104","105"]; // matches validBatch() in firestore.rules
 const RESTRICTED_OWNER_BATCHES = ["103", "104", "105"];
-const PHONE_REGEX = /^01[3-9]\d{8}$/;
+const PHONE_REGEX = /^01[3-9]\d{8}$/; // matches contactNumber rule in firestore.rules
 const VALID_POSITIONS = ["GK","CB","LB","RB","AMF","DMF","CM","LM","RM","LW","RW","ST","CF"];
 
 const COLS = {
@@ -327,15 +334,39 @@ function parseSheet(text) {
     if (!hall) errors.push("Missing hall");
     if (!photoLink) errors.push("Missing photo link");
 
-    if (contactNumber && !PHONE_REGEX.test(contactNumber)) warnings.push(`Phone "${contactNumber}" doesn't match 01XXXXXXXXX`);
-    if (batch && !VALID_BATCHES.includes(batch)) warnings.push(`Unexpected batch "${batch}" (expected 99–105)`);
-    if (photoLink && !photoLink.includes("drive.google.com")) warnings.push("Photo link isn't a Google Drive link");
-    if (role !== "owner" && preferredPositions.length === 0) warnings.push("No preferred position selected");
-    if (preferredPositions.some(p => !VALID_POSITIONS.includes(p))) warnings.push("Unrecognized position code in list");
+    // The following are promoted to hard ERRORS (not warnings) because
+    // firestore.rules enforces every one of them as a create-time
+    // requirement. A row that fails any of these WILL be rejected by
+    // Firestore, and because writes go through writeBatch(), one rejected
+    // row fails the whole chunk's commit — not just that row. Better to
+    // block it here than discover it from a batch-level permission error.
+    if (contactNumber && !PHONE_REGEX.test(contactNumber)) {
+      errors.push(`Phone "${contactNumber}" doesn't match 01XXXXXXXXX — Firestore rules will reject this row`);
+    }
+    if (batch && !VALID_BATCHES.includes(batch)) {
+      errors.push(`Batch "${batch}" isn't in the allowed list (95–105) — Firestore rules will reject this row`);
+    }
+    if (photoLink && !photoLink.includes("drive.google.com")) {
+      errors.push("Photo link isn't a Google Drive link — Firestore rules will reject this row");
+    }
+    if (role !== "owner" && preferredPositions.length === 0) {
+      errors.push("No preferred position selected — Firestore rules require at least one for this role");
+    }
+    if (preferredPositions.some(p => !VALID_POSITIONS.includes(p))) {
+      errors.push("Unrecognized position code in list — Firestore rules will reject this row");
+    }
 
     const isOwnerEligible = batch ? !RESTRICTED_OWNER_BATCHES.includes(batch) : true;
     if ((role === "owner" || role === "both") && !isOwnerEligible) {
-      warnings.push(`Batch ${batch} is not owner-eligible but role is "${role}" — will still import as-is; review manually`);
+      // NOTE: firestore.rules only allows this combination through when
+      // isAdmin() is true, i.e. when a signed-in user performs the write.
+      // This import tool does NOT sign in, so isAdmin() is always false
+      // here — meaning this row will actually be REJECTED by Firestore,
+      // not silently allowed. Flagged as a warning rather than auto-disabled
+      // since none of today's rows hit it, but if you see this note on a
+      // row you actually want to import, you'll need to sign in as an
+      // admin user before running the import (or adjust the rule).
+      warnings.push(`Batch ${batch} is not owner-eligible but role is "${role}" — this tool is not authenticated, so Firestore will reject this row unless you sign in as admin first`);
     }
 
     return {
