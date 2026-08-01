@@ -13,6 +13,12 @@
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
+  /* =========================================================
+     DESIGN TOKENS — "Floodlight & Foil"
+     Night-stadium auction room: deep pitch navy, brass/gold
+     "sold" accents, floodlight-cyan energy, turf-green data.
+     v2: larger type scale + slide card as a presentation stage.
+     ========================================================= */
   :root {
     --clr-canvas: #0A121C;
     --clr-canvas-alt: #0D1720;
@@ -179,27 +185,6 @@
 
   .section-wrap { max-width: 1400px; margin: 0 auto; padding: 20px 5vw 44px; }
 
-  /* =========================================================
-     STAGE MODE — while the auction is live, the presentation
-     is the only thing on screen: header stays (for nav/sign
-     out), the page intro and footer step aside, and the live
-     section is sized to the viewport instead of the document
-     flow, so nothing needs to scroll to see the whole slide.
-     ========================================================= */
-  body.stage-mode .page-intro,
-  body.stage-mode footer.site-footer {
-    display: none;
-  }
-
-  .stage-section {
-    max-width: 1400px; margin: 0 auto; width: 100%; box-sizing: border-box;
-    padding: 16px 5vw 16px;
-    height: calc(100vh - var(--header-height));
-    height: calc(100dvh - var(--header-height));
-    display: flex; flex-direction: column;
-    overflow-y: auto;
-  }
-
   /* ---------- SHARED FORM CARD (setup screen) ---------- */
   .form-card {
     padding: clamp(18px, 3vw, 34px);
@@ -294,7 +279,7 @@
 
   /* ---------- LIVE SCREEN TOP BAR ---------- */
   .ended-banner {
-    text-align: center; padding: 14px 18px; margin-bottom: 14px; flex-shrink: 0;
+    text-align: center; padding: 16px 18px; margin-bottom: 20px;
     background: linear-gradient(120deg, rgba(232,184,75,0.1), rgba(42,128,66,0.12));
     border: 1px solid rgba(232,184,75,0.35);
     border-radius: var(--radius-md); color: var(--clr-gold-bright);
@@ -303,7 +288,7 @@
 
   .stage-topbar {
     display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
-    margin-bottom: 14px; flex-shrink: 0;
+    margin-bottom: 18px;
   }
   .round-chip {
     display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 0.78rem;
@@ -332,7 +317,7 @@
 
   .round-banner {
     display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
-    padding: 12px 18px; margin-bottom: 14px; flex-shrink: 0;
+    padding: 14px 18px; margin-bottom: 18px;
     background: rgba(232,184,75,0.08); border: 1px solid rgba(232,184,75,0.3);
     border-radius: var(--radius-md); color: #F3D28A; font-size: 0.9rem;
   }
@@ -345,14 +330,13 @@
      ========================================================= */
   .auction-stage {
     display: flex; align-items: center; justify-content: center;
-    flex: 1; min-height: 0; width: 100%;
-    padding: 10px 0;
+    min-height: calc(100vh - var(--header-height) - 150px);
+    padding: 10px 0 30px;
   }
 
   .slide-empty {
     position: relative; overflow: hidden; text-align: center; width: 100%;
-    padding: clamp(40px, min(11vw, 12vh), 130px) 24px;
-    max-height: 100%; overflow-y: auto;
+    padding: clamp(70px, 11vw, 130px) 24px;
     background:
       radial-gradient(circle at 50% 0%, rgba(52,223,236,0.11), transparent 55%),
       linear-gradient(165deg, #101C2C 0%, #0A121C 70%);
@@ -393,14 +377,14 @@
   }
 
   .slide-card {
-    position: relative; overflow-y: auto; width: 100%; max-width: 1080px; max-height: 100%;
+    position: relative; overflow: hidden; width: 100%; max-width: 980px;
     background:
       radial-gradient(circle at 50% -8%, rgba(52,223,236,0.17), transparent 46%),
       linear-gradient(165deg, #142236 0%, #0B131E 62%, #0A121C 100%);
     border: 1px solid rgba(232, 184, 75, 0.24);
     border-radius: var(--radius-xl);
     box-shadow: var(--shadow-glow-cyan), 0 26px 70px rgba(0,0,0,0.5);
-    padding: clamp(24px, min(5vw, 4vh), 56px) clamp(24px, 5vw, 56px) clamp(22px, 3vh, 40px);
+    padding: clamp(36px, 6vw, 64px) clamp(26px, 5vw, 60px) clamp(30px, 4vw, 46px);
     text-align: center;
     animation: slideReveal 0.5s ease;
   }
@@ -441,7 +425,7 @@
   .slide-name {
     position: relative; z-index: 2;
     font-family: var(--font-display); font-weight: 800; letter-spacing: 0.015em;
-    font-size: clamp(1.9rem, min(4.6vw, 5.4vh), 3.2rem); margin-bottom: clamp(16px, 3vh, 28px);
+    font-size: clamp(1.9rem, 4.6vw, 3.2rem); margin-bottom: 28px;
     color: var(--clr-text-primary);
     text-shadow: 0 0 30px rgba(52,223,236,0.4);
   }
@@ -459,11 +443,11 @@
   .slide-split.no-positions .slide-split-left { align-items: center; }
 
   .slide-split-left {
-    display: flex; flex-direction: column; align-items: center; gap: clamp(14px, 2.4vh, 22px);
+    display: flex; flex-direction: column; align-items: center; gap: 20px;
   }
 
   .slide-photo-frame {
-    width: clamp(140px, min(19vw, 24vh), 260px); height: clamp(140px, min(19vw, 24vh), 260px);
+    width: clamp(160px, 20vw, 260px); height: clamp(160px, 20vw, 260px);
     padding: 5px; flex-shrink: 0;
     clip-path: polygon(16% 0, 100% 0, 100% 84%, 84% 100%, 0 100%, 0 16%);
     background: linear-gradient(150deg, var(--clr-gold-bright), var(--clr-accent-cyan) 120%);
@@ -496,7 +480,7 @@
   /* Positions, stacked like rungs of a ladder off a vertical rail */
   .slide-positions-ladder {
     position: relative;
-    display: flex; flex-direction: column; gap: clamp(10px, 1.8vh, 16px);
+    display: flex; flex-direction: column; gap: 14px;
     padding-left: 24px;
   }
   .slide-positions-ladder::before {
@@ -515,7 +499,7 @@
   }
 
   .slide-divider {
-    position: relative; z-index: 2; height: 1px; margin: clamp(16px, 3vh, 28px) auto clamp(14px, 2.4vh, 22px); max-width: 92%;
+    position: relative; z-index: 2; height: 1px; margin: 28px auto 22px; max-width: 92%;
     background: linear-gradient(90deg, transparent, rgba(232,184,75,0.4), transparent);
   }
 
@@ -776,7 +760,6 @@
     .page-intro { margin-top: 10px; }
     .page-intro h1 { font-size: 1.25rem; }
     .section-wrap { padding: 12px 4vw 34px; }
-    .stage-section { padding: 12px 4vw 12px; }
     .form-card { padding: 16px; margin-bottom: 18px; }
 
     .slide-split { grid-template-columns: 1fr; text-align: center; }
@@ -951,7 +934,7 @@
   </section>
 
   <!-- ============ LIVE SCREEN ============ -->
-  <section class="stage-section hidden" id="liveScreen">
+  <section class="section-wrap hidden" id="liveScreen">
 
     <div class="ended-banner hidden" id="endedBanner">🏁 Season 01 Auction — Complete</div>
 
@@ -1298,11 +1281,9 @@
     if (!auctionSettings || !auctionSettings.auctionStarted) {
       setupScreen.classList.remove("hidden");
       liveScreen.classList.add("hidden");
-      document.body.classList.remove("stage-mode");
     } else {
       setupScreen.classList.add("hidden");
       liveScreen.classList.remove("hidden");
-      document.body.classList.add("stage-mode");
       endedBanner.classList.toggle("hidden", !auctionSettings.auctionEnded);
       endAuctionBlock.classList.toggle("hidden", !!auctionSettings.auctionEnded);
       slideEmpty.classList.toggle("hidden", !!auctionSettings.auctionEnded);
