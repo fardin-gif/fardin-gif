@@ -288,6 +288,7 @@
   .tag.pos-tag {
     color: #9CF0B0; background: rgba(42,128,66,0.15); border: 1px solid rgba(42,128,66,0.35); text-transform: none;
   }
+  .tag.no-photo { color: #F3D28A; background: rgba(226,176,76,0.15); border: 1px solid rgba(226,176,76,0.45); }
 
   .status-toggle { display: flex; gap: 3px; flex-wrap: wrap; }
   .st-btn {
@@ -628,7 +629,7 @@
 </main>
 
 <footer class="site-footer">
-  © 2026 PHY-LIGA · Developed by <a href="https://www.facebook.com/fardin.0112" target="_blank" rel="noopener">Fardin Hossain</a> · Feathered by <a href="https://www.facebook.com/tawkir.hossain.16" target="_blank" rel="noopener">Tawkir Hossain Rahat</a>
+  © 2026 PHY-LIGA · Developed by <a href="https://www.facebook.com/fardin.0112" target="_blank" rel="noopener">Fardin Hossain</a> · Feathered by <a href="https://www.facebook.com/tawkir.hossain.16" target="_blank" rel="noopener">Tawkir Hossain</a>
 </footer>
 
 <!-- ---------- EDIT MODAL ---------- -->
@@ -976,6 +977,7 @@
             ${thumb ? `<img src="${thumb}" alt="" loading="lazy" onerror="this.remove();" />` : ""}
             <span class="row-avatar-fallback">${escapeHtml(initial)}</span>
           </div>
+          ${!p.photoLink ? `<span class="tag no-photo">No photo</span>` : ""}
         </td>
         <td>
           <div class="row-name">${escapeHtml(p.fullName || "Unnamed")}</div>

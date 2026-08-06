@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Manage Messages — PHY-LIGA Admin</title>
+<meta name="description" content="PHY-LIGA Season 01 — send personalized WhatsApp reminders to players." />
+<link rel="icon" type="image/png" href="admin.png" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --clr-canvas: #162235;
+    --clr-surface: #1E2D42;
+    --clr-surface-alt: #253850;
+    --clr-accent-primary: #A1C4C7;
+    --clr-accent-interactive: #34DFEC;
+    --clr-highlight: #2A8042;
+    --clr-danger: #E24C4C;
+    --clr-text-muted: #7E8B9B;
+    --clr-text-primary: #EAF2F2;
+    --clr-whatsapp: #25D366;
+    --radius-md: 12px;
+    --radius-lg: 20px;
+    --shadow-glow: 0 0 24px rgba(52, 223, 236, 0.15);
+    --font-display: 'Orbitron', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+    --header-height: 64px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; overflow-x: hidden; }
+
+  body {
+    background-color: var(--clr-canvas);
+    background-image:
+      radial-gradient(circle at 15% 10%, rgba(52,223,236,0.06), transparent 40%),
+      radial-gradient(circle at 85% 30%, rgba(42,128,66,0.08), transparent 45%);
+    color: var(--clr-text-primary);
+    font-family: var(--font-body);
+    line-height: 1.55;
+    min-height: 100vh;
+    overflow-x: hidden;
+    width: 100%;
+    padding-top: var(--header-height);
+  }
+
+  a { color: inherit; text-decoration: none; }
+  img { max-width: 100%; height: auto; }
+  ::selection { background: var(--clr-accent-interactive); color: var(--clr-canvas); }
+  :focus-visible { outline: 2px solid var(--clr-accent-interactive); outline-offset: 3px; }
+  .hidden { display: none !important; }
+
+  /* ---------- HEADER ---------- */
+  header.site-header {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 5vw; height: var(--header-height);
+    background: rgba(22, 34, 53, 0.94);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(161, 196, 199, 0.12);
+    gap: 8px;
+  }
+
+  .header-left { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .brand { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+  .logo-img { display: block; height: 32px; width: auto; max-width: 120px; flex-shrink: 1; }
+  .brand .season-tag {
+    font-family: var(--font-mono); font-size: 0.62rem; color: var(--clr-text-muted);
+    border: 1px solid rgba(161, 196, 199, 0.25); padding: 2px 8px; border-radius: 20px;
+    letter-spacing: 0.05em; white-space: nowrap; flex-shrink: 0;
+  }
+
+  .header-nav {
+    display: flex; align-items: center; gap: 4px; flex: 1; justify-content: center;
+    overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding: 0 4px;
+  }
+  .header-nav::-webkit-scrollbar { display: none; }
+
+  .nav-link {
+    font-family: var(--font-mono); font-size: 0.7rem; font-weight: 600;
+    color: var(--clr-text-muted); padding: 6px 12px; border-radius: 999px;
+    white-space: nowrap; transition: all 0.2s ease; letter-spacing: 0.03em;
+    border: 1px solid transparent;
+  }
+  .nav-link:hover { color: var(--clr-text-primary); border-color: rgba(161,196,199,0.2); }
+  .nav-link.active { color: var(--clr-accent-interactive); border-color: rgba(52,223,236,0.3); background: rgba(52,223,236,0.06); }
+
+  .header-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .account-chip {
+    font-family: var(--font-mono); font-size: 0.7rem; color: var(--clr-accent-primary);
+    border: 1px solid rgba(161,196,199,0.2); padding: 5px 10px; border-radius: 20px;
+    max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    display: none;
+  }
+  .btn-ghost-sm {
+    font-family: var(--font-mono); font-size: 0.7rem; color: var(--clr-accent-primary);
+    background: transparent; border: 1px solid rgba(161,196,199,0.2); border-radius: 999px;
+    padding: 6px 12px; cursor: pointer; transition: all 0.2s ease; white-space: nowrap;
+    min-height: 32px;
+  }
+  .btn-ghost-sm:hover { border-color: var(--clr-accent-interactive); color: var(--clr-accent-interactive); }
+
+  .hamburger-btn {
+    display: none; background: transparent; border: 1px solid rgba(161,196,199,0.2);
+    border-radius: 8px; color: var(--clr-text-primary); font-size: 1.3rem;
+    padding: 4px 8px; cursor: pointer; line-height: 1; min-height: 34px; min-width: 38px;
+  }
+  .hamburger-btn:hover { border-color: var(--clr-accent-interactive); color: var(--clr-accent-interactive); }
+
+  .nav-overlay {
+    display: none; position: fixed; top: var(--header-height); left: 0; right: 0; bottom: 0;
+    z-index: 999; background: rgba(10,16,26,0.7); backdrop-filter: blur(4px);
+  }
+  .nav-overlay.open { display: block; }
+
+  .nav-drawer {
+    position: fixed; top: var(--header-height); right: 0; bottom: 0; width: 280px; max-width: 80vw;
+    background: var(--clr-surface); border-left: 1px solid rgba(161,196,199,0.15);
+    padding: 20px 18px; transform: translateX(100%); transition: transform 0.25s ease;
+    overflow-y: auto; z-index: 1000;
+  }
+  .nav-drawer.open { transform: translateX(0); }
+  .nav-drawer .nav-link {
+    display: block; padding: 12px 14px; font-size: 0.85rem; border-radius: var(--radius-md);
+    border: 1px solid transparent; margin-bottom: 4px;
+  }
+  .nav-drawer .nav-link:hover { border-color: rgba(161,196,199,0.2); background: rgba(255,255,255,0.03); }
+  .nav-drawer .nav-link.active { border-color: rgba(52,223,236,0.3); background: rgba(52,223,236,0.06); }
+  .nav-drawer .drawer-divider { height: 1px; background: rgba(161,196,199,0.12); margin: 14px 0; }
+  .nav-drawer .drawer-account {
+    font-family: var(--font-mono); font-size: 0.75rem; color: var(--clr-text-muted);
+    padding: 8px 14px; word-break: break-all;
+  }
+  .nav-drawer .drawer-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+  .nav-drawer .drawer-actions .btn-ghost-sm { text-align: center; padding: 10px; font-size: 0.78rem; width: 100%; }
+
+  /* ---------- PAGE CHECKING ---------- */
+  .page-checking {
+    text-align: center; padding: 120px 20px;
+    color: var(--clr-text-muted); font-family: var(--font-mono); font-size: 0.9rem;
+  }
+
+  /* ---------- PAGE INTRO ---------- */
+  .page-intro { max-width: 1200px; margin: 20px auto 0; padding: 0 5vw; }
+  .page-intro .eyebrow {
+    font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--clr-accent-interactive); margin-bottom: 8px;
+  }
+  .page-intro h1 {
+    font-family: var(--font-display); font-weight: 800; font-size: clamp(1.3rem, 3vw, 2rem);
+    letter-spacing: 0.02em; margin-bottom: 6px;
+  }
+  .page-intro .page-desc { color: var(--clr-text-muted); font-size: 0.85rem; max-width: 680px; }
+
+  .section-wrap { max-width: 1200px; margin: 0 auto; padding: 0 5vw; }
+
+  /* ---------- TEMPLATE EDITOR ---------- */
+  .template-card {
+    margin-top: 16px; padding: clamp(14px, 2.5vw, 22px);
+    background: rgba(30, 45, 66, 0.55);
+    border: 1px solid rgba(161, 196, 199, 0.15);
+    border-radius: var(--radius-lg);
+    backdrop-filter: blur(10px);
+  }
+  .template-card summary {
+    cursor: pointer; list-style: none;
+    display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+    font-family: var(--font-display); font-size: 0.85rem; letter-spacing: 0.02em;
+    color: var(--clr-accent-interactive);
+  }
+  .template-card summary::-webkit-details-marker { display: none; }
+  .template-card summary .summary-hint {
+    font-family: var(--font-mono); font-size: 0.68rem; color: var(--clr-text-muted); font-weight: 400;
+    letter-spacing: 0; text-transform: none;
+  }
+  .template-body { margin-top: 16px; }
+  .token-hints { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+  .token-chip {
+    font-family: var(--font-mono); font-size: 0.66rem; color: var(--clr-accent-interactive);
+    background: rgba(52,223,236,0.08); border: 1px solid rgba(52,223,236,0.25);
+    padding: 3px 9px; border-radius: 20px; cursor: pointer;
+  }
+  .token-chip:hover { background: rgba(52,223,236,0.16); }
+  textarea#templateInput {
+    width: 100%; min-height: 260px; resize: vertical;
+    padding: 12px 14px; background: var(--clr-surface); border: 1px solid rgba(161, 196, 199, 0.2);
+    border-radius: var(--radius-md); color: var(--clr-text-primary);
+    font-family: var(--font-mono); font-size: 0.78rem; line-height: 1.6;
+  }
+  textarea#templateInput:focus { border-color: var(--clr-accent-interactive); box-shadow: 0 0 0 3px rgba(52,223,236,0.15); outline: none; }
+  .template-actions { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+  .template-actions .hint { font-size: 0.72rem; color: var(--clr-text-muted); }
+
+  .preview-card {
+    margin-top: 14px; padding: 14px 16px;
+    background: var(--clr-surface); border: 1px dashed rgba(161,196,199,0.25);
+    border-radius: var(--radius-md);
+  }
+  .preview-card .preview-label {
+    font-family: var(--font-mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--clr-text-muted); margin-bottom: 8px;
+  }
+  .preview-card pre {
+    white-space: pre-wrap; word-break: break-word; font-family: var(--font-body);
+    font-size: 0.8rem; color: var(--clr-text-primary); line-height: 1.55;
+  }
+
+  /* ---------- TOOLBAR ---------- */
+  .toolbar-wrap { margin-top: 18px; }
+  .toolbar {
+    padding: 14px clamp(12px, 2.5vw, 20px);
+    background: rgba(30, 45, 66, 0.55);
+    border: 1px solid rgba(161, 196, 199, 0.15);
+    border-radius: var(--radius-lg);
+    backdrop-filter: blur(10px);
+    display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px;
+  }
+  .toolbar .field-group { display: flex; flex-direction: column; gap: 4px; }
+  .toolbar .field-group label {
+    font-family: var(--font-mono); font-size: 0.62rem; text-transform: uppercase;
+    letter-spacing: 0.07em; color: var(--clr-text-muted);
+  }
+  .search-group { flex: 1 1 180px; position: relative; }
+  .search-group input {
+    width: 100%; padding: 8px 10px 8px 28px;
+    background: var(--clr-surface); border: 1px solid rgba(161, 196, 199, 0.2);
+    border-radius: var(--radius-md); color: var(--clr-text-primary);
+    font-family: var(--font-body); font-size: 0.8rem;
+  }
+  .search-group input:focus { border-color: var(--clr-accent-interactive); box-shadow: 0 0 0 3px rgba(52,223,236,0.15); outline: none; }
+  .search-group .search-icon { position: absolute; left: 9px; top: 28px; color: var(--clr-text-muted); font-size: 0.8rem; pointer-events: none; }
+
+  .toolbar select {
+    padding: 8px 26px 8px 10px; min-width: 100px;
+    background: var(--clr-surface); border: 1px solid rgba(161, 196, 199, 0.2);
+    border-radius: var(--radius-md); color: var(--clr-text-primary);
+    font-family: var(--font-body); font-size: 0.78rem; cursor: pointer; appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2334DFEC' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>");
+    background-repeat: no-repeat; background-position: right 8px center;
+  }
+  .toolbar select:focus { border-color: var(--clr-accent-interactive); box-shadow: 0 0 0 3px rgba(52,223,236,0.15); outline: none; }
+
+  .toolbar .reset-btn {
+    font-family: var(--font-mono); font-size: 0.7rem; color: var(--clr-accent-interactive);
+    background: transparent; border: 1px solid rgba(52,223,236,0.3); border-radius: var(--radius-md);
+    padding: 8px 12px; cursor: pointer; transition: all 0.2s ease; white-space: nowrap;
+  }
+  .toolbar .reset-btn:hover { background: rgba(52,223,236,0.1); }
+
+  /* ---------- SUMMARY BAR ---------- */
+  .result-summary {
+    margin: 12px 0 0;
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+  }
+  #resultCount { font-family: var(--font-mono); font-size: 0.76rem; color: var(--clr-text-muted); }
+  #resultCount strong { color: var(--clr-accent-interactive); }
+  .mini-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .mini-chip {
+    font-family: var(--font-mono); font-size: 0.62rem; padding: 3px 8px; border-radius: 20px;
+    border: 1px solid rgba(161,196,199,0.2); color: var(--clr-text-muted); white-space: nowrap;
+  }
+  .mini-chip.chip-sent { color: #9CF0B0; border-color: rgba(42,128,66,0.35); }
+  .mini-chip.chip-pending { color: #F3D28A; border-color: rgba(226,176,76,0.3); }
+  .mini-chip.chip-nophone { color: #FFB4B4; border-color: rgba(226,76,76,0.3); }
+
+  .active-chips { margin: 6px 0 0; display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: rgba(52,223,236,0.08); border: 1px solid rgba(52,223,236,0.3);
+    color: var(--clr-accent-interactive); border-radius: 999px; padding: 3px 8px 3px 10px;
+    font-family: var(--font-mono); font-size: 0.66rem;
+  }
+  .chip button { background: none; border: none; color: inherit; cursor: pointer; font-size: 0.8rem; padding: 0; }
+
+  /* ---------- PLAYER LIST ---------- */
+  .players-list { margin: 14px 0 40px; display: flex; flex-direction: column; gap: 8px; }
+  .player-card {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    padding: 12px 14px;
+    background: rgba(30, 45, 66, 0.5);
+    border: 1px solid rgba(161, 196, 199, 0.12);
+    border-radius: var(--radius-md);
+    transition: border-color 0.2s ease;
+  }
+  .player-card.is-sent { border-color: rgba(42,128,66,0.35); }
+  .player-card.no-phone { opacity: 0.7; }
+
+  .pc-avatar {
+    position: relative; width: 42px; height: 42px; border-radius: 10px; overflow: hidden; flex-shrink: 0;
+    background: linear-gradient(135deg, rgba(52,223,236,0.18), rgba(42,128,66,0.18));
+    border: 1px solid rgba(161,196,199,0.2);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .pc-avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
+  .pc-avatar-fallback { font-family: var(--font-display); font-weight: 700; font-size: 0.9rem; color: var(--clr-accent-interactive); }
+
+  .pc-info { flex: 1 1 200px; min-width: 0; }
+  .pc-name { font-weight: 600; font-size: 0.86rem; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .pc-meta { font-size: 0.72rem; color: var(--clr-text-muted); margin-top: 3px; font-family: var(--font-mono); }
+
+  .tag {
+    display: inline-block; font-family: var(--font-mono); font-size: 0.6rem; font-weight: 600;
+    padding: 2px 7px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.03em; white-space: nowrap;
+  }
+  .tag.pos-tag { color: #9CF0B0; background: rgba(42,128,66,0.15); border: 1px solid rgba(42,128,66,0.35); text-transform: none; }
+  .tag.sent-tag { color: #9CF0B0; background: rgba(42,128,66,0.2); border: 1px solid rgba(42,128,66,0.5); }
+  .tag.nophone-tag { color: #FFB4B4; background: rgba(226,76,76,0.12); border: 1px solid rgba(226,76,76,0.4); }
+
+  .pc-positions { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 5px; }
+
+  .pc-actions { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; flex-shrink: 0; }
+  .btn-wa {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: var(--font-mono); font-weight: 600; font-size: 0.74rem;
+    color: #0A2016; background: var(--clr-whatsapp);
+    border: none; padding: 8px 14px; border-radius: 999px; cursor: pointer;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+  }
+  .btn-wa:hover:not(:disabled) { transform: scale(1.03); }
+  .btn-wa:disabled { opacity: 0.35; cursor: not-allowed; }
+  .btn-copy {
+    font-family: var(--font-mono); font-size: 0.7rem; color: var(--clr-accent-primary);
+    background: transparent; border: 1px solid rgba(161,196,199,0.25); border-radius: 999px;
+    padding: 8px 12px; cursor: pointer; transition: all 0.2s ease;
+  }
+  .btn-copy:hover:not(:disabled) { border-color: var(--clr-accent-interactive); color: var(--clr-accent-interactive); }
+  .btn-copy:disabled { opacity: 0.35; cursor: not-allowed; }
+  .btn-toggle-sent {
+    font-family: var(--font-mono); font-size: 0.7rem;
+    background: transparent; border: 1px solid rgba(161,196,199,0.25); border-radius: 999px;
+    padding: 8px 12px; cursor: pointer; color: var(--clr-text-muted); transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+  .btn-toggle-sent:hover { border-color: rgba(161,196,199,0.45); color: var(--clr-text-primary); }
+  .btn-toggle-sent.is-sent { color: #9CF0B0; border-color: rgba(42,128,66,0.4); background: rgba(42,128,66,0.1); }
+
+  .loading-cell, .empty-cell, .error-cell {
+    text-align: center; color: var(--clr-text-muted); font-family: var(--font-mono); font-size: 0.8rem; padding: 30px !important;
+  }
+
+  .copy-toast {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--clr-surface-alt); border: 1px solid rgba(52,223,236,0.35);
+    color: var(--clr-text-primary); font-family: var(--font-mono); font-size: 0.76rem;
+    padding: 10px 18px; border-radius: 999px; box-shadow: var(--shadow-glow);
+    opacity: 0; pointer-events: none; transition: opacity 0.2s ease, transform 0.2s ease; z-index: 2000;
+  }
+  .copy-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  footer.site-footer {
+    text-align: center; padding: 20px 5vw; border-top: 1px solid rgba(161,196,199,0.12);
+    font-size: 0.72rem; color: var(--clr-text-muted); margin-top: 16px;
+  }
+  footer.site-footer a { color: var(--clr-accent-interactive); }
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (min-width: 769px) {
+    .account-chip { display: inline-block; }
+    .nav-drawer, .nav-overlay { display: none !important; }
+    .hamburger-btn { display: none !important; }
+  }
+  @media (max-width: 1024px) {
+    .header-nav .nav-link { font-size: 0.62rem; padding: 5px 8px; }
+  }
+  @media (max-width: 768px) {
+    :root { --header-height: 58px; }
+    .header-nav { display: none; }
+    .hamburger-btn { display: block; }
+    .account-chip { display: none; }
+    .btn-ghost-sm { font-size: 0.65rem; padding: 5px 10px; min-height: 28px; }
+    .logo-img { height: 26px; max-width: 100px; }
+    .brand .season-tag { font-size: 0.55rem; padding: 1px 6px; }
+    .header-actions { gap: 4px; }
+
+    .toolbar { flex-direction: column; align-items: stretch; padding: 12px; }
+    .toolbar select { width: 100%; }
+    .page-intro { margin-top: 10px; }
+    .page-intro h1 { font-size: 1.1rem; }
+    .page-intro .page-desc { font-size: 0.78rem; }
+
+    .player-card { flex-direction: column; align-items: stretch; }
+    .pc-actions { justify-content: flex-end; }
+    textarea#templateInput { min-height: 320px; font-size: 0.72rem; }
+  }
+  @media (max-width: 480px) {
+    :root { --header-height: 54px; }
+    .logo-img { height: 22px; max-width: 80px; }
+    .brand .season-tag { font-size: 0.5rem; padding: 1px 4px; }
+    .btn-ghost-sm { font-size: 0.58rem; padding: 4px 8px; min-height: 24px; }
+    .hamburger-btn { font-size: 1.1rem; min-height: 28px; min-width: 32px; padding: 2px 6px; }
+    .pc-name { font-size: 0.8rem; }
+    .pc-meta { font-size: 0.66rem; }
+    .btn-wa, .btn-copy, .btn-toggle-sent { font-size: 0.68rem; padding: 7px 10px; }
+    .nav-drawer { width: 240px; padding: 14px 12px; }
+    .nav-drawer .nav-link { font-size: 0.76rem; padding: 10px 12px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-left">
+    <a href="../index.html" class="brand">
+      <img src="../logo.png" alt="PHY LIGA Logo" class="logo-img" />
+      <span class="season-tag">Admin</span>
+    </a>
+  </div>
+
+  <nav class="header-nav" id="mainNav">
+    <a href="./dashboard.html" class="nav-link">Dashboard</a>
+    <a href="./manage-players.html" class="nav-link">Players</a>
+    <a href="./manage-messages.html" class="nav-link active">Messages</a>
+    <a href="./manage-teams.html" class="nav-link">Teams</a>
+    <a href="./manage-auction.html" class="nav-link">Auction</a>
+    <a href="./manage-fixtures.html" class="nav-link">Fixtures</a>
+  </nav>
+
+  <div class="header-actions">
+    <span class="account-chip" id="accountChip">…</span>
+    <a href="../index.html" class="btn-ghost-sm">View site</a>
+    <button class="btn-ghost-sm" id="signOutBtn" type="button">Sign out</button>
+    <button class="hamburger-btn" id="hamburgerBtn" type="button" aria-label="Menu">☰</button>
+  </div>
+</header>
+
+<div class="nav-overlay" id="navOverlay"></div>
+<div class="nav-drawer" id="navDrawer">
+  <a href="./dashboard.html" class="nav-link">Dashboard</a>
+  <a href="./manage-players.html" class="nav-link">Manage Players</a>
+  <a href="./manage-messages.html" class="nav-link active">Manage Messages</a>
+  <a href="./manage-teams.html" class="nav-link">Manage Teams</a>
+  <a href="./manage-auction.html" class="nav-link">Manage Auction</a>
+  <a href="./manage-fixtures.html" class="nav-link">Fixtures &amp; Live Score</a>
+  <div class="drawer-divider"></div>
+  <div class="drawer-account" id="drawerAccount">…</div>
+  <div class="drawer-actions">
+    <a href="../index.html" class="btn-ghost-sm">View site</a>
+    <button class="btn-ghost-sm" id="drawerSignOutBtn" type="button">Sign out</button>
+  </div>
+</div>
+
+<div class="page-checking" id="checkingState">Checking session…</div>
+
+<main id="pageContent" class="hidden">
+
+  <section class="page-intro">
+    <p class="eyebrow">Organizer Console</p>
+    <h1>Manage Messages</h1>
+    <p class="page-desc">Send each player a personalized WhatsApp reminder before the auction. Clicking "Send via WhatsApp" opens their chat with the message already typed in — you just tap Send. Nothing is sent automatically; every message needs your final tap in WhatsApp.</p>
+  </section>
+
+  <section class="section-wrap">
+    <details class="template-card" id="templateCard">
+      <summary>✏️ Customize message template <span class="summary-hint">click to expand</span></summary>
+      <div class="template-body">
+        <div class="token-hints">
+          <span class="token-chip" data-token="{{name}}">{{name}}</span>
+          <span class="token-chip" data-token="{{batch}}">{{batch}}</span>
+          <span class="token-chip" data-token="{{hall}}">{{hall}}</span>
+          <span class="token-chip" data-token="{{positions}}">{{positions}}</span>
+        </div>
+        <textarea id="templateInput" spellcheck="false"></textarea>
+        <div class="template-actions">
+          <span class="hint">Tokens are replaced per player. Click a chip above to insert it at your cursor. Saved automatically on this device.</span>
+          <button class="btn-ghost-sm" id="resetTemplateBtn" type="button">Reset to default</button>
+        </div>
+        <div class="preview-card">
+          <div class="preview-label">Preview — first matching player</div>
+          <pre id="templatePreview">Loading…</pre>
+        </div>
+      </div>
+    </details>
+
+    <div class="toolbar-wrap">
+      <div class="toolbar">
+        <div class="field-group search-group">
+          <label for="searchInput">Search</label>
+          <input type="text" id="searchInput" placeholder="Name, email, or phone" autocomplete="off" />
+        </div>
+        <div class="field-group">
+          <label for="batchFilter">Batch</label>
+          <select id="batchFilter">
+            <option value="">All batches</option>
+            <option value="95">95</option><option value="96">96</option><option value="97">97</option>
+            <option value="98">98</option><option value="99">99</option><option value="100">100</option>
+            <option value="101">101</option><option value="102">102</option><option value="103">103</option>
+            <option value="104">104</option><option value="105">105</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label for="hallFilter">Hall</label>
+          <select id="hallFilter">
+            <option value="">All halls</option>
+            <option value="FH">FH</option><option value="SH">SH</option><option value="AE">AE</option>
+            <option value="JN">JN</option><option value="SK">SK</option><option value="SN">SN</option><option value="RH">RH</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label for="roleFilter">Role</label>
+          <select id="roleFilter">
+            <option value="">All roles</option>
+            <option value="player">Player</option>
+            <option value="owner">Owner</option>
+            <option value="both">Both</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label for="statusFilter">Status</label>
+          <select id="statusFilter">
+            <option value="">All statuses</option>
+            <option value="registered">Pending</option>
+            <option value="approved" selected>Approved</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label for="sentFilter">Reminder</label>
+          <select id="sentFilter">
+            <option value="">All</option>
+            <option value="not-sent">Not sent</option>
+            <option value="sent">Sent</option>
+          </select>
+        </div>
+        <button class="reset-btn" id="resetBtn" type="button">Reset filters</button>
+      </div>
+    </div>
+
+    <div class="result-summary">
+      <div id="resultCount">Loading registrations…</div>
+      <div class="mini-chips" id="statusChips"></div>
+    </div>
+    <div class="active-chips" id="activeChips"></div>
+
+    <div class="players-list" id="playersList">
+      <div class="loading-cell">Loading registrations…</div>
+    </div>
+  </section>
+
+</main>
+
+<div class="copy-toast" id="copyToast">Copied to clipboard</div>
+
+<footer class="site-footer">
+  © 2026 PHY-LIGA · Developed by <a href="https://www.facebook.com/fardin.0112" target="_blank" rel="noopener">Fardin Hossain</a> · Feathered by <a href="https://www.facebook.com/tawkir.hossain.16" target="_blank" rel="noopener">Tawkir Hossain</a>
+</footer>
+
+<script type="module">
+  // ---- Hamburger menu ----
+  const hamburgerBtn = document.getElementById("hamburgerBtn");
+  const navOverlay = document.getElementById("navOverlay");
+  const navDrawer = document.getElementById("navDrawer");
+
+  function toggleMenu(open) {
+    const isOpen = typeof open === "boolean" ? open : navDrawer.classList.contains("open");
+    if (isOpen) {
+      navDrawer.classList.remove("open");
+      navOverlay.classList.remove("open");
+      document.body.style.overflow = "";
+    } else {
+      navDrawer.classList.add("open");
+      navOverlay.classList.add("open");
+      document.body.style.overflow = "hidden";
+    }
+  }
+  hamburgerBtn.addEventListener("click", () => toggleMenu());
+  navOverlay.addEventListener("click", () => toggleMenu(false));
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && navDrawer.classList.contains("open")) toggleMenu(false);
+  });
+
+  // ---- Constants ----
+  const ROLE_LABELS = { player: "Player", owner: "Owner", both: "Both" };
+  const STATUS_LABELS = { registered: "Pending", approved: "Approved", rejected: "Rejected" };
+  const TEMPLATE_STORAGE_KEY = "phyliga_admin_message_template_v1";
+
+  const DEFAULT_TEMPLATE =
+`Hey {{name}}!
+
+The PHY-LIGA Season 01 Auction is happening tomorrow at 5:00 PM at the SH Hall TV Room.
+
+Before the auction, please check your player information once again and make sure everything is correct:
+Batch: {{batch}}
+Hall: {{hall}}
+Position(s): {{positions}}
+👉 https://phyliga.netlify.app/players
+
+If you find any mistake in your information, please let me know as soon as possible.
+
+You're also cordially invited to attend the auction live and witness the moment your PHY-LIGA journey begins.
+
+Can't attend physically?
+You can follow the live auction updates directly from the PHY-LIGA website:
+👉 https://phyliga.netlify.app/auction
+
+Get ready, {{name}}. Your name could be the next one on the auction board.
+
+PHY-LIGA Season 01
+Beyond Equations, Into the Game.
+— PHY-LIGA Season 01 Organizing Committee`;
+
+  // ---- Elements ----
+  const checkingState = document.getElementById("checkingState");
+  const pageContent = document.getElementById("pageContent");
+  const accountChip = document.getElementById("accountChip");
+  const drawerAccount = document.getElementById("drawerAccount");
+  const signOutBtn = document.getElementById("signOutBtn");
+  const drawerSignOutBtn = document.getElementById("drawerSignOutBtn");
+
+  const templateInput = document.getElementById("templateInput");
+  const templatePreview = document.getElementById("templatePreview");
+  const resetTemplateBtn = document.getElementById("resetTemplateBtn");
+
+  const searchInput = document.getElementById("searchInput");
+  const batchFilter = document.getElementById("batchFilter");
+  const hallFilter = document.getElementById("hallFilter");
+  const roleFilter = document.getElementById("roleFilter");
+  const statusFilter = document.getElementById("statusFilter");
+  const sentFilter = document.getElementById("sentFilter");
+  const resetBtn = document.getElementById("resetBtn");
+
+  const resultCount = document.getElementById("resultCount");
+  const statusChips = document.getElementById("statusChips");
+  const activeChips = document.getElementById("activeChips");
+  const playersList = document.getElementById("playersList");
+  const copyToast = document.getElementById("copyToast");
+
+  // ---- State ----
+  let allPlayers = [];
+  let db, doc, updateDoc, serverTimestamp;
+
+  // ---- Helpers ----
+  function escapeHtml(str) {
+    return String(str ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+  function toMillis(ts) {
+    if (!ts) return 0;
+    if (typeof ts.toMillis === "function") return ts.toMillis();
+    if (typeof ts.seconds === "number") return ts.seconds * 1000;
+    return 0;
+  }
+  function formatWhen(ts) {
+    const ms = toMillis(ts);
+    if (!ms) return "—";
+    return new Date(ms).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+  }
+  function driveThumb(link) {
+    if (!link) return null;
+    const m = link.match(/\/d\/([a-zA-Z0-9_-]+)/) || link.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    if (m && m[1]) return `https://drive.google.com/thumbnail?id=${m[1]}&sz=w200`;
+    return link;
+  }
+  function initialOf(name) { return (name || "?").trim().charAt(0).toUpperCase() || "?"; }
+
+  function waNumber(phone) {
+    const digits = (phone || "").replace(/\D/g, "");
+    if (!digits) return null;
+    let local = digits;
+    if (!local.startsWith("880")) local = local.startsWith("0") ? "880" + local.slice(1) : "880" + local;
+    return local;
+  }
+
+  function buildMessage(p, template) {
+    const positions = Array.isArray(p.preferredPositions) && p.preferredPositions.length
+      ? p.preferredPositions.join(", ")
+      : "Not specified";
+    return template
+      .replaceAll("{{name}}", p.fullName || "Player")
+      .replaceAll("{{batch}}", p.batch != null ? String(p.batch) : "—")
+      .replaceAll("{{hall}}", p.hall || "—")
+      .replaceAll("{{positions}}", positions);
+  }
+
+  function currentTemplate() { return templateInput.value || DEFAULT_TEMPLATE; }
+
+  function waLink(phone, message) {
+    const number = waNumber(phone);
+    if (!number) return null;
+    return `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
+  }
+
+  async function copyText(text) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch (err) {
+      try {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.focus(); ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+        return true;
+      } catch (err2) {
+        console.error("Copy failed:", err2);
+        return false;
+      }
+    }
+  }
+
+  let toastTimer = null;
+  function showToast(msg) {
+    copyToast.textContent = msg;
+    copyToast.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => copyToast.classList.remove("show"), 2200);
+  }
+
+  // ---- Template editor ----
+  function loadTemplate() {
+    let saved = null;
+    try { saved = localStorage.getItem(TEMPLATE_STORAGE_KEY); } catch (err) { /* ignore */ }
+    templateInput.value = saved || DEFAULT_TEMPLATE;
+  }
+  function saveTemplate() {
+    try { localStorage.setItem(TEMPLATE_STORAGE_KEY, templateInput.value); } catch (err) { /* ignore */ }
+  }
+  templateInput.addEventListener("input", () => { saveTemplate(); renderPreview(); });
+  resetTemplateBtn.addEventListener("click", () => {
+    templateInput.value = DEFAULT_TEMPLATE;
+    saveTemplate();
+    renderPreview();
+  });
+  document.querySelectorAll(".token-chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      const token = chip.dataset.token;
+      const start = templateInput.selectionStart ?? templateInput.value.length;
+      const end = templateInput.selectionEnd ?? templateInput.value.length;
+      const val = templateInput.value;
+      templateInput.value = val.slice(0, start) + token + val.slice(end);
+      templateInput.focus();
+      templateInput.selectionStart = templateInput.selectionEnd = start + token.length;
+      saveTemplate();
+      renderPreview();
+    });
+  });
+
+  function renderPreview() {
+    const sample = currentFilteredList()[0] || allPlayers[0];
+    if (!sample) { templatePreview.textContent = "No players to preview yet."; return; }
+    templatePreview.textContent = buildMessage(sample, currentTemplate());
+  }
+
+  // ---- Auth + Firebase ----
+  (async function init() {
+    let requireAdmin, adminSignOut, collection, onSnapshot;
+
+    try {
+      const [guardMod, configMod, firestoreMod] = await Promise.all([
+        import("../assets/js/admin-guard.js"),
+        import("../assets/js/firebase-config.js"),
+        import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js")
+      ]);
+      requireAdmin = guardMod.requireAdmin;
+      adminSignOut = guardMod.adminSignOut;
+      db = configMod.db;
+      ({ collection, onSnapshot, doc, updateDoc, serverTimestamp } = firestoreMod);
+    } catch (err) {
+      console.error("Firebase failed to load:", err);
+      checkingState.textContent =
+        "Couldn't connect to Firebase. If you're opening this file directly on your computer, serve it through a local web server (e.g. VS Code's \"Live Server\" extension, or `npx serve`) or view it on the live deployed site.";
+      return;
+    }
+
+    const user = await requireAdmin();
+    const email = user.email || "Signed in";
+    accountChip.textContent = email;
+    drawerAccount.textContent = email;
+    signOutBtn.addEventListener("click", () => adminSignOut());
+    drawerSignOutBtn.addEventListener("click", () => adminSignOut());
+
+    loadTemplate();
+    checkingState.classList.add("hidden");
+    pageContent.classList.remove("hidden");
+
+    onSnapshot(collection(db, "players"), (snap) => {
+      allPlayers = [];
+      snap.forEach(d => allPlayers.push({ id: d.id, ...d.data() }));
+      applyFilters();
+    }, (err) => {
+      console.error("players listener error:", err);
+      playersList.innerHTML = `<div class="error-cell">Couldn't load registrations — check your connection or admin access, then refresh.</div>`;
+      resultCount.textContent = "Couldn't load registrations.";
+    });
+  })();
+
+  // ---- Filtering ----
+  function currentFilters() {
+    return {
+      search: searchInput.value.trim().toLowerCase(),
+      batch: batchFilter.value,
+      hall: hallFilter.value,
+      role: roleFilter.value,
+      status: statusFilter.value,
+      sent: sentFilter.value
+    };
+  }
+
+  let lastFilteredList = [];
+  function currentFilteredList() { return lastFilteredList; }
+
+  function applyFilters() {
+    const f = currentFilters();
+    let list = allPlayers.filter(p => {
+      if (f.search) {
+        const hay = `${p.fullName || ""} ${p.email || ""} ${p.contactNumber || ""} ${p.batch || ""} ${p.hall || ""}`.toLowerCase();
+        if (!hay.includes(f.search)) return false;
+      }
+      if (f.batch && String(p.batch) !== f.batch) return false;
+      if (f.hall && p.hall !== f.hall) return false;
+      if (f.role && p.role !== f.role) return false;
+      if (f.status && (p.status || "registered") !== f.status) return false;
+      if (f.sent === "sent" && !p.reminderSent) return false;
+      if (f.sent === "not-sent" && p.reminderSent) return false;
+      return true;
+    });
+
+    list.sort((a, b) => (a.fullName || "").localeCompare(b.fullName || ""));
+    lastFilteredList = list;
+
+    renderSummary(list);
+    renderChips(f);
+    renderList(list);
+    renderPreview();
+  }
+
+  function renderSummary(list) {
+    const sent = allPlayers.filter(p => p.reminderSent).length;
+    const notSent = allPlayers.length - sent;
+    const noPhone = allPlayers.filter(p => !p.contactNumber).length;
+
+    resultCount.innerHTML = `Showing <strong>${list.length}</strong> of <strong>${allPlayers.length}</strong> registrations`;
+    statusChips.innerHTML = `
+      <span class="mini-chip chip-sent">${sent} sent</span>
+      <span class="mini-chip chip-pending">${notSent} not sent</span>
+      <span class="mini-chip chip-nophone">${noPhone} no phone</span>
+    `;
+  }
+
+  function renderChips(f) {
+    const chips = [];
+    if (f.search) chips.push({ key: "search", label: `Search: "${f.search}"` });
+    if (f.batch) chips.push({ key: "batch", label: `Batch ${f.batch}` });
+    if (f.hall) chips.push({ key: "hall", label: `Hall ${f.hall}` });
+    if (f.role) chips.push({ key: "role", label: ROLE_LABELS[f.role] });
+    if (f.status) chips.push({ key: "status", label: STATUS_LABELS[f.status] });
+    if (f.sent) chips.push({ key: "sent", label: f.sent === "sent" ? "Reminder sent" : "Reminder not sent" });
+
+    activeChips.innerHTML = chips.map(c =>
+      `<span class="chip">${escapeHtml(c.label)}<button data-key="${c.key}" aria-label="Remove filter">✕</button></span>`
+    ).join("");
+
+    activeChips.querySelectorAll("button").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const key = btn.dataset.key;
+        if (key === "search") searchInput.value = "";
+        if (key === "batch") batchFilter.value = "";
+        if (key === "hall") hallFilter.value = "";
+        if (key === "role") roleFilter.value = "";
+        if (key === "status") statusFilter.value = "";
+        if (key === "sent") sentFilter.value = "";
+        applyFilters();
+      });
+    });
+  }
+
+  function renderList(list) {
+    if (!list.length) {
+      playersList.innerHTML = `<div class="empty-cell">No registrations match these filters.</div>`;
+      return;
+    }
+    playersList.innerHTML = list.map(renderCard).join("");
+
+    playersList.querySelectorAll(".btn-wa").forEach(btn => {
+      btn.addEventListener("click", () => handleSend(btn.dataset.id));
+    });
+    playersList.querySelectorAll(".btn-copy").forEach(btn => {
+      btn.addEventListener("click", () => handleCopy(btn.dataset.id));
+    });
+    playersList.querySelectorAll(".btn-toggle-sent").forEach(btn => {
+      btn.addEventListener("click", () => handleToggleSent(btn.dataset.id));
+    });
+  }
+
+  function renderCard(p) {
+    const thumb = driveThumb(p.photoLink);
+    const positions = Array.isArray(p.preferredPositions) ? p.preferredPositions : [];
+    const hasPhone = !!p.contactNumber && !!waNumber(p.contactNumber);
+    const sent = !!p.reminderSent;
+
+    return `
+      <div class="player-card ${sent ? "is-sent" : ""} ${hasPhone ? "" : "no-phone"}">
+        <div class="pc-avatar">
+          ${thumb ? `<img src="${thumb}" alt="" loading="lazy" onerror="this.remove();" />` : ""}
+          <span class="pc-avatar-fallback">${escapeHtml(initialOf(p.fullName))}</span>
+        </div>
+        <div class="pc-info">
+          <div class="pc-name">
+            ${escapeHtml(p.fullName || "Unnamed")}
+            ${sent ? `<span class="tag sent-tag">Sent ${escapeHtml(formatWhen(p.reminderSentAt))}</span>` : ""}
+            ${hasPhone ? "" : `<span class="tag nophone-tag">No usable phone</span>`}
+          </div>
+          <div class="pc-meta">${escapeHtml(p.contactNumber || "—")} · Batch ${escapeHtml(p.batch ?? "—")} · ${escapeHtml(p.hall ?? "—")} · ${ROLE_LABELS[p.role] || p.role || "—"}</div>
+          ${positions.length ? `<div class="pc-positions">${positions.map(pos => `<span class="tag pos-tag">${escapeHtml(pos)}</span>`).join("")}</div>` : ""}
+        </div>
+        <div class="pc-actions">
+          <button class="btn-toggle-sent ${sent ? "is-sent" : ""}" data-id="${p.id}" type="button">${sent ? "✓ Sent" : "Mark sent"}</button>
+          <button class="btn-copy" data-id="${p.id}" type="button" ${hasPhone ? "" : "disabled"}>Copy</button>
+          <button class="btn-wa" data-id="${p.id}" type="button" ${hasPhone ? "" : "disabled"} title="${hasPhone ? "Open WhatsApp with message pre-filled" : "No usable phone number"}">💬 Send via WhatsApp</button>
+        </div>
+      </div>
+    `;
+  }
+
+  [searchInput, batchFilter, hallFilter, roleFilter, statusFilter, sentFilter].forEach(el => {
+    el.addEventListener(el.tagName === "SELECT" ? "change" : "input", applyFilters);
+  });
+  resetBtn.addEventListener("click", () => {
+    searchInput.value = ""; batchFilter.value = ""; hallFilter.value = ""; roleFilter.value = ""; statusFilter.value = ""; sentFilter.value = "";
+    applyFilters();
+  });
+
+  // ---- Actions ----
+  async function handleCopy(playerId) {
+    const p = allPlayers.find(pl => pl.id === playerId);
+    if (!p) return;
+    const message = buildMessage(p, currentTemplate());
+    const ok = await copyText(message);
+    showToast(ok ? "Message copied to clipboard" : "Couldn't copy — select and copy manually");
+  }
+
+  async function handleSend(playerId) {
+    const p = allPlayers.find(pl => pl.id === playerId);
+    if (!p) return;
+    const message = buildMessage(p, currentTemplate());
+    const link = waLink(p.contactNumber, message);
+    if (!link) { showToast("No usable phone number for this player"); return; }
+
+    // Best-effort clipboard copy as a backup, then open the chat with the
+    // message already filled in via WhatsApp's own text parameter.
+    await copyText(message);
+    window.open(link, "_blank", "noopener");
+
+    try {
+      await updateDoc(doc(db, "players", playerId), {
+        reminderSent: true,
+        reminderSentAt: serverTimestamp()
+      });
+    } catch (err) {
+      console.error("Couldn't mark reminder sent:", err);
+    }
+  }
+
+  async function handleToggleSent(playerId) {
+    const p = allPlayers.find(pl => pl.id === playerId);
+    if (!p) return;
+    const next = !p.reminderSent;
+    try {
+      await updateDoc(doc(db, "players", playerId), {
+        reminderSent: next,
+        reminderSentAt: next ? serverTimestamp() : null
+      });
+    } catch (err) {
+      console.error(err);
+      showToast("Couldn't update reminder status");
+    }
+  }
+</script>
+
+</body>
+</html>

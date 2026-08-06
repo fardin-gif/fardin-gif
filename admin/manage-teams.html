@@ -689,7 +689,7 @@
 </main>
 
 <footer class="site-footer">
-  © 2026 PHY-LIGA · Developed by <a href="https://www.facebook.com/fardin.0112" target="_blank" rel="noopener">Fardin Hossain</a> · Feathered by <a href="https://www.facebook.com/tawkir.hossain.16" target="_blank" rel="noopener">Tawkir Hossain Rahat</a>
+  © 2026 PHY-LIGA · Developed by <a href="https://www.facebook.com/fardin.0112" target="_blank" rel="noopener">Fardin Hossain</a> · Feathered by <a href="https://www.facebook.com/tawkir.hossain.16" target="_blank" rel="noopener">Tawkir Hossain</a>
 </footer>
 
 <!-- ============ EDIT TEAM MODAL ============ -->
@@ -1067,7 +1067,10 @@
     createSubmitStatus.textContent = "Creating…";
 
     try {
-      await addDoc(collection(db, "teams"), {
+      const newTeamRef = doc(collection(db, "teams"));
+      const batch = writeBatch(db);
+
+      batch.set(newTeamRef, {
         teamName,
         ownerId: ownerId || null,
         ownerName: ownerPlayer ? ownerPlayer.fullName : null,
@@ -1080,6 +1083,14 @@
         playerIds: [],
         stats: { played: 0, won: 0, drawn: 0, lost: 0, goalsFor: 0, goalsAgainst: 0, points: 0 }
       });
+
+      // A "both"-role owner never enters the auction pool — auto-assign them straight to their own roster.
+      if (ownerPlayer && ownerPlayer.role === "both") {
+        batch.update(doc(db, "players", ownerPlayer.id), { teamId: newTeamRef.id, auctionStatus: "not_applicable", soldPrice: null });
+        batch.update(doc(db, "publicPlayers", ownerPlayer.id), { teamId: newTeamRef.id, teamName });
+      }
+
+      await batch.commit();
 
       createTeamForm.reset();
       teamColorInput.value = "#34DFEC";
@@ -1287,6 +1298,9 @@
       return;
     }
 
+    const team = allTeams.find(t => t.id === editingTeamId);
+    const prevOwnerId = team ? (team.ownerId || null) : null;
+    const prevOwner = prevOwnerId ? allPlayers.find(p => p.id === prevOwnerId) : null;
     const ownerPlayer = ownerId ? allPlayers.find(p => p.id === ownerId) : null;
     const captainPlayer = captainId ? allPlayers.find(p => p.id === captainId) : null;
 
@@ -1294,7 +1308,9 @@
     editSubmitStatus.textContent = "Saving…";
 
     try {
-      await updateDoc(doc(db, "teams", editingTeamId), {
+      const batch = writeBatch(db);
+
+      batch.update(doc(db, "teams", editingTeamId), {
         teamName,
         logoLink,
         teamColor,
@@ -1303,6 +1319,20 @@
         captainId: captainId || null,
         captainName: captainPlayer ? captainPlayer.fullName : null
       });
+
+      // Outgoing owner: if they were a "both"-role player auto-rostered here, release them back to "no team".
+      if (ownerId !== prevOwnerId && prevOwner && prevOwner.role === "both" && prevOwner.teamId === editingTeamId) {
+        batch.update(doc(db, "players", prevOwner.id), { teamId: null, soldPrice: null, auctionStatus: "not_applicable" });
+        batch.update(doc(db, "publicPlayers", prevOwner.id), { teamId: null, teamName: null });
+      }
+
+      // Incoming owner: if the newly-selected owner is a "both"-role player, auto-assign them to this team's roster.
+      if (ownerId !== prevOwnerId && ownerPlayer && ownerPlayer.role === "both") {
+        batch.update(doc(db, "players", ownerPlayer.id), { teamId: editingTeamId, auctionStatus: "not_applicable", soldPrice: null });
+        batch.update(doc(db, "publicPlayers", ownerPlayer.id), { teamId: editingTeamId, teamName });
+      }
+
+      await batch.commit();
       closeEditModal();
     } catch (err) {
       console.error(err);
@@ -1321,7 +1351,7 @@
     const ok = confirm(
       `Delete "${team.teamName}"?\n\n` +
       (roster.length
-        ? `${roster.length} player(s) currently on this team's roster will be unassigned (marked "unsold") so they can be re-auctioned. `
+        ? `${roster.length} player(s) currently on this team's roster will be unassigned. `
         : "") +
       `This can't be undone.`
     );
@@ -1330,7 +1360,9 @@
     try {
       const batch = writeBatch(db);
       roster.forEach(p => {
-        batch.update(doc(db, "players", p.id), { teamId: null, soldPrice: null, auctionStatus: "unsold" });
+        // "both"-role members never entered the auction pool, so they reset to "not_applicable" rather than "unsold".
+        const resetStatus = p.role === "player" ? "unsold" : "not_applicable";
+        batch.update(doc(db, "players", p.id), { teamId: null, soldPrice: null, auctionStatus: resetStatus });
         batch.update(doc(db, "publicPlayers", p.id), { teamId: null, teamName: null });
       });
       batch.delete(doc(db, "teams", teamId));
