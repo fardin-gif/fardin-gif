@@ -713,7 +713,6 @@
                 <li><a href="stats.html">Statistics</a></li>
                 <li><a href="fixture.html">Fixture</a></li>
                 <li><a href="scoreboard.html">Scoreboard</a></li>
-                <li><a href="memory.html">Memory</a></li>
             </ul>
         </nav>
     </header>
@@ -752,7 +751,7 @@
             </div>
 
             <p class="contacts-line">
-                Queries about registration? Contact <b>Ibna Hossain Emon</b>, <b>Tawkir Hossain Rahat</b>, or
+                Queries about registration? Contact <b>Ibna Hossain Emon</b>, <b>Tawkir Hossain</b>, or
                 <a href="https://wa.me/8801310908781" target="_blank" rel="noopener">Fardin Hossain</a>.
             </p>
         </section>
@@ -844,8 +843,8 @@
 
                     <div class="field">
                         <label class="field-label" for="photoLink">Square Photo — Google Drive Link <span class="required">*</span></label>
-                        <input type="url" id="photoLink" name="photoLink" placeholder="https://drive.google.com/..." required />
-                        <p class="hint">Upload a square (1:1) photo to Google Drive, set sharing to "Anyone with the link", then paste the link here.</p>
+                        <input type="url" id="photoLink" name="photoLink" placeholder="https://drive.google.com/file/d/.../view" required />
+                        <p class="hint">Upload a square (1:1) photo to Google Drive, set sharing to "Anyone with the link", then paste the <b>file</b> share link here (looks like ".../file/d/FILE_ID/view"). Folder links won't work.</p>
                     </div>
                 </fieldset>
 
@@ -894,7 +893,7 @@
     </main>
 
     <footer class="site-footer">
-  © 2026 PHY-LIGA · Developed by <a href="https://www.facebook.com/fardin.0112" target="_blank" rel="noopener">Fardin Hossain</a> · Feathered by <a href="https://www.facebook.com/tawkir.hossain.16" target="_blank" rel="noopener">Tawkir Hossain Rahat</a>
+  © 2026 PHY-LIGA · Developed by <a href="https://www.facebook.com/fardin.0112" target="_blank" rel="noopener">Fardin Hossain</a> · Feathered by <a href="https://www.facebook.com/tawkir.hossain.16" target="_blank" rel="noopener">Tawkir Hossain</a>
 </footer>
 
     <script>
@@ -1132,8 +1131,9 @@
                 showError("Please enter a valid Bangladeshi WhatsApp number (e.g. 01712345678).");
                 return;
             }
-            if (!/^https:\/\/.*drive\.google\.com\/.+/.test(photoLink)) {
-                showError("Please provide a valid Google Drive link for your photo.");
+            if (!/^https:\/\/.*drive\.google\.com\/.+/.test(photoLink) ||
+                !(photoLink.match(/\/d\/([a-zA-Z0-9_-]+)/) || photoLink.match(/[?&]id=([a-zA-Z0-9_-]+)/))) {
+                showError("Please provide a valid Google Drive file link — it should look like \".../file/d/FILE_ID/view\" or \".../open?id=FILE_ID\". Folder links or \"My Drive\" links won't display a photo.");
                 return;
             }
 
